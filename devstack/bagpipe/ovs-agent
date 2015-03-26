@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# Neutron BaGPipe agent
+# -----------------------------
+
+# Save trace setting
+OVSA_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# We inherit nearly everything from the openvswitch agent
+source $TOP_DIR/lib/neutron_plugins/openvswitch_agent
+
+# A bit of shell magic to override the neutron_plugin_configure_plugin_agent
+# shell function from $TOP_DIR/lib/neutron_plugins/openvswitch_agent so that
+# it sets AGENT_BINARY to the value we want
+temp=`tempfile -p bagpipe_agent_override`
+shopt -s extdebug
+(type -a neutron_plugin_configure_plugin_agent | \
+tail -n +2 | head -n -1 ; echo '    AGENT_BINARY="$NEUTRON_BIN_DIR/neutron-bagpipe-openvswitch-agent"'; echo '}') > $temp
+shopt -u extdebug
+source $temp
+
+# Restore xtrace
+$OVSA_XTRACE
+
+
