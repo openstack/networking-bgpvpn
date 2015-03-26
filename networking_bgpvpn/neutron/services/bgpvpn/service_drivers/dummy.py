@@ -14,7 +14,7 @@
 #    under the License.
 
 from networking_bgpvpn.neutron.services.bgpvpn import service_drivers
-from oslo_log import log
+from neutron.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

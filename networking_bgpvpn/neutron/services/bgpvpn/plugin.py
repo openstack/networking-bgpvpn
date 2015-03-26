@@ -15,9 +15,9 @@
 
 from networking_bgpvpn.neutron.db.bgpvpn import bgpvpn_db
 from neutron.i18n import _LI
+from neutron.openstack.common import log
 from neutron.plugins.common import constants
 from neutron.services import service_base
-from oslo_log import log
 
 LOG = log.getLogger(__name__)
 
