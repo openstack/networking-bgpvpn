@@ -205,9 +205,9 @@ class BGPVPNPluginDb(BGPVPNPluginBase,
                         if user_attr in bgpvpn_conn}
                     fields = self.USER_READABLE_ATTRIBUTES
                 else:
-                    # Format Route Target list to string
-                    rt = self._rt_list2str(bgpvpn_conn['route_targets'])
+                    # Format Route Target lists to string
                     if 'route_targets' in bgpvpn_conn:
+                        rt = self._rt_list2str(bgpvpn_conn['route_targets'])
                         bgpvpn_conn['route_targets'] = rt
                     if 'import_targets' in bgpvpn_conn:
                         i_rt = self._rt_list2str(bgpvpn_conn['import_targets'])
