@@ -39,11 +39,3 @@ class BGPVPNDriver(object):
     @abc.abstractmethod
     def delete_bgpvpn_connection(self, context, bgpvpn_connection):
         pass
-
-    @abc.abstractmethod
-    def notify_port_updated(self, context, port):
-        pass
-
-    @abc.abstractmethod
-    def remove_port_from_bgpvpn_agent(self, context, port):
-        pass

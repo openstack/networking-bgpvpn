@@ -32,7 +32,7 @@ class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
             constants.BGPVPN, self)
         LOG.info(_LI("BGP VPN Service Plugin using Service Driver: %s"),
                  default_provider)
-        self.bgpvpn_driver = drivers[default_provider]
+        self.driver = drivers[default_provider]
 
     def get_plugin_type(self):
         return constants.BGPVPN
@@ -40,22 +40,12 @@ class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
     def get_plugin_description(self):
         return "Neutron BGP VPN connection Service Plugin"
 
-    def prevent_bgpvpn_network_deletion(self, context, network_id):
-        LOG.debug('Prevent BGP VPN network deletion')
-        if (super(BGPVPNPlugin, self).
-                get_bgpvpn_connections(context,
-                                       filters={'network_id': [network_id]})):
-            raise bgpvpn_db.BGPVPNNetworkInUse(network_id=network_id)
-        else:
-            LOG.debug('Network %(network_id)s can be deleted')
-
     def create_bgpvpn_connection(self, context, bgpvpn_connection):
         bgpvpn_connection = super(
             BGPVPNPlugin, self).create_bgpvpn_connection(context,
                                                          bgpvpn_connection)
 
-        self.bgpvpn_driver.create_bgpvpn_connection(context,
-                                                    bgpvpn_connection)
+        self.driver.create_bgpvpn_connection(context, bgpvpn_connection)
         return bgpvpn_connection
 
     def delete_bgpvpn_connection(self, context, bgpvpn_conn_id):
@@ -63,8 +53,7 @@ class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
             BGPVPNPlugin, self).delete_bgpvpn_connection(context,
                                                          bgpvpn_conn_id)
 
-        self.bgpvpn_driver.delete_bgpvpn_connection(context,
-                                                    bgpvpn_connection)
+        self.driver.delete_bgpvpn_connection(context, bgpvpn_connection)
 
     def update_bgpvpn_connection(self,
                                  context, bgpvpn_conn_id,
@@ -77,13 +66,6 @@ class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
                                                          bgpvpn_conn_id,
                                                          bgpvpn_connection)
 
-        self.bgpvpn_driver.update_bgpvpn_connection(context,
-                                                    old_bgpvpn_connection,
-                                                    bgpvpn_connection)
+        self.driver.update_bgpvpn_connection(context, old_bgpvpn_connection,
+                                             bgpvpn_connection)
         return bgpvpn_connection
-
-    def notify_port_updated(self, context, port):
-        self.bgpvpn_driver.notify_port_updated(context, port)
-
-    def remove_port_from_bgpvpn_agent(self, context, port):
-        self.bgpvpn_driver.remove_port_from_bgpvpn_agent(context, port)
