@@ -5,7 +5,7 @@ networking-bgpvpn
 API and Framework to interconnect BGP/MPLS VPNs to Openstack Neutron networks
 
 * Free software: Apache license
-* Source: http://git.openstack.org/cgit/stackforge/networking-bgpvpn
+* Source: http://git.openstack.org/cgit/openstack/networking-bgpvpn
 * Bugs: http://bugs.launchpad.net/bgpvpn
 
 Quick start
@@ -18,7 +18,7 @@ To be able to test this framework, you have to:
 * add the devstack plugin for the BGPVPN service plugin to your ``local.conf``: ::
 
 	[[local|localrc]]
-	enable_plugin networking-bgpvpn git@github.com:stackforge/networking-bgpvpn.git
+	enable_plugin networking-bgpvpn git@github.com:openstack/networking-bgpvpn.git
 
 * add the following to your ``local.conf``: ::
 

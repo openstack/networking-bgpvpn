@@ -25,15 +25,15 @@ In devstack :
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
-	enable_plugin networking-bagpipe-l2 git@github.com:stackforge/networking-bagpipe-l2.git
+	enable_plugin networking-bagpipe-l2 git@github.com:openstack/networking-bagpipe-l2.git
 
     * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
 
-    * (you need to ``git clone git@github.com:stackforge/networking-bgpvpn.git`` in /opt/stack manually before doing a ./stack.sh,
+    * (you need to ``git clone git@github.com:openstack/networking-bgpvpn.git`` in /opt/stack manually before doing a ./stack.sh,
       or a devstack more recent than 2015-04-20 which includes https://review.openstack.org/#/c/168796 )
 
 .. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
-.. _networking-bagpipe-l2: https://github.com/stackforge/networking-bagpipe-l2
+.. _networking-bagpipe-l2: https://github.com/openstack/networking-bagpipe-l2
 
 
 
