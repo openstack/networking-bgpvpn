@@ -21,7 +21,6 @@ from neutron.db import model_base
 from neutron.db import models_v2
 from neutron.openstack.common import uuidutils
 from oslo_log import log
-from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
 from networking_bgpvpn.neutron.extensions.bgpvpn.bgpvpn import BGPVPNPluginBase
@@ -43,9 +42,7 @@ class BGPVPNConnection(model_base.BASEV2,
     import_targets = sa.Column(sa.String(255), nullable=False)
     export_targets = sa.Column(sa.String(255), nullable=False)
     auto_aggregate = sa.Column(sa.Boolean(), nullable=False)
-    network_id = sa.Column(sa.String(36),
-                           sa.ForeignKey('networks.id'))
-    network = orm.relationship(models_v2.Network)
+    network_id = sa.Column(sa.String(36))
 
 
 class BGPVPNConnectionNotFound(q_exc.NotFound):
