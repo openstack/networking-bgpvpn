@@ -56,6 +56,11 @@ class BGPVPNConnectionCreate(extension.ClientExtensionCreate,
             help=_('List of additional Route Targets to export to. Usage: -- '
                    '--export-targets list=true <asn1>:<nn1> <asn2>:<nn2> ...'))
         parser.add_argument(
+            '--route-distinguishers',
+            help=_('List of RDs that will be used to advertize VPN routes.'
+                   'Usage: -- --route-distinguishers list=true '
+                   '<asn1>:<nn1> <asn2>:<nn2> ...'))
+        parser.add_argument(
             '--network-id', metavar='NETWORK',
             default=None,
             help=_('Id of the network associated with this '
@@ -80,7 +85,7 @@ class BGPVPNConnectionCreate(extension.ClientExtensionCreate,
         neutronv20.update_dict(parsed_args, body[self.resource],
                                ['name', 'tenant_id', 'type', 'route_targets',
                                 'import_targets', 'export_targets',
-                                'auto_aggregate'])
+                                'route_distinguishers', 'auto_aggregate'])
 
         return body
 
@@ -100,7 +105,8 @@ class BGPVPNConnectionList(extension.ClientExtensionList,
     shell_command = 'bgpvpn-connection-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
-        'export_targets', 'network_id', 'auto_aggregate', 'tenant_id']
+        'export_targets', 'route_distinguishers',
+        'network_id', 'auto_aggregate', 'tenant_id']
     pagination_support = True
     sorting_support = True
 
