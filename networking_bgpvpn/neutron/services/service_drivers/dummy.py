@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_bgpvpn.neutron.services.bgpvpn import service_drivers
+from networking_bgpvpn.neutron.services import service_drivers
 from oslo_log import log
 
 LOG = log.getLogger(__name__)

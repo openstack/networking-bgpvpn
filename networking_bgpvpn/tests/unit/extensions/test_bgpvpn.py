@@ -23,7 +23,7 @@ from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
 from webob import exc
 
-from networking_bgpvpn.neutron.extensions.bgpvpn import bgpvpn
+from networking_bgpvpn.neutron.extensions import bgpvpn
 
 _uuid = uuidutils.generate_uuid
 _get_path = test_base._get_path

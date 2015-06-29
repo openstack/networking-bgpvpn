@@ -17,7 +17,7 @@ import abc
 
 import six
 
-from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
+from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import resource_helper

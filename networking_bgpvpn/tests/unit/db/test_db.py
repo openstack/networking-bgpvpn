@@ -17,15 +17,15 @@ from neutron import context
 
 from neutron.tests.unit import testlib_api
 
-from networking_bgpvpn.neutron.db.bgpvpn.bgpvpn_db \
+from networking_bgpvpn.neutron.db.bgpvpn_db \
     import BGPVPNConnectionNotFound
-from networking_bgpvpn.neutron.db.bgpvpn.bgpvpn_db import BGPVPNPluginDb
+from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
 
 
-class BGPVPNDBTestCase(testlib_api.SqlTestCase):
+class BgpvpnDBTestCase(testlib_api.SqlTestCase):
 
     def setUp(self):
-        super(BGPVPNDBTestCase, self).setUp()
+        super(BgpvpnDBTestCase, self).setUp()
         self.ctx = context.get_admin_context()
         self.plugin_db = BGPVPNPluginDb()
 
