@@ -21,7 +21,12 @@ In devstack :
 
   * install and configure bagpipe-bgp_, typically with a peering to a BGP Route Reflector or BGP routers
 
-  * the compute node agent is ``bagpipe-openvswitch`` (openvswitch agent, modified to interact with ``bagpipe-bgp``):
+        enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
+	BAGPIPE_DATAPLANE_DRIVER_IPVPN = mpls_ovs_dataplane.MPLSOVSDataplaneDriver
+        # IP of your route reflector or BGP router, or fakeRR:
+	BAGPIPE_BGP_PEERS=1.2.3.4
+
+  * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with addtions to interact with ``bagpipe-bgp``):
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
@@ -29,8 +34,8 @@ In devstack :
 
     * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
 
-    * (you need to ``git clone git@github.com:openstack/networking-bgpvpn.git`` in /opt/stack manually before doing a ./stack.sh,
-      or a devstack more recent than 2015-04-20 which includes https://review.openstack.org/#/c/168796 )
+Note well: you need to ``git clone git@github.com:openstack/networking-bgpvpn.git`` in /opt/stack manually before doing a ./stack.sh,
+or a devstack more recent than 2015-04-20 which includes https://review.openstack.org/#/c/168796
 
 .. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
 .. _networking-bagpipe-l2: https://github.com/openstack/networking-bagpipe-l2
