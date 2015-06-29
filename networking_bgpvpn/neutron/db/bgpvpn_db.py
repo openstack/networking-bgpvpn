@@ -24,7 +24,7 @@ from neutron.db import models_v2
 from oslo_log import log
 from sqlalchemy.orm import exc
 
-from networking_bgpvpn.neutron.extensions.bgpvpn.bgpvpn import BGPVPNPluginBase
+from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase
 
 
 LOG = log.getLogger(__name__)

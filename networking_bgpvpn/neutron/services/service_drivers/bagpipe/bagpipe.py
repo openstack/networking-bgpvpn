@@ -20,8 +20,8 @@ from neutron.common import constants as const
 from neutron.db import models_v2
 from oslo_log import log as logging
 
-from networking_bgpvpn.neutron.db.bgpvpn import bgpvpn_db
-from networking_bgpvpn.neutron.services.bgpvpn import service_drivers
+from networking_bgpvpn.neutron.db import bgpvpn_db
+from networking_bgpvpn.neutron.services import service_drivers
 
 from networking_bagpipe_l2.agent.bgpvpn import rpc_client
 

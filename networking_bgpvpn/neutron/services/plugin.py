@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_bgpvpn.neutron.db.bgpvpn import bgpvpn_db
+from networking_bgpvpn.neutron.db import bgpvpn_db
 from neutron.i18n import _LI
 from neutron.plugins.common import constants
 from neutron.services import service_base
