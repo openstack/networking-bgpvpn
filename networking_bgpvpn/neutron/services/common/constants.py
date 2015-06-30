@@ -15,7 +15,7 @@
 
 BGPVPN = "BGPVPN"
 
-BGPVPN_CONNECTIONS = "bgpvpn_connections"
+BGPVPN_RES = "bgpvpns"
 BGPVPN_L3 = 'l3'
 BGPVPN_L2 = 'l2'
 BGPVPN_TYPES = [BGPVPN_L3, BGPVPN_L2]

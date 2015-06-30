@@ -24,12 +24,12 @@ the forwarding plane) you have to:
 * add the following to your ``local.conf``: ::
 
 	Q_SERVICE_PLUGIN_CLASSES=networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin
-	
+
 	[[post-config|$NETWORKING_BGPVPN_CONF]]
 	[service_providers]
-	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.dummy.dummyBGPVPNDriver:default
+	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default
 
-* bgpvpn-connection-create/update/delete/show/list commands will be available with 
+* bgpvpn-connection-create/update/delete/show/list commands will be available with
   the neutron client, for example: ::
 
 	source openrc admin admin

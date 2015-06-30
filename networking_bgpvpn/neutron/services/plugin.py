@@ -13,8 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.common import exceptions as n_exc
 from neutron.db import servicetype_db as st_db
 from neutron.i18n import _LI
+from neutron import manager
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 from oslo_log import log
@@ -46,24 +48,45 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                  default_provider)
         self.driver = drivers[default_provider]
 
+    def _validate_network_body(self, context, bgpvpn_id, network_body):
+        # Check that the tenant of the network is the same as the tenant of the
+        # bgpvpn resource
+        if (not network_body or 'network_id' not in network_body):
+            msg = 'no network specified'
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+        plugin = manager.NeutronManager.get_plugin()
+        return plugin.get_network(context, network_body['network_id'])
+
     def get_plugin_type(self):
         return constants.BGPVPN
 
     def get_plugin_description(self):
-        return "Neutron BGP VPN connection Service Plugin"
+        return "Neutron BGPVPN Service Plugin"
 
-    def create_bgpvpn_connection(self, context, bgpvpn_connection):
-        return self.driver.create_bgpvpn_connection(context, bgpvpn_connection)
+    def create_bgpvpn(self, context, bgpvpn):
+        return self.driver.create_bgpvpn(context, bgpvpn)
 
-    def get_bgpvpn_connections(self, context, filters=None, fields=None):
-        return self.driver.get_bgpvpn_connections(context, filters, fields)
+    def get_bgpvpns(self, context, filters=None, fields=None):
+        return self.driver.get_bgpvpns(context, filters, fields)
 
-    def get_bgpvpn_connection(self, context, id, fields=None):
-        return self.driver.get_bgpvpn_connection(context, id, fields)
+    def get_bgpvpn(self, context, id, fields=None):
+        return self.driver.get_bgpvpn(context, id, fields)
 
-    def update_bgpvpn_connection(self, context, id, bgpvpn_connection):
-        return self.driver.update_bgpvpn_connection(context, id,
-                                                    bgpvpn_connection)
+    def update_bgpvpn(self, context, id, bgpvpn):
+        return self.driver.update_bgpvpn(context, id, bgpvpn)
 
-    def delete_bgpvpn_connection(self, context, id):
-        self.driver.delete_bgpvpn_connection(context, id)
+    def delete_bgpvpn(self, context, id):
+        self.driver.delete_bgpvpn(context, id)
+
+    def associate_network(self, context, id, network_body):
+        net = self._validate_network_body(context, id, network_body)
+        bgpvpn = self.get_bgpvpn(context, id)
+        if not net['tenant_id'] == bgpvpn['tenant_id']:
+            msg = 'network doesn\'t belong to the bgpvpn owner'
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+
+        self.driver.associate_network(context, id, net['id'])
+
+    def disassociate_network(self, context, id, network_body):
+        net = self._validate_network_body(context, id, network_body)
+        self.driver.disassociate_network(context, id, net['id'])

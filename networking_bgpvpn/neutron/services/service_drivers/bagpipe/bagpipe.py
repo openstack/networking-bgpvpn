@@ -26,7 +26,7 @@ from neutron.common import constants as const
 from neutron.db import models_v2
 from oslo_log import log as logging
 
-from networking_bgpvpn.neutron.services import service_drivers
+from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 from networking_bagpipe_l2.agent.bgpvpn import rpc_client
 
@@ -70,9 +70,9 @@ def get_network_ports(context, network_id):
         return
 
 
-class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
+class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
-    """BGP VPN connection Service Driver class for BaGPipe"""
+    """BGPVPN Service Driver class for BaGPipe"""
 
     def __init__(self, service_plugin):
         super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
@@ -89,21 +89,21 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
     def service_type(self):
         return BAGPIPE_BGPVPN
 
-    def _format_bgpvpn_connection(self, bgpvpn_connection):
-        """JSON-format BGP VPN connection
+    def _format_bgpvpn(self, bgpvpn):
+        """JSON-format BGPVPN
 
-        BGP VPN connection,network identifiers, and route targets.
+        BGPVPN, network identifiers, and route targets.
         """
-        formated_bgpvpn_conn = {'id': bgpvpn_connection['id'],
-                                'network_id': bgpvpn_connection['network_id']}
-        formated_bgpvpn_conn.update(
-            self._format_bgpvpn_network_route_targets([bgpvpn_connection])
+        formatted_bgpvpn = {'id': bgpvpn['id'],
+                            'network_id': bgpvpn['network_id']}
+        formatted_bgpvpn.update(
+            self._format_bgpvpn_network_route_targets([bgpvpn])
         )
 
-        return formated_bgpvpn_conn
+        return formatted_bgpvpn
 
-    def _format_bgpvpn_network_route_targets(self, bgpvpn_connections):
-        """Format BGP VPN network informations (VPN type and route targets)
+    def _format_bgpvpn_network_route_targets(self, bgpvpns):
+        """Format BGPVPN network informations (VPN type and route targets)
 
         {
             'type': 'l3',
@@ -123,31 +123,31 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
         """
         bgpvpn_rts = {}
-        LOG.debug('BGP VPN connection to format %s' % bgpvpn_connections)
-        for bgpvpn_conn in bgpvpn_connections:
+        LOG.debug('BGPVPN to format %s' % bgpvpns)
+        for bgpvpn in bgpvpns:
             # Add necessary keys to BGP VPN route targets dictionary
-            if bgpvpn_conn['type'] + 'vpn' not in bgpvpn_rts:
+            if bgpvpn['type'] + 'vpn' not in bgpvpn_rts:
                 bgpvpn_rts.update(
-                    {bgpvpn_conn['type'] + 'vpn': {'import_rt': [],
-                                                   'export_rt': []}}
+                    {bgpvpn['type'] + 'vpn': {'import_rt': [],
+                                              'export_rt': []}}
                 )
 
-            if 'route_targets' in bgpvpn_conn:
-                bgpvpn_rts[bgpvpn_conn['type'] + 'vpn']['import_rt'] += (
-                    bgpvpn_conn['route_targets']
+            if 'route_targets' in bgpvpn:
+                bgpvpn_rts[bgpvpn['type'] + 'vpn']['import_rt'] += (
+                    bgpvpn['route_targets']
                 )
-                bgpvpn_rts[bgpvpn_conn['type'] + 'vpn']['export_rt'] += (
-                    bgpvpn_conn['route_targets']
-                )
-
-            if 'import_targets' in bgpvpn_conn:
-                bgpvpn_rts[bgpvpn_conn['type'] + 'vpn']['import_rt'] += (
-                    bgpvpn_conn['import_targets']
+                bgpvpn_rts[bgpvpn['type'] + 'vpn']['export_rt'] += (
+                    bgpvpn['route_targets']
                 )
 
-            if 'export_targets' in bgpvpn_conn:
-                bgpvpn_rts[bgpvpn_conn['type'] + 'vpn']['export_rt'] += (
-                    bgpvpn_conn['export_targets']
+            if 'import_targets' in bgpvpn:
+                bgpvpn_rts[bgpvpn['type'] + 'vpn']['import_rt'] += (
+                    bgpvpn['import_targets']
+                )
+
+            if 'export_targets' in bgpvpn:
+                bgpvpn_rts[bgpvpn['type'] + 'vpn']['export_rt'] += (
+                    bgpvpn['export_targets']
                 )
 
         # FIXME: Only returning l3vpn route targets. Must be modified to also
@@ -177,18 +177,17 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
         bgpvpn_network_info = {}
 
         # Check if port is connected on a BGP VPN network
-        bgpvpn_connections = (
-            self.bgpvpn_db.find_bgpvpn_connections_for_network(context,
-                                                               network_id)
+        bgpvpns = (
+            self.bgpvpn_db.find_bgpvpns_for_network(context, network_id)
         )
 
-        if not bgpvpn_connections:
+        if not bgpvpns:
             return
 
         bgpvpn_rts = (
-            self._format_bgpvpn_network_route_targets(bgpvpn_connections)
+            self._format_bgpvpn_network_route_targets(bgpvpns)
         )
-        LOG.debug("Port connected on BGP VPN network %s with route targets "
+        LOG.debug("Port connected on BGPVPN network %s with route targets "
                   "%s" % (network_id, bgpvpn_rts))
 
         bgpvpn_network_info.update(bgpvpn_rts)
@@ -203,8 +202,8 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
         return bgpvpn_network_info
 
-    def _get_bgpvpn_connection_differences(self, current_dict, old_dict):
-        """Compare 2 BGP VPN connections
+    def _get_bgpvpn_differences(self, current_dict, old_dict):
+        """Compare 2 BGPVPNs
 
         - added elements (route_targets, import_targets or export_targets)
         - removed elements (route_targets, import_targets or export_targets)
@@ -223,79 +222,76 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
         return (added, removed, changed)
 
-    def _create_bgpvpn_connection(self, context, bgpvpn_connection):
-        # Notify only if BGP VPN connection associated to a network
+    def create_bgpvpn_postcommit(self, context, bgpvpn):
+        # Notify only if BGPVPN associated to a network
         # and network has already plugged ports
-        if (bgpvpn_connection['network_id'] is not None and
-                get_network_ports(context, bgpvpn_connection['network_id'])):
-            # Format BGP VPN connection before sending notification
-            self.agent_rpc.create_bgpvpn_connection(
+        if (bgpvpn['network_id'] is not None and
+                get_network_ports(context, bgpvpn['network_id'])):
+            # Format BGPVPN before sending notification
+            self.agent_rpc.create_bgpvpn(
                 context,
-                self._format_bgpvpn_connection(bgpvpn_connection)
+                self._format_bgpvpn(bgpvpn)
             )
 
-    def _delete_bgpvpn_connection(self, context, bgpvpn_connection):
-        # Notify only if BGP VPN connection associated to a network
+    def delete_bgpvpn_postcommit(self, context, bgpvpn):
+        # Notify only if BGPVPN associated to a network
         # and network has already plugged ports
         # In the case it was dissociated before delete, update notification
         # will do the job (all ports are detached)
-        if (bgpvpn_connection['network_id'] is not None and
-                get_network_ports(context, bgpvpn_connection['network_id'])):
-            # Format BGP VPN connection before sending notification
-            self.agent_rpc.delete_bgpvpn_connection(
+        if (bgpvpn['network_id'] is not None and
+                get_network_ports(context, bgpvpn['network_id'])):
+            # Format BGPVPN before sending notification
+            self.agent_rpc.delete_bgpvpn(
                 context,
-                self._format_bgpvpn_connection(bgpvpn_connection)
+                self._format_bgpvpn(bgpvpn)
             )
 
-    def _update_bgpvpn_connection(self, context, old_bgpvpn_connection,
-                                  bgpvpn_connection):
+    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
-            self._get_bgpvpn_connection_differences(bgpvpn_connection,
-                                                    old_bgpvpn_connection)
-            )
+            self._get_bgpvpn_differences(bgpvpn, old_bgpvpn))
 
         if 'network_id' in changed_keys:
-            formated_bgpvpn_conn = (
-                self._format_bgpvpn_connection(bgpvpn_connection)
+            formated_bgpvpn = (
+                self._format_bgpvpn(bgpvpn)
             )
-            formated_bgpvpn_conn.update(
-                {'old_network_id': old_bgpvpn_connection['network_id']}
+            formated_bgpvpn.update(
+                {'old_network_id': old_bgpvpn['network_id']}
             )
 
-            # BGP VPN connection is dissociated from a network
-            if bgpvpn_connection['network_id'] is None:
+            # BGPVPN is dissociated from a network
+            if bgpvpn['network_id'] is None:
                 # Check if dissociated network has already plugged ports
                 if get_network_ports(context,
-                                     old_bgpvpn_connection['network_id']):
-                    self.agent_rpc.update_bgpvpn_connection(
+                                     old_bgpvpn['network_id']):
+                    self.agent_rpc.update_bgpvpn(
                         context,
-                        formated_bgpvpn_conn
+                        formated_bgpvpn
                     )
             else:
-                # Network association to BGP VPN connection
-                if old_bgpvpn_connection['network_id'] is None:
+                # Network association to BGPVPN
+                if old_bgpvpn['network_id'] is None:
                     # Check if associated network has already plugged ports
                     if get_network_ports(context,
-                                         bgpvpn_connection['network_id']):
-                        self.agent_rpc.update_bgpvpn_connection(
+                                         bgpvpn['network_id']):
+                        self.agent_rpc.update_bgpvpn(
                             context,
-                            formated_bgpvpn_conn
+                            formated_bgpvpn
                         )
                 else:
                     # Association to a different network
                     # Check if one of the 2 networks has already plugged ports
                     if (get_network_ports(context,
-                                          old_bgpvpn_connection['network_id'])
+                                          old_bgpvpn['network_id'])
                         or get_network_ports(context,
-                                             bgpvpn_connection['network_id'])):
-                        self.agent_rpc.update_bgpvpn_connection(
+                                             bgpvpn['network_id'])):
+                        self.agent_rpc.update_bgpvpn(
                             context,
-                            formated_bgpvpn_conn
+                            formated_bgpvpn
                         )
         else:
-            if (bgpvpn_connection['network_id'] is not None and
+            if (bgpvpn['network_id'] is not None and
                     get_network_ports(context,
-                                      bgpvpn_connection['network_id'])):
+                                      bgpvpn['network_id'])):
                 if ((key in added_keys for key in ('route_targets',
                                                    'import_targets',
                                                    'export_targets')) or
@@ -305,9 +301,9 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
                     (key in changed_keys for key in ('route_targets',
                                                      'import_targets',
                                                      'export_targets'))):
-                    self.agent_rpc.update_bgpvpn_connection(
+                    self.agent_rpc.update_bgpvpn(
                         context,
-                        self._format_bgpvpn_connection(bgpvpn_connection)
+                        self._format_bgpvpn(bgpvpn)
                     )
 
     def _get_port_host(self, port_id):

@@ -19,32 +19,31 @@ from neutronclient.i18n import _
 from neutronclient.neutron import v2_0 as neutronv20
 
 
-class BGPVPNConnection(extension.NeutronClientExtension):
-    resource = 'bgpvpn_connection'
-    path = 'bgpvpn-connections'
+class BGPVPN(extension.NeutronClientExtension):
+    resource = 'bgpvpn'
+    path = 'bgpvpns'
     resource_plural = '%ss' % resource
     object_path = '/bgpvpn/%s' % path
     resource_path = '/bgpvpn/%s/%%s' % path
     versions = ['2.0']
 
 
-class BGPVPNConnectionCreate(extension.ClientExtensionCreate,
-                             BGPVPNConnection):
-    shell_command = 'bgpvpn-connection-create'
+class BGPVPNCreate(extension.ClientExtensionCreate, BGPVPN):
+    shell_command = 'bgpvpn-create'
 
     def add_known_arguments(self, parser):
         parser.add_argument(
             '--name',
-            help=_('Name of the BGP VPN connection'))
+            help=_('Name of the BGPVPN'))
         parser.add_argument(
             '--type',
             default='l3', choices=['l2', 'l3'],
-            help=_('BGP VPN connection type selection between L3VPN (l3) and '
+            help=_('BGPVPN type selection between L3VPN (l3) and '
                    'EVPN (l2), default:l3'))
         parser.add_argument(
             '--route-targets',
-            help=_('Route Targets list to import/export for this BGP '
-                   'VPN connection. Usage: -- --route-targets '
+            help=_('Route Targets list to import/export for this BGPVPN. '
+                   'Usage: -- --route-targets '
                    'list=true <asn1>:<nn1> <asn2>:<nn2> ...'))
         parser.add_argument(
             '--import-targets',
@@ -64,12 +63,12 @@ class BGPVPNConnectionCreate(extension.ClientExtensionCreate,
             '--network-id', metavar='NETWORK',
             default=None,
             help=_('Id of the network associated with this '
-                   'BGP VPN connection'))
+                   'BGPVPN'))
         parser.add_argument(
             '--no-aggregate',
             dest='auto_aggregate', action='store_false',
             help=_('Disable auto aggregation (only for '
-                   'L3VPN connection type)'))
+                   'L3VPN type)'))
 
     def args2body(self, parsed_args):
         body = {
@@ -90,19 +89,16 @@ class BGPVPNConnectionCreate(extension.ClientExtensionCreate,
         return body
 
 
-class BGPVPNConnectionUpdate(extension.ClientExtensionUpdate,
-                             BGPVPNConnection):
-    shell_command = 'bgpvpn-connection-update'
+class BGPVPNUpdate(extension.ClientExtensionUpdate, BGPVPN):
+    shell_command = 'bgpvpn-update'
 
 
-class BGPVPNConnectionDelete(extension.ClientExtensionDelete,
-                             BGPVPNConnection):
-    shell_command = 'bgpvpn-connection-delete'
+class BGPVPNDelete(extension.ClientExtensionDelete, BGPVPN):
+    shell_command = 'bgpvpn-delete'
 
 
-class BGPVPNConnectionList(extension.ClientExtensionList,
-                           BGPVPNConnection):
-    shell_command = 'bgpvpn-connection-list'
+class BGPVPNList(extension.ClientExtensionList, BGPVPN):
+    shell_command = 'bgpvpn-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
         'export_targets', 'route_distinguishers',
@@ -111,6 +107,5 @@ class BGPVPNConnectionList(extension.ClientExtensionList,
     sorting_support = True
 
 
-class BGPVPNConnectionShow(extension.ClientExtensionShow,
-                           BGPVPNConnection):
-    shell_command = 'bgpvpn-connection-show'
+class BGPVPNShow(extension.ClientExtensionShow, BGPVPN):
+    shell_command = 'bgpvpn-show'

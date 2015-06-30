@@ -67,7 +67,7 @@ validators = {'type:route_target_list': _validate_rt_list,
 attr.validators.update(validators)
 
 RESOURCE_ATTRIBUTE_MAP = {
-    constants.BGPVPN_CONNECTIONS: {
+    constants.BGPVPN_RES: {
         'id': {'allow_post': False, 'allow_put': False,
                'validate': {'type:uuid': None},
                'is_visible': True,
@@ -76,10 +76,6 @@ RESOURCE_ATTRIBUTE_MAP = {
                       'validate': {'type:string': None},
                       'required_by_policy': True,
                       'is_visible': True},
-        'network_id': {'allow_post': True, 'allow_put': True,
-                       'default': None,
-                       'validate': {'type:uuid_or_none': None},
-                       'is_visible': True},
         'name': {'allow_post': True, 'allow_put': True,
                  'default': '',
                  'validate': {'type:string': None},
@@ -116,6 +112,8 @@ RESOURCE_ATTRIBUTE_MAP = {
                            'validate': {'type:boolean': None},
                            'convert_to': attr.convert_to_boolean,
                            'is_visible': True},
+        'networks': {'allow_post': False, 'allow_put': False,
+                     'is_visible': True}
     },
 }
 
@@ -124,7 +122,7 @@ class Bgpvpn(extensions.ExtensionDescriptor):
 
     @classmethod
     def get_name(cls):
-        return "BGPVPN Connection extension"
+        return "BGPVPN extension"
 
     @classmethod
     def get_alias(cls):
@@ -132,11 +130,7 @@ class Bgpvpn(extensions.ExtensionDescriptor):
 
     @classmethod
     def get_description(cls):
-        return "Extension for BGPVPN Connection service"
-
-    @classmethod
-    def get_namespace(cls):
-        return "http://wiki.openstack.org/Neutron/bgpvpn/API_1.0"
+        return "Extension for BGPVPN service"
 
     @classmethod
     def get_updated(cls):
@@ -151,9 +145,13 @@ class Bgpvpn(extensions.ExtensionDescriptor):
         plural_mappings['export_targets'] = 'export_target'
         plural_mappings['route_distinguishers'] = 'route_distinguishers'
         attr.PLURALS.update(plural_mappings)
+        action_map = {'bgpvpn':
+                      {'associate_network': 'PUT',
+                       'disassociate_network': 'PUT'}}
         return resource_helper.build_resource_info(plural_mappings,
                                                    RESOURCE_ATTRIBUTE_MAP,
                                                    constants.BGPVPN,
+                                                   action_map=action_map,
                                                    register_quota=True,
                                                    translate_name=True)
 
@@ -185,21 +183,29 @@ class BGPVPNPluginBase(ServicePluginBase):
         return 'BGP VPN service plugin'
 
     @abc.abstractmethod
-    def create_bgpvpn_connection(self, context, bgpvpn_connection):
+    def create_bgpvpn(self, context, bgpvpn):
         pass
 
     @abc.abstractmethod
-    def get_bgpvpn_connections(self, context, filters=None, fields=None):
+    def get_bgpvpns(self, context, filters=None, fields=None):
         pass
 
     @abc.abstractmethod
-    def get_bgpvpn_connection(self, context, id, fields=None):
+    def get_bgpvpn(self, context, id, fields=None):
         pass
 
     @abc.abstractmethod
-    def update_bgpvpn_connection(self, context, id, bgpvpn_connection):
+    def update_bgpvpn(self, context, id, bgpvpn):
         pass
 
     @abc.abstractmethod
-    def delete_bgpvpn_connection(self, context, id):
+    def delete_bgpvpn(self, context, id):
+        pass
+
+    @abc.abstractmethod
+    def associate_network(self, context, id, network_body):
+        pass
+
+    @abc.abstractmethod
+    def disassociate_network(self, context, id, network_body):
         pass

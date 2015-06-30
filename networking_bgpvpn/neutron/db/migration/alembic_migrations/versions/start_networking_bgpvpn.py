@@ -26,24 +26,33 @@ vpn_types = sa.Enum("l2", "l3", name="vpn_types")
 
 def upgrade(active_plugins=None, options=None):
     op.create_table(
-        u'bgpvpn_connections',
-        sa.Column(u'name', sa.String(255), nullable=True),
-        sa.Column(u'id', sa.String(length=36), nullable=False),
-        sa.Column(u'tenant_id', sa.String(length=255), nullable=True),
-        sa.Column(u'type', vpn_types, nullable=False),
-        sa.Column(u'route_targets', sa.String(255), nullable=False),
-        sa.Column(u'import_targets', sa.String(255), nullable=True),
-        sa.Column(u'export_targets', sa.String(255), nullable=True),
-        sa.Column(u'route_distinguishers', sa.String(255), nullable=True),
-        sa.Column(u'auto_aggregate', sa.Boolean(), nullable=False),
-        sa.Column(u'network_id', sa.String(36), nullable=True),
-        sa.ForeignKeyConstraint(['network_id'], [u'networks.id'], ),
-        sa.PrimaryKeyConstraint(u'id'),
-        mysql_default_charset=u'utf8',
+        'bgpvpns',
+        sa.Column('name', sa.String(255), nullable=True),
+        sa.Column('id', sa.String(length=36), nullable=False),
+        sa.Column('tenant_id', sa.String(length=255), nullable=True),
+        sa.Column('type', vpn_types, nullable=False),
+        sa.Column('route_targets', sa.String(255), nullable=False),
+        sa.Column('import_targets', sa.String(255), nullable=True),
+        sa.Column('export_targets', sa.String(255), nullable=True),
+        sa.Column('route_distinguishers', sa.String(255), nullable=True),
+        sa.Column('auto_aggregate', sa.Boolean(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        mysql_default_charset='utf8',
         mysql_engine='InnoDB'
+    )
+    op.create_table(
+        'bgpvpn_net_associations',
+        sa.Column('bgpvpn_id', sa.String(36), nullable=False),
+        sa.Column('network_id', sa.String(36), nullable=True),
+        sa.ForeignKeyConstraint(['network_id'], ['networks.id'],
+                                ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['bgpvpn_id'], ['bgpvpns.id'],
+                                ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('network_id', 'bgpvpn_id'),
     )
 
 
 def downgrade(active_plugins=None, options=None):
-    op.drop_table(u'bgpvpn_connections')
+    op.drop_table('bgpvpns')
+    op.drop_table('bgpvpn_net_associations')
     vpn_types.drop(op.get_bind(), checkfirst=False)
