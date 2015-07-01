@@ -53,12 +53,6 @@ class BGPVPNConnectionMissingRouteTarget(q_exc.BadRequest):
                 " route_targets, import_targets or export_targets attribute")
 
 
-class BGPVPNNetworkInUse(q_exc.NetworkInUse):
-    message = _("Unable to complete operation on network %(network_id)s. "
-                "There are one or more BGP VPN connections associated"
-                " to the network.")
-
-
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGP VPN service plugin database class using SQLAlchemy models."""
 
