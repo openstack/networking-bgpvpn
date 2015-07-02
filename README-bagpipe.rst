@@ -11,7 +11,7 @@ In devstack :
 
 	[[post-config|/$NEUTRON_CONF]]
 	[service_providers]
-	service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.bgpvpn.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
+	service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
 
   * add ``bgpvpn_notify`` to ``Q_ML2_PLUGIN_MECHANISM_DRIVERS``
 
