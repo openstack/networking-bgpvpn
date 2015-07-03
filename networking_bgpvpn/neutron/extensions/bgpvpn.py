@@ -40,7 +40,7 @@ RT_REGEX = ('^((?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]'
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
 constants.BGPVPN = "BGPVPN"
-constants.ALLOWED_SERVICES.append(constants.BGPVPN)
+constants.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
 constants.COMMON_PREFIXES["BGPVPN"] = "/bgpvpn"
 
 
