@@ -22,11 +22,11 @@ To be able to test this framework, you have to:
 
 * add the following to your ``local.conf``: ::
 
-	Q_SERVICE_PLUGIN_CLASSES=networking_bgpvpn.neutron.services.bgpvpn.plugin.BGPVPNPlugin
+	Q_SERVICE_PLUGIN_CLASSES=networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin
 	
 	[[post-config|/$NEUTRON_CONF]]
 	[service_providers]
-	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.bgpvpn.service_drivers.dummy.dummyBGPVPNDriver:default
+	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.dummy.dummyBGPVPNDriver:default
 
 * bgpvpn-connection-create/update/delete/show/list commands will be available with 
   the neutron client, for example: ::
