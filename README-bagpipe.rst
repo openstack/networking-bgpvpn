@@ -17,14 +17,22 @@ In devstack :
 
     * (this mech_driver does not implement the setup of L2 networks; it is used only to notify the ``bagpipe`` driver for the BGPVPN plugin of L2 ports coming and going on compute nodes)
 
+* on a control node, if you want to run the Fake Route Reflector there::
+
+    enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
+    enable_service b-fakerr
+
 * on compute nodes:
 
-  * install and configure bagpipe-bgp_, typically with a peering to a BGP Route Reflector or BGP routers
+  * install and configure bagpipe-bgp_, typically with a peering to a BGP Route Reflector or BGP routers, can be done through devstack
+    like this::
 
-        enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
-	BAGPIPE_DATAPLANE_DRIVER_IPVPN = mpls_ovs_dataplane.MPLSOVSDataplaneDriver
-        # IP of your route reflector or BGP router, or fakeRR:
-	BAGPIPE_BGP_PEERS=1.2.3.4
+    enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
+    BAGPIPE_DATAPLANE_DRIVER_IPVPN = mpls_ovs_dataplane.MPLSOVSDataplaneDriver
+    # IP of your route reflector or BGP router, or fakeRR
+    # (typically $SERVICE_HOST on compute node, if the control node is running the RR)
+    BAGPIPE_BGP_PEERS=1.2.3.4
+    enable_service b-bgp
 
   * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with addtions to interact with ``bagpipe-bgp``):
 
