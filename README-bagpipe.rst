@@ -9,36 +9,36 @@ In devstack :
 
   * add the following to enable the BaGPipe driver for the BGPVPN service plugin::
 
-	[[post-config|/$NEUTRON_CONF]]
-	[service_providers]
-	service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
+    [[post-config|/$NEUTRON_CONF]]
+    [service_providers]
+    service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
 
   * add ``bgpvpn_notify`` to ``Q_ML2_PLUGIN_MECHANISM_DRIVERS``
 
     * (this mech_driver does not implement the setup of L2 networks; it is used only to notify the ``bagpipe`` driver for the BGPVPN plugin of L2 ports coming and going on compute nodes)
 
-* on a control node, if you want to run the Fake Route Reflector there::
+* on a control node, if you want to run the Fake Route-Reflector there::
 
     enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
     enable_service b-fakerr
 
 * on compute nodes:
 
-  * install and configure bagpipe-bgp_, typically with a peering to a BGP Route Reflector or BGP routers, can be done through devstack
+  * install and configure bagpipe-bgp_, typically with a peering to a BGP Router-Reflector or BGP routers, can be done through devstack
     like this::
 
-    enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
-    BAGPIPE_DATAPLANE_DRIVER_IPVPN = mpls_ovs_dataplane.MPLSOVSDataplaneDriver
-    # IP of your route reflector or BGP router, or fakeRR
-    # (typically $SERVICE_HOST on compute node, if the control node is running the RR)
-    BAGPIPE_BGP_PEERS=1.2.3.4
-    enable_service b-bgp
+        enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git
+        BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver
+        # IP of your route-reflector or BGP router, or fakeRR
+        # (typically $SERVICE_HOST on compute node, if the control node is running the RR)
+        BAGPIPE_BGP_PEERS=1.2.3.4
+        enable_service b-bgp
 
   * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with addtions to interact with ``bagpipe-bgp``):
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
-	enable_plugin networking-bagpipe-l2 git@github.com:openstack/networking-bagpipe-l2.git
+        enable_plugin networking-bagpipe-l2 git@github.com:openstack/networking-bagpipe-l2.git
 
     * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
 
