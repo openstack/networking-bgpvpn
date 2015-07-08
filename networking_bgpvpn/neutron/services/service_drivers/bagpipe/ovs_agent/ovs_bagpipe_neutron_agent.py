@@ -30,20 +30,33 @@ from neutron.common import utils as q_utils
 from oslo.config import cfg
 from oslo_log import log as logging
 
-from neutron.plugins.openvswitch.agent.ovs_neutron_agent import \
+from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
+    br_int
+from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
+    br_phys
+from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
+    br_tun
+from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     create_agent_config_map
-from neutron.plugins.openvswitch.agent.ovs_neutron_agent import \
+from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     OVSNeutronAgent
 
 from networking_bagpipe_l2.agent import bagpipe_bgp_agent
 
 LOG = logging.getLogger(__name__)
-cfg.CONF.import_group('AGENT', 'neutron.plugins.openvswitch.common.config')
+cfg.CONF.import_group('AGENT', 'neutron.plugins.ml2.drivers.openvswitch.'
+                      'agent.common.config')
 
 
 class OVSBagpipeNeutronAgent(OVSNeutronAgent):
 
     def __init__(self, *args, **kwargs):
+        bridge_classes = {
+            'br_int': br_int.OVSIntegrationBridge,
+            'br_phys': br_phys.OVSPhysicalBridge,
+            'br_tun': br_tun.OVSTunnelBridge,
+        }
+        kwargs['bridge_classes'] = bridge_classes
         super(OVSBagpipeNeutronAgent, self).__init__(*args, **kwargs)
 
         # Creates an HTTP client for BaGPipe BGP component REST service
