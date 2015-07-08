@@ -21,15 +21,13 @@ from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import resource_helper
-from neutron.plugins.common import constants
+from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
 from oslo_log import log
 
-LOG = log.getLogger(__name__)
+from networking_bgpvpn.neutron.services.common import constants
 
-BGPVPN_L3 = 'l3'
-BGPVPN_L2 = 'l2'
-BGPVPN_TYPES = [BGPVPN_L3, BGPVPN_L2]
+LOG = log.getLogger(__name__)
 
 
 # Regular expression to validate Route Target list format
@@ -39,9 +37,7 @@ RT_REGEX = ('^((?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]'
             '{2}|655[0-2]\d|6553[0-5]))$')
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
-constants.BGPVPN = "BGPVPN"
-constants.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
-constants.COMMON_PREFIXES["BGPVPN"] = "/bgpvpn"
+n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
 
 
 def _validate_rt_list(data, valid_values=None):
@@ -71,7 +67,7 @@ validators = {'type:route_target_list': _validate_rt_list,
 attr.validators.update(validators)
 
 RESOURCE_ATTRIBUTE_MAP = {
-    'bgpvpn_connections': {
+    constants.BGPVPN_CONNECTIONS: {
         'id': {'allow_post': False, 'allow_put': False,
                'validate': {'type:uuid': None},
                'is_visible': True,
@@ -89,8 +85,8 @@ RESOURCE_ATTRIBUTE_MAP = {
                  'validate': {'type:string': None},
                  'is_visible': True},
         'type': {'allow_post': True, 'allow_put': False,
-                 'default': BGPVPN_L3,
-                 'validate': {'type:values': BGPVPN_TYPES},
+                 'default': constants.BGPVPN_L3,
+                 'validate': {'type:values': constants.BGPVPN_TYPES},
                  'is_visible': True},
         'route_targets': {'allow_post': True, 'allow_put': True,
                           'default': [],

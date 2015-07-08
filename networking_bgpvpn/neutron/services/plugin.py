@@ -15,15 +15,17 @@
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from neutron.i18n import _LI
-from neutron.plugins.common import constants
 from neutron.services import service_base
 from oslo_log import log
+
+from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
 
 class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
     supported_extension_aliases = ["bgpvpn"]
+    path_prefix = "/bgpvpn"
 
     def __init__(self):
         super(BGPVPNPlugin, self).__init__()
