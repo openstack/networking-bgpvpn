@@ -24,9 +24,6 @@ from neutron.db import models_v2
 from oslo_log import log
 from sqlalchemy.orm import exc
 
-from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase
-
-
 LOG = log.getLogger(__name__)
 
 
@@ -61,8 +58,7 @@ class BGPVPNNetworkInUse(q_exc.NetworkInUse):
                 " to the network.")
 
 
-class BGPVPNPluginDb(BGPVPNPluginBase,
-                     common_db_mixin.CommonDbMixin):
+class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGP VPN service plugin database class using SQLAlchemy models."""
 
     USER_READABLE_ATTRIBUTES = ['id', 'name', 'type',

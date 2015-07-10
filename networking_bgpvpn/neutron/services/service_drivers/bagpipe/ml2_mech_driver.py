@@ -18,7 +18,7 @@ from oslo_log import log
 from neutron import context as n_context
 from neutron import manager
 
-from neutron.plugins.common import constants
+from networking_bgpvpn.neutron.services.common import constants
 from neutron.plugins.ml2 import driver_api as api
 
 LOG = log.getLogger(__name__)

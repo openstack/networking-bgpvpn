@@ -65,8 +65,7 @@ def get_network_ports(context, network_id):
         return
 
 
-class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
-                          bgpvpn_db.BGPVPNPluginDb):
+class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
     """BGP VPN connection Service Driver class for BaGPipe"""
 
@@ -166,7 +165,8 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
 
         # Check if port is connected on a BGP VPN network
         bgpvpn_connections = (
-            self.find_bgpvpn_connections_for_network(context, network_id)
+            self.bgpvpn_db.find_bgpvpn_connections_for_network(context,
+                                                               network_id)
         )
 
         if not bgpvpn_connections:
@@ -210,7 +210,7 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
 
         return (added, removed, changed)
 
-    def create_bgpvpn_connection(self, context, bgpvpn_connection):
+    def _create_bgpvpn_connection(self, context, bgpvpn_connection):
         # Notify only if BGP VPN connection associated to a network
         # and network has already plugged ports
         if (bgpvpn_connection['network_id'] is not None and
@@ -221,7 +221,7 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
                 self._format_bgpvpn_connection(bgpvpn_connection)
             )
 
-    def delete_bgpvpn_connection(self, context, bgpvpn_connection):
+    def _delete_bgpvpn_connection(self, context, bgpvpn_connection):
         # Notify only if BGP VPN connection associated to a network
         # and network has already plugged ports
         # In the case it was dissociated before delete, update notification
@@ -234,8 +234,8 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
                 self._format_bgpvpn_connection(bgpvpn_connection)
             )
 
-    def update_bgpvpn_connection(self, context, old_bgpvpn_connection,
-                                 bgpvpn_connection):
+    def _update_bgpvpn_connection(self, context, old_bgpvpn_connection,
+                                  bgpvpn_connection):
         (added_keys, removed_keys, changed_keys) = (
             self._get_bgpvpn_connection_differences(bgpvpn_connection,
                                                     old_bgpvpn_connection)
@@ -336,6 +336,8 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriver,
         connection.
         '''
         LOG.debug('Prevent BGP VPN network deletion')
+        # Note(ethuleau): can we use DB directly instead of the service
+        #                 provider to get that list?
         if (self.service_plugin.get_bgpvpn_connections(
                 context,
                 filters={'network_id': [network_id]})):

@@ -29,15 +29,32 @@ class dummyBGPVPNDriver(service_drivers.BGPVPNDriver):
     def create_bgpvpn_connection(self, context, bgpvpn_connection):
         pass
 
-    def update_bgpvpn_connection(self, context, old_bgpvpn_connection,
-                                 bgpvpn_connection):
+    def get_bgpvpn_connections(self, context, filters=None, fields=None):
         pass
 
-    def delete_bgpvpn_connection(self, context, bgpvpn_connection):
+    def get_bgpvpn_connection(self, context, id, fields=None):
         pass
 
-    def notify_port_updated(self, context, port):
+    def update_bgpvpn_connection(self, context, id, bgpvpn_connection):
         pass
 
-    def remove_port_from_bgpvpn_agent(self, context, port):
+    def delete_bgpvpn_connection(self, context, id):
+        pass
+
+
+class dummyBGPVPNDriverDB(service_drivers.BGPVPNDriverBD):
+    """dummy BGP VPN connection Service Driver class with database."""
+
+    def __init__(self, service_plugin):
+        super(dummyBGPVPNDriverDB, self).__init__(service_plugin)
+        LOG.debug("dummyBGPVPNDriverDB service_plugin : %s", service_plugin)
+
+    def _create_bgpvpn_connection(self, context, bgpvpn_connection):
+        pass
+
+    def _update_bgpvpn_connection(self, context, old_bgpvpn_connection,
+                                  bgpvpn_connection):
+        pass
+
+    def _delete_bgpvpn_connection(self, context, bgpvpn_connection):
         pass

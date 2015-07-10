@@ -13,17 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_bgpvpn.neutron.db import bgpvpn_db
 from neutron.i18n import _LI
 from neutron.services import service_base
 from oslo_log import log
 
+from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase
 from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
 
-class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
+class BGPVPNPlugin(BGPVPNPluginBase):
     supported_extension_aliases = ["bgpvpn"]
     path_prefix = "/bgpvpn"
 
@@ -43,31 +43,17 @@ class BGPVPNPlugin(bgpvpn_db.BGPVPNPluginDb):
         return "Neutron BGP VPN connection Service Plugin"
 
     def create_bgpvpn_connection(self, context, bgpvpn_connection):
-        bgpvpn_connection = super(
-            BGPVPNPlugin, self).create_bgpvpn_connection(context,
-                                                         bgpvpn_connection)
+        return self.driver.create_bgpvpn_connection(context, bgpvpn_connection)
 
-        self.driver.create_bgpvpn_connection(context, bgpvpn_connection)
-        return bgpvpn_connection
+    def get_bgpvpn_connections(self, context, filters=None, fields=None):
+        return self.driver.get_bgpvpn_connections(context, filters, fields)
 
-    def delete_bgpvpn_connection(self, context, bgpvpn_conn_id):
-        bgpvpn_connection = super(
-            BGPVPNPlugin, self).delete_bgpvpn_connection(context,
-                                                         bgpvpn_conn_id)
+    def get_bgpvpn_connection(self, context, id, fields=None):
+        return self.driver.get_bgpvpn_connection(context, id, fields)
 
-        self.driver.delete_bgpvpn_connection(context, bgpvpn_connection)
+    def update_bgpvpn_connection(self, context, id, bgpvpn_connection):
+        return self.driver.update_bgpvpn_connection(context, id,
+                                                    bgpvpn_connection)
 
-    def update_bgpvpn_connection(self,
-                                 context, bgpvpn_conn_id,
-                                 bgpvpn_connection):
-        old_bgpvpn_connection = self.get_bgpvpn_connection(context,
-                                                           bgpvpn_conn_id)
-
-        bgpvpn_connection = super(
-            BGPVPNPlugin, self).update_bgpvpn_connection(context,
-                                                         bgpvpn_conn_id,
-                                                         bgpvpn_connection)
-
-        self.driver.update_bgpvpn_connection(context, old_bgpvpn_connection,
-                                             bgpvpn_connection)
-        return bgpvpn_connection
+    def delete_bgpvpn_connection(self, context, id):
+        self.driver.delete_bgpvpn_connection(context, id)
