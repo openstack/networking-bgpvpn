@@ -41,6 +41,7 @@ class BgpvpnDBTestCase(testlib_api.SqlTestCase):
                     "route_targets": ["64512:1"],
                     "import_targets": ["64512:11", "64512:12"],
                     "export_targets": ["64512:13", "64512:14"],
+                    "route_distinguishers": ["64512:15", "64512:16"],
                     "auto_aggregate": False
                 }}
             )
@@ -57,6 +58,8 @@ class BgpvpnDBTestCase(testlib_api.SqlTestCase):
                              bgpvpncnx['import_targets'])
             self.assertEqual(["64512:13", "64512:14"],
                              bgpvpncnx['export_targets'])
+            self.assertEqual(["64512:15", "64512:16"],
+                             bgpvpncnx['route_distinguishers'])
             self.assertEqual(False, bgpvpncnx['auto_aggregate'])
 
             # update
@@ -70,6 +73,7 @@ class BgpvpnDBTestCase(testlib_api.SqlTestCase):
                     "network_id": "1-2-3-4",
                     "route_targets": [],
                     "import_targets": ["64512:22"],
+                    "route_distinguishers": [],
                     "auto_aggregate": True
                 }})
 
@@ -85,6 +89,7 @@ class BgpvpnDBTestCase(testlib_api.SqlTestCase):
             self.assertEqual(["64512:22"], bgpvpncnx2['import_targets'])
             self.assertEqual(["64512:13", "64512:14"],
                              bgpvpncnx2['export_targets'])
+            self.assertEqual([], bgpvpncnx2['route_distinguishers'])
             self.assertEqual(True, bgpvpncnx2['auto_aggregate'])
 
             # find bgpvpn by network_id

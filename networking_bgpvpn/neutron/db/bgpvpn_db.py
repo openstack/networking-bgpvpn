@@ -39,6 +39,7 @@ class BGPVPNConnection(model_base.BASEV2,
     route_targets = sa.Column(sa.String(255), nullable=False)
     import_targets = sa.Column(sa.String(255), nullable=False)
     export_targets = sa.Column(sa.String(255), nullable=False)
+    route_distinguishers = sa.Column(sa.String(255), nullable=False)
     auto_aggregate = sa.Column(sa.Boolean(), nullable=False)
     network_id = sa.Column(sa.String(36))
 
@@ -61,14 +62,14 @@ class BGPVPNNetworkInUse(q_exc.NetworkInUse):
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGP VPN service plugin database class using SQLAlchemy models."""
 
-    def _rt_list2str(self, list):
+    def _rtrd_list2str(self, list):
         """Format Route Target list to string"""
         if not list:
             return ''
 
         return ','.join(list)
 
-    def _rt_str2list(self, str):
+    def _rtrd_str2list(self, str):
         """Format Route Target string to list"""
         if not str:
             return []
@@ -95,11 +96,13 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             'name': bgpvpn_connection['name'],
             'type': bgpvpn_connection['type'],
             'route_targets':
-                self._rt_str2list(bgpvpn_connection['route_targets']),
+                self._rtrd_str2list(bgpvpn_connection['route_targets']),
             'import_targets':
-                self._rt_str2list(bgpvpn_connection['import_targets']),
+                self._rtrd_str2list(bgpvpn_connection['import_targets']),
             'export_targets':
-                self._rt_str2list(bgpvpn_connection['export_targets']),
+                self._rtrd_str2list(bgpvpn_connection['export_targets']),
+            'route_distinguishers':
+                self._rtrd_str2list(bgpvpn_connection['route_distinguishers']),
             'auto_aggregate': bgpvpn_connection['auto_aggregate']
         }
         return self._fields(res, fields)
@@ -111,9 +114,11 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         if (not bgpvpn_conn['route_targets']):
             raise BGPVPNConnectionMissingRouteTarget
         else:
-            rt = self._rt_list2str(bgpvpn_conn['route_targets'])
-            i_rt = self._rt_list2str(bgpvpn_conn['import_targets'])
-            e_rt = self._rt_list2str(bgpvpn_conn['export_targets'])
+            rt = self._rtrd_list2str(bgpvpn_conn['route_targets'])
+            i_rt = self._rtrd_list2str(bgpvpn_conn['import_targets'])
+            e_rt = self._rtrd_list2str(bgpvpn_conn['export_targets'])
+            rd = self._rtrd_list2str(
+                bgpvpn_conn.get('route_distinguishers', ''))
 
         tenant_id = self._get_tenant_id_for_create(context, bgpvpn_conn)
 
@@ -126,6 +131,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 route_targets=rt,
                 import_targets=i_rt,
                 export_targets=e_rt,
+                route_distinguishers=rd,
                 network_id=bgpvpn_conn['network_id'],
                 auto_aggregate=bgpvpn_conn['auto_aggregate']
             )
@@ -163,14 +169,18 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             if bgpvpn_conn:
                 # Format Route Target lists to string
                 if 'route_targets' in bgpvpn_conn:
-                    rt = self._rt_list2str(bgpvpn_conn['route_targets'])
+                    rt = self._rtrd_list2str(bgpvpn_conn['route_targets'])
                     bgpvpn_conn['route_targets'] = rt
                 if 'import_targets' in bgpvpn_conn:
-                    i_rt = self._rt_list2str(bgpvpn_conn['import_targets'])
+                    i_rt = self._rtrd_list2str(bgpvpn_conn['import_targets'])
                     bgpvpn_conn['import_targets'] = i_rt
                 if 'export_targets' in bgpvpn_conn:
-                    e_rt = self._rt_list2str(bgpvpn_conn['export_targets'])
+                    e_rt = self._rtrd_list2str(bgpvpn_conn['export_targets'])
                     bgpvpn_conn['export_targets'] = e_rt
+                if 'route_distinguishers' in bgpvpn_conn:
+                    rd = self._rtrd_list2str(
+                        bgpvpn_conn['route_distinguishers'])
+                    bgpvpn_conn['route_distinguishers'] = rd
 
                 bgpvpn_connection_db.update(bgpvpn_conn)
 

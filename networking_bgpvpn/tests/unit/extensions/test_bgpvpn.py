@@ -64,6 +64,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         expected_ret_val = copy.copy(data['bgpvpn_connection'])
         expected_ret_val['import_targets'] = []
         expected_ret_val['export_targets'] = []
+        expected_ret_val['route_distinguishers'] = []
         expected_call_args = copy.copy(expected_ret_val)
         expected_ret_val.update({'id': bgpvpn_conn_id})
 

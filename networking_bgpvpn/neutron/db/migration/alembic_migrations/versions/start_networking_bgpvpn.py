@@ -34,6 +34,7 @@ def upgrade(active_plugins=None, options=None):
         sa.Column(u'route_targets', sa.String(255), nullable=False),
         sa.Column(u'import_targets', sa.String(255), nullable=True),
         sa.Column(u'export_targets', sa.String(255), nullable=True),
+        sa.Column(u'route_distinguishers', sa.String(255), nullable=True),
         sa.Column(u'auto_aggregate', sa.Boolean(), nullable=False),
         sa.Column(u'network_id', sa.String(36), nullable=True),
         sa.ForeignKeyConstraint(['network_id'], [u'networks.id'], ),

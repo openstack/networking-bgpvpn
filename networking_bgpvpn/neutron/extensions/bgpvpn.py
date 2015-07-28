@@ -105,6 +105,12 @@ RESOURCE_ATTRIBUTE_MAP = {
                            'validate': {'type:route_target_list_or_none':
                                         None},
                            'is_visible': True},
+        'route_distinguishers': {'allow_post': True, 'allow_put': True,
+                                 'default': None,
+                                 'convert_to': attr.convert_to_list,
+                                 'validate': {'type:route_target_list_or_none':
+                                              None},
+                                 'is_visible': True},
         'auto_aggregate': {'allow_post': True, 'allow_put': True,
                            'default': True,
                            'validate': {'type:boolean': None},
@@ -143,6 +149,7 @@ class Bgpvpn(extensions.ExtensionDescriptor):
         plural_mappings['route_targets'] = 'route_target'
         plural_mappings['import_targets'] = 'import_target'
         plural_mappings['export_targets'] = 'export_target'
+        plural_mappings['route_distinguishers'] = 'route_distinguishers'
         attr.PLURALS.update(plural_mappings)
         return resource_helper.build_resource_info(plural_mappings,
                                                    RESOURCE_ATTRIBUTE_MAP,
