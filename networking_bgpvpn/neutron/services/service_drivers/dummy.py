@@ -42,7 +42,7 @@ class dummyBGPVPNDriver(service_drivers.BGPVPNDriver):
         pass
 
 
-class dummyBGPVPNDriverDB(service_drivers.BGPVPNDriverBD):
+class dummyBGPVPNDriverDB(service_drivers.BGPVPNDriverDB):
     """dummy BGP VPN connection Service Driver class with database."""
 
     def __init__(self, service_plugin):
