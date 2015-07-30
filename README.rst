@@ -11,7 +11,8 @@ API and Framework to interconnect BGP/MPLS VPNs to Openstack Neutron networks
 Quick start
 -----------
 
-To be able to test this framework, you have to:
+To test this framework with the **dummy** driver (not doing any real interaction with BGP nor
+the forwarding plane) you have to:
 
 * install devstack
 
@@ -35,4 +36,7 @@ To be able to test this framework, you have to:
 	neutron bgpvpn-connection-create --route-targets 64512:1
 	neutron bgpvpn-connection-list
 	neutron bgpvpn-connection-update <bgpvpn-connection-uuid> --network-id <neutron-net-uuid>
+
+
+To test this framework with the **bagpipe** reference driver, you can follow :doc:`README-bagpipe` .
 
