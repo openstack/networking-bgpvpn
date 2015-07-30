@@ -38,7 +38,7 @@ In devstack :
         BAGPIPE_BGP_PEERS=1.2.3.4
         enable_service b-bgp
 
-  * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with addtions to interact with ``bagpipe-bgp``):
+  * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with additions to interact with ``bagpipe-bgp``):
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
