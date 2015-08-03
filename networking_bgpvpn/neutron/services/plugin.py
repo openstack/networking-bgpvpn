@@ -13,7 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.db import servicetype_db as st_db
 from neutron.i18n import _LI
+from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 from oslo_log import log
 
@@ -29,9 +31,17 @@ class BGPVPNPlugin(BGPVPNPluginBase):
 
     def __init__(self):
         super(BGPVPNPlugin, self).__init__()
-        # Load the service driver from neutron.conf.
-        drivers, default_provider = service_base.load_drivers(
-            constants.BGPVPN, self)
+
+        service_type_manager = st_db.ServiceTypeManager.get_instance()
+        # Need to also look into /etc/neutron/networking_bgpvpn.conf for
+        # service_provider definitions:
+        service_type_manager.add_provider_configuration(
+            constants.BGPVPN,
+            pconf.ProviderConfiguration('networking_bgpvpn'))
+
+        # Load the default driver
+        drivers, default_provider = service_base.load_drivers(constants.BGPVPN,
+                                                              self)
         LOG.info(_LI("BGP VPN Service Plugin using Service Driver: %s"),
                  default_provider)
         self.driver = drivers[default_provider]

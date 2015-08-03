@@ -1,6 +1,6 @@
-===============================
+=================
 networking-bgpvpn
-===============================
+=================
 
 API and Framework to interconnect BGP/MPLS VPNs to Openstack Neutron networks
 
@@ -25,7 +25,7 @@ the forwarding plane) you have to:
 
 	Q_SERVICE_PLUGIN_CLASSES=networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin
 	
-	[[post-config|/$NEUTRON_CONF]]
+	[[post-config|/$NETWORKING_BGPVPN_CONF]]
 	[service_providers]
 	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.dummy.dummyBGPVPNDriver:default
 

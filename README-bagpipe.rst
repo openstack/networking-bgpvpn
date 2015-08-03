@@ -13,7 +13,7 @@ In devstack :
 
   * add the following to enable the BaGPipe driver for the BGPVPN service plugin::
 
-     [[post-config|/$NEUTRON_CONF]]
+     [[post-config|/$NETWORKING_BGPVPN_CONF]]
      [service_providers]
      service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
 

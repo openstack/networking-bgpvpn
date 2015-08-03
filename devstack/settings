@@ -1,2 +1,2 @@
 NETWORKING_BGPVPN_DIR=$DEST/networking-bgpvpn
-
+NETWORKING_BGPVPN_CONF=$NEUTRON_CONF_DIR/networking_bgpvpn.conf

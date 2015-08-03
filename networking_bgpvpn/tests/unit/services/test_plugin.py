@@ -17,10 +17,10 @@ import contextlib
 import mock
 import webob.exc
 
-from oslo_config import cfg
 from oslo_utils import uuidutils
 
 from neutron.api import extensions as api_extensions
+from neutron.db import servicetype_db as sdb
 from neutron.tests.unit.db import test_db_base_plugin_v2
 
 from networking_bgpvpn.neutron import extensions
@@ -38,9 +38,19 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
                     ':dummy:networking_bgpvpn.neutron.services.'
                     'service_drivers.dummy.dummyBGPVPNDriverDB:default')
 
-        cfg.CONF.set_override('service_provider',
-                              [provider],
-                              'service_providers')
+        bits = provider.split(':')
+        provider = {
+            'service_type': bits[0],
+            'name': bits[1],
+            'driver': bits[2]
+        }
+        if len(bits) == 4:
+            provider['default'] = True
+        # override the default service provider
+        self.service_providers = (
+            mock.patch.object(sdb.ServiceTypeManager,
+                              'get_service_providers').start())
+        self.service_providers.return_value = [provider]
 
         bgpvpn_plugin_str = ('networking_bgpvpn.neutron.services.plugin.'
                              'BGPVPNPlugin')
