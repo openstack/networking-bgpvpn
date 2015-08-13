@@ -14,7 +14,6 @@
 #    under the License.
 
 from neutron import context
-
 from neutron.tests.unit import testlib_api
 
 from networking_bgpvpn.neutron.db.bgpvpn_db \
