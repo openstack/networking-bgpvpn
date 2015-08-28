@@ -61,13 +61,6 @@ class BGPVPNNetworkInUse(q_exc.NetworkInUse):
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGP VPN service plugin database class using SQLAlchemy models."""
 
-    USER_READABLE_ATTRIBUTES = ['id', 'name', 'type',
-                                'network_id', 'tenant_id']
-    USER_WRITABLE_ATTRIBUTES = ['name', 'network_id']
-
-    def _get_resource(self, context, model, id):
-        return self._get_by_id(context, model, id)
-
     def _rt_list2str(self, list):
         """Format Route Target list to string"""
         if not list:
@@ -91,12 +84,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
         return [self._make_bgpvpn_connection_dict(bvc, fields=fields)
                 for bvc in bgpvpn_connections]
-
-    def _get_user_readable_fields(self, fields):
-        if fields is not None and fields:
-            return list(set(fields) & set(self.USER_READABLE_ATTRIBUTES))
-        else:
-            return self.USER_READABLE_ATTRIBUTES
 
     def _make_bgpvpn_connection_dict(self,
                                      bgpvpn_connection,
@@ -147,25 +134,13 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._make_bgpvpn_connection_dict(bgpvpn_conn_db)
 
     def get_bgpvpn_connections(self, context, filters=None, fields=None):
-        if context.is_admin:
-            return self._get_collection(context, BGPVPNConnection,
-                                        self._make_bgpvpn_connection_dict,
-                                        filters=filters, fields=fields)
-        else:
-            readable_fields = self._get_user_readable_fields(fields)
-            LOG.debug("get_bgpvpn_connections called for user, "
-                      "readable fields = %s" % readable_fields)
-            return self._get_bgpvpn_connections_for_tenant(context.session,
-                                                           context.tenant_id,
-                                                           readable_fields)
+        return self._get_collection(context, BGPVPNConnection,
+                                    self._make_bgpvpn_connection_dict,
+                                    filters=filters, fields=fields)
 
     def _get_bgpvpn_connection(self, context, id):
         try:
-            if context.is_admin:
-                return self._get_resource(context, BGPVPNConnection, id)
-            else:
-                qry = context.session.query(BGPVPNConnection)
-                return qry.filter_by(id=id, tenant_id=context.tenant_id).one()
+            return self._get_by_id(context, BGPVPNConnection, id)
         except exc.NoResultFound:
             raise BGPVPNConnectionNotFound(conn_id=id)
 
@@ -191,24 +166,16 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             bgpvpn_connection_db = self._get_bgpvpn_connection(context, id)
 
             if bgpvpn_conn:
-                # Filter only user writable attributes
-                if not context.is_admin:
-                    bgpvpn_conn = {
-                        user_attr: bgpvpn_conn[user_attr]
-                        for user_attr in self.USER_WRITABLE_ATTRIBUTES
-                        if user_attr in bgpvpn_conn}
-                    fields = self.USER_READABLE_ATTRIBUTES
-                else:
-                    # Format Route Target lists to string
-                    if 'route_targets' in bgpvpn_conn:
-                        rt = self._rt_list2str(bgpvpn_conn['route_targets'])
-                        bgpvpn_conn['route_targets'] = rt
-                    if 'import_targets' in bgpvpn_conn:
-                        i_rt = self._rt_list2str(bgpvpn_conn['import_targets'])
-                        bgpvpn_conn['import_targets'] = i_rt
-                    if 'export_targets' in bgpvpn_conn:
-                        e_rt = self._rt_list2str(bgpvpn_conn['export_targets'])
-                        bgpvpn_conn['export_targets'] = e_rt
+                # Format Route Target lists to string
+                if 'route_targets' in bgpvpn_conn:
+                    rt = self._rt_list2str(bgpvpn_conn['route_targets'])
+                    bgpvpn_conn['route_targets'] = rt
+                if 'import_targets' in bgpvpn_conn:
+                    i_rt = self._rt_list2str(bgpvpn_conn['import_targets'])
+                    bgpvpn_conn['import_targets'] = i_rt
+                if 'export_targets' in bgpvpn_conn:
+                    e_rt = self._rt_list2str(bgpvpn_conn['export_targets'])
+                    bgpvpn_conn['export_targets'] = e_rt
 
                 bgpvpn_connection_db.update(bgpvpn_conn)
 
@@ -216,10 +183,9 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
     def delete_bgpvpn_connection(self, context, id):
         with context.session.begin(subtransactions=True):
-            bgpvpn_connection_db = self._get_resource(
-                context,
-                BGPVPNConnection,
-                id)
+            bgpvpn_connection_db = self._get_by_id(context,
+                                                   BGPVPNConnection,
+                                                   id)
 
             context.session.delete(bgpvpn_connection_db)
 
