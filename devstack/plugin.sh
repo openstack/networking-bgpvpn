@@ -9,7 +9,7 @@ if [[ "$1" == "source" ]]; then
 	:
 elif [[ "$1" == "stack" && "$2" == "install" ]]; then
 	setup_develop $NETWORKING_BGPVPN_DIR
-	cp $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
+ 	mkdir -p $NEUTRON_CONF_DIR/policy.d && cp $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
 	if is_service_enabled q-svc; then
 		bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
