@@ -148,11 +148,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         bgpvpn_connection_db = self._get_bgpvpn_connection(context, id)
         LOG.debug("get_bgpvpn_connection called with fields = %s" % fields)
 
-        if not context.is_admin:
-            fields = self._get_user_readable_fields(fields)
-            LOG.debug("get_bgpvpn_connection called for user,"
-                      "readable fields = %s" % fields)
-
         return self._make_bgpvpn_connection_dict(bgpvpn_connection_db, fields)
 
     def update_bgpvpn_connection(self, context, id, bgpvpn_connection):
