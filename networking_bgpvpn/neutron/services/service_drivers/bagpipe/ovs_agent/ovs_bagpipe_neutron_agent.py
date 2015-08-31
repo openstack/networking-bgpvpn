@@ -27,7 +27,7 @@ from neutron.i18n import _LI
 from neutron.common import config as common_config
 from neutron.common import constants as q_const
 from neutron.common import utils as q_utils
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
