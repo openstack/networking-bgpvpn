@@ -29,14 +29,14 @@ the forwarding plane) you have to:
 	[service_providers]
 	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default
 
-* bgpvpn-connection-create/update/delete/show/list commands will be available with
+* bgpvpn-create/update/associate/delete/show/list commands will be available with
   the neutron client, for example: ::
 
 	source openrc admin admin
-	neutron bgpvpn-connection-create --route-targets 64512:1
-	neutron bgpvpn-connection-list
-	neutron bgpvpn-connection-update <bgpvpn-connection-uuid> --network-id <neutron-net-uuid>
+	neutron bgpvpn-create --route-targets 64512:1 --tenant-id b954279e1e064dc9b8264474cb3e6bd2
+	neutron bgpvpn-list
+	neutron bgpvpn-update 1009a0f326b6403180c18f3caa1430de --name foo
+	neutron bgpvpn-network-associate foo --network 828cddad3b834e79b79abc1b87b6cca0
 
-
-To test this framework with the **bagpipe** reference driver, you can follow :doc:`README-bagpipe` .
+To test this framework with the **bagpipe** reference driver, you can follow :doc:`README-bagpipe.rst` .
 
