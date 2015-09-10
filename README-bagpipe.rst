@@ -17,10 +17,6 @@ In devstack :
      [service_providers]
      service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
 
-  * add ``bgpvpn_notify`` to ``Q_ML2_PLUGIN_MECHANISM_DRIVERS``
-
-    * (this mech_driver does not implement the setup of L2 networks; it is used only to notify the ``bagpipe`` driver for the BGPVPN plugin of L2 ports coming and going on compute nodes)
-
 * on a control node, if you want to run the Fake Route-Reflector there::
 
      enable_plugin bagpipe-bgp https://github.com/Orange-OpenSource/bagpipe-bgp.git

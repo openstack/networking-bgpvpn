@@ -16,11 +16,16 @@
 from sqlalchemy.orm import exc
 from sqlalchemy import sql
 
+from neutron import context as n_context
+from neutron import manager
+
+from neutron.callbacks import events
+from neutron.callbacks import registry
+from neutron.callbacks import resources
 from neutron.common import constants as const
 from neutron.db import models_v2
 from oslo_log import log as logging
 
-from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.services import service_drivers
 
 from networking_bagpipe_l2.agent.bgpvpn import rpc_client
@@ -73,6 +78,12 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
         super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
 
         self.agent_rpc = rpc_client.BGPVPNAgentNotifyApi()
+
+        registry.subscribe(self.registry_port_updated, resources.PORT,
+                           events.AFTER_UPDATE)
+
+        registry.subscribe(self.registry_port_deleted, resources.PORT,
+                           events.AFTER_DELETE)
 
     @property
     def service_type(self):
@@ -146,8 +157,7 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
         return bgpvpn_rts
 
-    def _retrieve_bgpvpn_network_info_for_port(self, context, port_id,
-                                               network_id):
+    def _retrieve_bgpvpn_network_info_for_port(self, context, port):
         """Retrieve BGP VPN network informations for a specific port
 
         {
@@ -161,6 +171,9 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
             }
         }
         """
+        port_id = port['id']
+        network_id = port['network_id']
+
         bgpvpn_network_info = {}
 
         # Check if port is connected on a BGP VPN network
@@ -297,17 +310,34 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
                         self._format_bgpvpn_connection(bgpvpn_connection)
                     )
 
+    def _get_port_host(self, port_id):
+        # the port dict, as provided by the registry callback
+        # has no binding:host_id information, it seems the reason is
+        # because the context is not admin
+        # let's switch to an admin context and retrieve full port info
+        _core_plugin = manager.NeutronManager.get_plugin()
+        full_port = _core_plugin.get_port(n_context.get_admin_context(),
+                                          port_id)
+
+        if 'binding:host_id' not in full_port:
+            raise Exception("cannot determine host_id for port %s, "
+                            "aborting BGPVPN update", port_id)
+
+        return full_port.get('binding:host_id')
+
     def notify_port_updated(self, context, port):
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
-        agent_host = port['binding:host_id']
+
+        if port['device_owner'] == 'network:dhcp':
+            LOG.info("Owner of port %s is network:dhcp, ignoring")
+
+        agent_host = self._get_port_host(port['id'])
 
         if port['status'] == const.PORT_STATUS_ACTIVE:
             bgpvpn_network_info = (
-                self._retrieve_bgpvpn_network_info_for_port(
-                    context,
-                    port['id'],
-                    port['network_id']))
+                self._retrieve_bgpvpn_network_info_for_port(context, port)
+            )
 
             if bgpvpn_network_info:
                 port_bgpvpn_info.update(bgpvpn_network_info)
@@ -319,28 +349,28 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
             self.agent_rpc.detach_port_from_bgpvpn_network(context,
                                                            port_bgpvpn_info,
                                                            agent_host)
+        else:
+            LOG.debug("no action since new port status is %", port['status'])
 
     def remove_port_from_bgpvpn_agent(self, context, port):
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
-        agent_host = port['binding:host_id']
+
+        if port['device_owner'] == 'network:dhcp':
+            LOG.info("Owner of port %s is network:dhcp, ignoring")
+
+        agent_host = self._get_port_host(port['id'])
 
         self.agent_rpc.detach_port_from_bgpvpn_network(context,
                                                        port_bgpvpn_info,
                                                        agent_host)
 
-    def prevent_bgpvpn_network_deletion(self, context, network_id):
-        '''Method called by the mech_driver at delete_network_precommit time
+    def registry_port_updated(self, resource, event, trigger, **kwargs):
+        context = kwargs.get('context')
+        port_dict = kwargs.get('port')
+        self.notify_port_updated(context, port_dict)
 
-        Used to prevent deletion of a network referred to by a BGPVPN
-        connection.
-        '''
-        LOG.debug('Prevent BGP VPN network deletion')
-        # Note(ethuleau): can we use DB directly instead of the service
-        #                 provider to get that list?
-        if (self.service_plugin.get_bgpvpn_connections(
-                context,
-                filters={'network_id': [network_id]})):
-            raise bgpvpn_db.BGPVPNNetworkInUse(network_id=network_id)
-        else:
-            LOG.debug('Network %(network_id)s can be deleted')
+    def registry_port_deleted(self, resource, event, trigger, **kwargs):
+        context = kwargs.get('context')
+        port_dict = kwargs.get('port')
+        self.remove_port_from_bgpvpn_agent(context, port_dict)
