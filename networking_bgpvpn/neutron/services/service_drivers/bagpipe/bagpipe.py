@@ -342,13 +342,13 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
             if bgpvpn_network_info:
                 port_bgpvpn_info.update(bgpvpn_network_info)
 
-                self.agent_rpc.attach_port_on_bgpvpn_network(context,
-                                                             port_bgpvpn_info,
-                                                             agent_host)
+                self.agent_rpc.attach_port_on_bgpvpn(context,
+                                                     port_bgpvpn_info,
+                                                     agent_host)
         elif port['status'] == const.PORT_STATUS_DOWN:
-            self.agent_rpc.detach_port_from_bgpvpn_network(context,
-                                                           port_bgpvpn_info,
-                                                           agent_host)
+            self.agent_rpc.detach_port_from_bgpvpn(context,
+                                                   port_bgpvpn_info,
+                                                   agent_host)
         else:
             LOG.debug("no action since new port status is %", port['status'])
 
@@ -361,9 +361,9 @@ class BaGPipeBGPVPNDriver(service_drivers.BGPVPNDriverDB):
 
         agent_host = self._get_port_host(port['id'])
 
-        self.agent_rpc.detach_port_from_bgpvpn_network(context,
-                                                       port_bgpvpn_info,
-                                                       agent_host)
+        self.agent_rpc.detach_port_from_bgpvpn(context,
+                                               port_bgpvpn_info,
+                                               agent_host)
 
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         context = kwargs.get('context')
