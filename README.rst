@@ -19,7 +19,7 @@ the forwarding plane) you have to:
 * add the devstack plugin for the BGPVPN service plugin to your ``local.conf``: ::
 
 	[[local|localrc]]
-	enable_plugin networking-bgpvpn git@github.com:openstack/networking-bgpvpn.git
+	enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
 
 * add the following to your ``local.conf``: ::
 
