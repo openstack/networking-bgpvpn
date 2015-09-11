@@ -29,9 +29,9 @@ class BGPVPN(extension.NeutronClientExtension):
     versions = ['2.0']
 
 
-class BGPVPNCommandsCommonMixin(object):
+class BGPVPNCreateUpdateCommon(BGPVPN):
 
-    def add_common_known_args(self, parser):
+    def add_known_args(self, parser):
         """Adds to parser arguments common to create and update commands."""
 
         parser.add_argument(
@@ -75,16 +75,15 @@ class BGPVPNCommandsCommonMixin(object):
         return body
 
 
-class BGPVPNCreate(extension.ClientExtensionCreate,
-                   BGPVPN,
-                   BGPVPNCommandsCommonMixin
-                   ):
+class BGPVPNCreate(BGPVPNCreateUpdateCommon,
+                   extension.ClientExtensionCreate):
     shell_command = 'bgpvpn-create'
 
     def add_known_arguments(self, parser):
 
-        BGPVPNCommandsCommonMixin.add_common_known_args(self, parser)
+        BGPVPNCreateUpdateCommon.add_known_args(self, parser)
 
+        # type is read-only, hence specific to create
         parser.add_argument(
             '--type',
             default='l3', choices=['l2', 'l3'],
@@ -92,9 +91,8 @@ class BGPVPNCreate(extension.ClientExtensionCreate,
                    'EVPN (l2), default:l3'))
 
 
-class BGPVPNConnectionUpdate(extension.ClientExtensionUpdate,
-                             BGPVPN,
-                             BGPVPNCommandsCommonMixin):
+class BGPVPNConnectionUpdate(BGPVPNCreateUpdateCommon,
+                             extension.ClientExtensionUpdate):
     shell_command = 'bgpvpn-update'
 
 
