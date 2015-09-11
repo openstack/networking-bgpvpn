@@ -12,6 +12,7 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
  	mkdir -p $NEUTRON_CONF_DIR/policy.d && cp $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
 	mkdir -p $(dirname $NETWORKING_BGPVPN_CONF) && cp $NETWORKING_BGPVPN_DIR/etc/neutron/networking_bgpvpn.conf $NETWORKING_BGPVPN_CONF
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+	_neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
 	if is_service_enabled q-svc; then
 		bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
 	fi
