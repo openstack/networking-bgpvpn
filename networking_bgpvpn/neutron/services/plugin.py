@@ -34,9 +34,9 @@ class BGPVPNPlugin(BGPVPNPluginBase):
     def __init__(self):
         super(BGPVPNPlugin, self).__init__()
 
-        service_type_manager = st_db.ServiceTypeManager.get_instance()
-        # Need to also look into /etc/neutron/networking_bgpvpn.conf for
+        # Need to look into /etc/neutron/networking_bgpvpn.conf for
         # service_provider definitions:
+        service_type_manager = st_db.ServiceTypeManager.get_instance()
         service_type_manager.add_provider_configuration(
             constants.BGPVPN,
             pconf.ProviderConfiguration('networking_bgpvpn'))
@@ -47,6 +47,11 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         LOG.info(_LI("BGP VPN Service Plugin using Service Driver: %s"),
                  default_provider)
         self.driver = drivers[default_provider]
+
+        if len(drivers) > 1:
+            LOG.warning(_LI("Multiple drivers configured for BGPVPN, although"
+                            "running multiple drivers in parallel is not yet"
+                            "supported"))
 
     def _validate_network_body(self, context, bgpvpn_id, network_body):
         # Check that the tenant of the network is the same as the tenant of the
