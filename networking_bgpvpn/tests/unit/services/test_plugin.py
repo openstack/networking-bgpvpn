@@ -35,10 +35,14 @@ _uuid = uuidutils.generate_uuid
 
 class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
 
-    def setUp(self):
-        provider = (constants.BGPVPN +
-                    ':dummy:networking_bgpvpn.neutron.services.'
-                    'service_drivers.driver_api.BGPVPNDriver:default')
+    def setUp(self, service_provider=None):
+        if not service_provider:
+            provider = (constants.BGPVPN +
+                        ':dummy:networking_bgpvpn.neutron.services.'
+                        'service_drivers.driver_api.BGPVPNDriver:default')
+        else:
+            provider = (constants.BGPVPN + ':test:' + service_provider +
+                        ':default')
 
         bits = provider.split(':')
         provider = {
