@@ -32,8 +32,6 @@ from networking_bagpipe_l2.agent.bgpvpn import rpc_client
 
 LOG = logging.getLogger(__name__)
 
-BAGPIPE_BGPVPN = 'bagpipe-bgpvpn'
-
 
 def get_network_info_for_port(context, port_id):
     """Get MAC, IP and Gateway IP addresses informations for a specific port"""
@@ -84,10 +82,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         registry.subscribe(self.registry_port_deleted, resources.PORT,
                            events.AFTER_DELETE)
-
-    @property
-    def service_type(self):
-        return BAGPIPE_BGPVPN
 
     def _format_bgpvpn(self, bgpvpn, network_id):
         """JSON-format BGPVPN
@@ -182,9 +176,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         if not bgpvpns:
             return
 
-        bgpvpn_rts = (
-            self._format_bgpvpn_network_route_targets(bgpvpns)
-        )
+        bgpvpn_rts = self._format_bgpvpn_network_route_targets(bgpvpns)
+
         LOG.debug("Port connected on BGPVPN network %s with route targets "
                   "%s" % (network_id, bgpvpn_rts))
 
@@ -280,11 +273,16 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         return full_port.get('binding:host_id')
 
     def notify_port_updated(self, context, port):
+        LOG.info("notify_port_updated on port %s status %s",
+                 port['id'],
+                 port['status'])
+
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
 
-        if port['device_owner'] == 'network:dhcp':
-            LOG.info("Owner of port %s is network:dhcp, ignoring")
+        if port['device_owner'] == const.DEVICE_OWNER_DHCP:
+            LOG.info("Port %s is DHCP, ignoring", port['id'])
+            return
 
         agent_host = self._get_port_host(port['id'])
 
@@ -304,14 +302,20 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                    port_bgpvpn_info,
                                                    agent_host)
         else:
-            LOG.debug("no action since new port status is %", port['status'])
+            LOG.info("no action since new port status is %s", port['status'])
 
     def remove_port_from_bgpvpn_agent(self, context, port):
+        LOG.info("remove_port_from_bgpvpn_agent port updated on port %s "
+                 "status %s",
+                 port['id'],
+                 port['status'])
+
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
 
-        if port['device_owner'] == 'network:dhcp':
-            LOG.info("Owner of port %s is network:dhcp, ignoring")
+        if port['device_owner'] == const.DEVICE_OWNER_DHCP:
+            LOG.info("Port %s is DHCP, ignoring", port['id'])
+            return
 
         agent_host = self._get_port_host(port['id'])
 

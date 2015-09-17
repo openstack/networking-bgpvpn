@@ -62,11 +62,11 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
                              'BGPVPNPlugin')
         service_plugins = {'bgpvpn_plugin': bgpvpn_plugin_str}
 
-        bgpvpn_plugin = plugin.BGPVPNPlugin()
+        self.bgpvpn_plugin = plugin.BGPVPNPlugin()
         extensions_path = ':'.join(extensions.__path__)
         ext_mgr = api_extensions.PluginAwareExtensionManager(
             extensions_path,
-            {constants.BGPVPN: bgpvpn_plugin})
+            {constants.BGPVPN: self.bgpvpn_plugin})
 
         super(BgpvpnTestCaseMixin, self).setUp(
             service_plugins=service_plugins,
