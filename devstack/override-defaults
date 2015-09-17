@@ -1,3 +1,0 @@
-NETWORKING_BGPVPN_DIR=$DEST/networking-bgpvpn
-ln -sf $NETWORKING_BGPVPN_DIR/devstack/bagpipe/ovs-agent $TOP_DIR/lib/neutron_plugins/bagpipe-openvswitch_agent
-
