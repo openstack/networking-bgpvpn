@@ -4,4 +4,4 @@ source = networking-bgpvpn
 omit = networking-bgpvpn/tests/*,networking-bgpvpn/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
