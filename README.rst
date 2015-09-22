@@ -12,7 +12,7 @@ provided WANs using these standard protocols. An additional purpose of this
 project is to enable the use of these technologies within the Neutron
 networking environment.
 
-A vendor neutral API and data model is provided such that multiple backends
+A vendor neutral API and data model are provided such that multiple backends
 may be "plugged in" while offering the same tenant facing API. A reference
 implementation based on an Open Source BGP implementation is also provided.
 

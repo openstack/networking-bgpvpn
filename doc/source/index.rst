@@ -8,7 +8,8 @@ Welcome to BGP-MPLS VPN Networking Documentation!
 .. include:: ../../README.rst
 
 
-Contents:
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
@@ -17,7 +18,7 @@ Contents:
    usage
    contributing
 
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`
