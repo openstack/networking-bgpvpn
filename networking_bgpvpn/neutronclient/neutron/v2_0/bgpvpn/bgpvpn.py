@@ -106,7 +106,7 @@ class BGPVPNConnectionList(extension.ClientExtensionList,
     shell_command = 'bgpvpn-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
-        'export_targets', 'tenant_id']
+        'export_targets', 'tenant_id', 'networks']
     pagination_support = True
     sorting_support = True
 
@@ -116,31 +116,39 @@ class BGPVPNConnectionShow(extension.ClientExtensionShow,
     shell_command = 'bgpvpn-show'
 
 
-class BGPVPNNetAssociationCommand(BGPVPN, neutronv20.NeutronCommand):
+class BGPVPNAssociationCommand(BGPVPN, neutronv20.NeutronCommand):
 
-    path_action = None
+    shell_command_fmt = 'bgpvpn-%s'
 
-    def success_message(self, bgpvpn_id, network_id):
-        raise NotImplementedError()
+    def success_message(self, bgpvpn_id, associated_rsrc, rsrc_id):
+        return (_('%(command)s %(associated_rsrc)s %(rsrc_id)s to '
+                  'BGPVPN %(bgpvpn)s.') %
+                {'command': self.command.title(),
+                 'associated_rsrc': associated_rsrc,
+                 'rsrc_id': rsrc_id,
+                 'bgpvpn': bgpvpn_id
+                 })
 
-    def call_api(self, neutron_client, bgpvpn_id, network_id):
-        if not self.path_action:
+    def call_api(self, neutron_client, bgpvpn_id, associated_rsrc, rsrc_id):
+        if not self.command:
             raise NotImplementedError()
 
-        body = {'network_id': network_id}
+        body = {'%s_id' % associated_rsrc: rsrc_id}
 
-        return neutron_client.put("%s/%s" % ((self.resource_path % bgpvpn_id),
-                                             self.path_action),
+        return neutron_client.put("%s/%s_%s" %
+                                  ((self.resource_path % bgpvpn_id),
+                                   self.command, associated_rsrc),
                                   body=body)
 
     def get_parser(self, prog_name):
-        parser = super(BGPVPNNetAssociationCommand, self).get_parser(prog_name)
+        parser = super(BGPVPNAssociationCommand, self).get_parser(prog_name)
         parser.add_argument(
             'bgpvpn',
             help=_('ID or name of the BGPVPN.'))
         parser.add_argument(
             '--network', required=True,
             help=_('ID or name of the network.'))
+        # TODO(whoever): add --router argument
         return parser
 
     def run(self, parsed_args):
@@ -154,26 +162,21 @@ class BGPVPNNetAssociationCommand(BGPVPN, neutronv20.NeutronCommand):
         _network_id = neutronv20.find_resourceid_by_name_or_id(
             neutron_client, 'network', parsed_args.network)
 
-        out = self.call_api(neutron_client, _bgpvpn_id, _network_id)
+        # TODO(whoever): support --router argument
+        out = self.call_api(neutron_client, _bgpvpn_id,
+                            'network', _network_id)
         self.log.debug("out: %s", out)
 
-        print(self.success_message(parsed_args.bgpvpn, parsed_args.network),
+        print(self.success_message(parsed_args.bgpvpn, 'network',
+                                   parsed_args.network),
               file=self.app.stdout)
 
 
-class BGPVPNNetAssociate(BGPVPNNetAssociationCommand):
-    shell_command = 'bgpvpn-network-associate'
-    path_action = 'associate_network'
-
-    def success_message(self, bgpvpn_id, network_id):
-        return (_('Associated network %(network)s to BGPVPN %(bgpvpn)s.') %
-                {'network': network_id, 'bgpvpn': bgpvpn_id})
+class BGPVPNAssociate(BGPVPNAssociationCommand):
+    command = 'associate'
+    shell_command = BGPVPNAssociationCommand.shell_command_fmt % command
 
 
-class BGPVPNNetDisassociate(BGPVPNNetAssociationCommand):
-    shell_command = 'bgpvpn-network-disassociate'
-    path_action = 'disassociate_network'
-
-    def success_message(self, bgpvpn_id, network_id):
-        return (_('Disassociated network %(network)s to BGPVPN %(bgpvpn)s.') %
-                {'network': network_id, 'bgpvpn': bgpvpn_id})
+class BGPVPNDisassociate(BGPVPNAssociationCommand):
+    command = 'disassociate'
+    shell_command = BGPVPNAssociationCommand.shell_command_fmt % command
