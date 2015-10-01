@@ -13,20 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import signal
 import sys
 
 import eventlet
 eventlet.monkey_patch()
 
-from neutron.agent.common import config as agent_cfg
-from neutron.agent.linux import ip_lib
 from neutron.i18n import _LE
-from neutron.i18n import _LI
 
 from neutron.common import config as common_config
 from neutron.common import constants as q_const
-from neutron.common import utils as q_utils
+from neutron.common import utils as n_utils
+
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -40,23 +37,23 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     create_agent_config_map
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     OVSNeutronAgent
+from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
+    prepare_xen_compute
+from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
+    validate_local_ip
 
 from networking_bagpipe_l2.agent import bagpipe_bgp_agent
 
 LOG = logging.getLogger(__name__)
 cfg.CONF.import_group('AGENT', 'neutron.plugins.ml2.drivers.openvswitch.'
                       'agent.common.config')
+cfg.CONF.import_group('OVS', 'neutron.plugins.ml2.drivers.openvswitch.agent.'
+                      'common.config')
 
 
 class OVSBagpipeNeutronAgent(OVSNeutronAgent):
 
     def __init__(self, *args, **kwargs):
-        bridge_classes = {
-            'br_int': br_int.OVSIntegrationBridge,
-            'br_phys': br_phys.OVSPhysicalBridge,
-            'br_tun': br_tun.OVSTunnelBridge,
-        }
-        kwargs['bridge_classes'] = bridge_classes
         super(OVSBagpipeNeutronAgent, self).__init__(*args, **kwargs)
 
         # Creates an HTTP client for BaGPipe BGP component REST service
@@ -73,31 +70,29 @@ class OVSBagpipeNeutronAgent(OVSNeutronAgent):
 
 
 def main():
-    cfg.CONF.register_opts(ip_lib.OPTS)
-    agent_cfg.register_root_helper(cfg.CONF)
+    # this is from neutron.plugins.ml2.drivers.openvswitch.agent.main
     common_config.init(sys.argv[1:])
+    n_utils.log_opt_values(LOG)
     common_config.setup_logging()
-    q_utils.log_opt_values(LOG)
-
+    # this is from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.
+    # ovs_ofctl.main
+    bridge_classes = {
+        'br_int': br_int.OVSIntegrationBridge,
+        'br_phys': br_phys.OVSPhysicalBridge,
+        'br_tun': br_tun.OVSTunnelBridge,
+    }
+    # this is from neutron.plugins.ml2.drivers.openvswitch.agent.
+    # ovs_neutron_agent
     try:
         agent_config = create_agent_config_map(cfg.CONF)
-    except ValueError as e:
-        LOG.error(_LE('%s Agent terminated!'), e)
+    except ValueError:
+        LOG.exception(_LE("Agent failed to create agent config map"))
+        raise SystemExit(1)
+    prepare_xen_compute()
+    validate_local_ip(agent_config['local_ip'])
+    try:
+        agent = OVSBagpipeNeutronAgent(bridge_classes, **agent_config)
+    except (RuntimeError, ValueError) as e:
+        LOG.error(_LE("%s Agent terminated!"), e)
         sys.exit(1)
-
-    is_xen_compute_host = 'rootwrap-xen-dom0' in cfg.CONF.AGENT.root_helper
-    if is_xen_compute_host:
-        # Force ip_lib to always use the root helper to ensure that ip
-        # commands target xen dom0 rather than domU.
-        cfg.CONF.set_default('ip_lib_force_root', True)
-
-    agent = OVSBagpipeNeutronAgent(**agent_config)
-    signal.signal(signal.SIGTERM, agent._handle_sigterm)
-
-    # Start everything.
-    LOG.info(_LI("Agent initialized successfully, now running... "))
     agent.daemon_loop()
-
-
-if __name__ == "__main__":
-    main()
