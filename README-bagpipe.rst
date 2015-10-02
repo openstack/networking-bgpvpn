@@ -5,7 +5,9 @@ The **bagpipe** driver for the BGPVPN service plugin is designed to work jointly
 ML2 mechanism driver.  It relies on the use of the _bagpipe-bgp BGP VPN implementation on compute node
 and the MPLS implementation in OpenVSwitch.
 
-In devstack :
+In devstack:
+
+* follow the instruction in README.rst
 
 * ``local.conf``:
 
@@ -13,9 +15,7 @@ In devstack :
 
   * add the following to enable the BaGPipe driver for the BGPVPN service plugin::
 
-     [[post-config|/$NETWORKING_BGPVPN_CONF]]
-     [service_providers]
-     service_provider=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
+     NETWORKING_BGPVPN_DRIVER=$NETWORKING_BGPVPN_DRIVER_BAGPIPE
 
 * on a control node, if you want to run the Fake Route-Reflector there::
 
@@ -34,7 +34,7 @@ In devstack :
         BAGPIPE_BGP_PEERS=1.2.3.4
         enable_service b-bgp
 
-  * the compute node agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with additions to interact with ``bagpipe-bgp``):
+  * the compute node Neutron agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with additions to interact with ``bagpipe-bgp``):
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 

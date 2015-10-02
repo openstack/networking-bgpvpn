@@ -33,12 +33,6 @@ the forwarding plane) you have to:
 	[[local|localrc]]
 	enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
 
-* add the following to your ``local.conf``: ::
-
-	[[post-config|$NETWORKING_BGPVPN_CONF]]
-	[service_providers]
-	service_provider=BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default
-
 * bgpvpn-create/update/associate/delete/show/list commands will be available with
   the neutron client, for example: ::
 

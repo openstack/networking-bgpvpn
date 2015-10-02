@@ -14,8 +14,10 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
 elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
 	_neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
-	#no-op
-	:
+        if is_service_enabled q-svc; then
+                inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
+                iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
+        fi
 fi
 if [[ "$1" == "unstack" ]]; then
 	#no-op
