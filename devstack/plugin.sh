@@ -14,9 +14,8 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
 elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
 	_neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
-	if is_service_enabled q-svc; then
-		bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
-	fi
+	#no-op
+	:
 fi
 if [[ "$1" == "unstack" ]]; then
 	#no-op
