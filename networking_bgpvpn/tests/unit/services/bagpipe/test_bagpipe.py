@@ -61,16 +61,19 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 rt = bgpvpn['bgpvpn']['route_targets']
-                with self.assoc_net(id, net_id, do_disassociate=False):
-                    net_body = {'network_id': net_id}
+                with self.assoc_net(id, net_id,
+                                    do_disassociate=False) as assoc:
                     mocked_delete.reset_mock()
-                    disassoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                             data=net_body, fmt=self.fmt,
-                                             id=id,
-                                             action='disassociate_network')
-                    res = disassoc_req.get_response(self.ext_api)
+                    del_req = self.new_delete_request(
+                        'bgpvpn/bgpvpns',
+                        id,
+                        fmt=self.fmt,
+                        subresource='network_associations',
+                        sub_id=assoc['network_association']['id'])
+                    res = del_req.get_response(self.ext_api)
                     if res.status_int >= 400:
                         raise webob.exc.HTTPClientError(code=res.status_int)
+
                     formatted_bgpvpn = {'id': id,
                                         'network_id': net_id,
                                         'l3vpn':

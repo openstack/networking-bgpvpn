@@ -49,6 +49,11 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             plural_mappings=plural_mappings,
             translate_resource_name=True)
         self.instance = self.plugin.return_value
+        self.bgpvpn_id = _uuid()
+        self.net_id = _uuid()
+        self.assoc_id = _uuid()
+        self.NET_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
+            '/network_associations'
 
     def test_bgpvpn_create(self):
         bgpvpn_id = _uuid()
@@ -192,35 +197,51 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
     def test_bgpvpn_delete(self):
         self._test_entity_delete('bgpvpn')
 
-    def test_bgpvpn_associate_network(self):
-        bgpvpn_id = _uuid()
-        network_id = _uuid()
-        network_data = {'network_id': network_id}
-        return_value = {'id': bgpvpn_id,
-                        'network_id': _uuid()}
-        self.instance.associate_network.return_value = return_value
+    def test_bgpvpn_net_create(self):
+        data = {'network_association': {'network_id': self.net_id,
+                                        'tenant_id': _uuid()}}
+        return_value = copy.copy(data['network_association'])
+        return_value.update({'id': self.assoc_id})
+        self.instance.create_bgpvpn_network_association.return_value = \
+            return_value
+        res = self.api.post(_get_path(self.NET_ASSOC_URI,
+                                      fmt=self.fmt),
+                            self.serialize(data),
+                            content_type='application/%s' % self.fmt,
+                            expect_errors=True)
 
-        res = self.api.put(_get_path(BGPVPN_URI,
-                                     id=bgpvpn_id,
-                                     action="associate_network",
-                                     fmt=self.fmt),
-                           self.serialize(network_data))
-        self.instance.associate_network.assert_called_with(
-            mock.ANY, bgpvpn_id, network_data)
+        self.instance.create_bgpvpn_network_association.assert_called_with(
+            mock.ANY, bgpvpn_id=self.bgpvpn_id, network_association=data)
+        self.assertIn('network_association', res)
+        res = self.deserialize(res)
+        self.assertEqual(return_value, res['network_association'])
+
+    def test_bgpvpn_net_get(self):
+        return_value = {'id': self.assoc_id,
+                        'network_id': self.net_id}
+
+        self.instance.get_bgpvpn_network_association.return_value = \
+            return_value
+
+        res = self.api.get(_get_path(self.NET_ASSOC_URI,
+                                     id=self.assoc_id,
+                                     fmt=self.fmt))
+
+        self.instance.get_bgpvpn_network_association.assert_called_with(
+            mock.ANY, self.assoc_id, bgpvpn_id=self.bgpvpn_id, fields=mock.ANY
+        )
         self.assertEqual(res.status_int, exc.HTTPOk.code)
         res = self.deserialize(res)
-        self.assertEqual(res, return_value)
+        self.assertIn('network_association', res)
+        self.assertEqual(return_value, res['network_association'])
 
-    def test_bgpvpn_disassociate_network(self):
-        bgpvpn_id = _uuid()
-        network_id = _uuid()
-        network_data = {'network_id': network_id}
+    def test_bgpvpn_net_update(self):
+        pass
 
-        res = self.api.put(_get_path(BGPVPN_URI,
-                                     id=bgpvpn_id,
-                                     action="disassociate_network",
-                                     fmt=self.fmt),
-                           self.serialize(network_data))
-        self.instance.disassociate_network.assert_called_with(
-            mock.ANY, bgpvpn_id, network_data)
-        self.assertEqual(res.status_int, exc.HTTPOk.code)
+    def test_bgpvpn_net_delete(self):
+        res = self.api.delete(_get_path(self.NET_ASSOC_URI,
+                                        id=self.assoc_id,
+                                        fmt=self.fmt))
+        self.instance.delete_bgpvpn_network_association.assert_called_with(
+            mock.ANY, bgpvpn_id=self.bgpvpn_id, id=self.assoc_id)
+        self.assertEqual(res.status_int, exc.HTTPNoContent.code)

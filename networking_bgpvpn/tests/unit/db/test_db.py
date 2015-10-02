@@ -15,8 +15,8 @@
 
 from neutron import context
 
-from networking_bgpvpn.neutron.db.bgpvpn_db \
-    import BGPVPNNotFound
+from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNNetAssocNotFound
+from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNNotFound
 from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
 from networking_bgpvpn.tests.unit.services import test_plugin
 
@@ -45,8 +45,8 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             )
 
             # associate network
-            self.plugin_db.associate_network(self.ctx, bgpvpn['id'],
-                                             net['network']['id'])
+            assoc1 = self.plugin_db.create_net_assoc(self.ctx, bgpvpn['id'],
+                                                     net['network']['id'])
 
             # retrieve
             bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn['id'])
@@ -62,6 +62,23 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual(False, bgpvpn['auto_aggregate'])
             self.assertEqual(["64512:15", "64512:16"],
                              bgpvpn['route_distinguishers'])
+            self.assertEqual([net['network']['id']], bgpvpn['networks'])
+
+            assoc1 = self.plugin_db.get_net_assoc(self.ctx, assoc1['id'])
+            self.assertEqual(net['network']['id'], assoc1['network_id'])
+            self.assertEqual(bgpvpn['id'], assoc1['bgpvpn_id'])
+
+            with self.network(name='net2') as net2:
+                # associate network
+                assoc2 = self.plugin_db.create_net_assoc(self.ctx,
+                                                         bgpvpn['id'],
+                                                         net2['network']['id'])
+                # retrieve
+                assoc2 = self.plugin_db.get_net_assoc(self.ctx, assoc2['id'])
+                assoc_list = self.plugin_db.get_net_assocs(self.ctx,
+                                                           bgpvpn['id'])
+                self.assertIn(assoc2, assoc_list)
+                self.assertIn(assoc1, assoc_list)
 
             # update
             self.plugin_db.update_bgpvpn(
@@ -98,12 +115,26 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual(1, len(bgpvpn3))
             self.assertEqual(bgpvpn2['id'], bgpvpn3[0]['id'])
 
+            # assert that deleting a net remove the assoc
+            self._delete('networks', net2['network']['id'])
+            assoc_list = self.plugin_db.get_net_assocs(self.ctx,
+                                                       bgpvpn['id'])
+            self.assertNotIn(assoc2, assoc_list)
+            self.assertRaises(BGPVPNNetAssocNotFound,
+                              self.plugin_db.get_net_assoc,
+                              self.ctx,
+                              assoc2['id'])
             # delete
             self.plugin_db.delete_bgpvpn(self.ctx, bgpvpn['id'])
             # check that delete was effective
             self.assertRaises(BGPVPNNotFound,
                               self.plugin_db.get_bgpvpn,
                               self.ctx, bgpvpn['id'])
+            # check that the assoc has been deleted after deleting the bgpvpn
+            self.assertRaises(BGPVPNNetAssocNotFound,
+                              self.plugin_db.get_net_assoc,
+                              self.ctx,
+                              assoc1['id'])
 
     def test_db_associate_disassociate_net(self):
         with self.network() as net:
@@ -116,7 +147,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, id)
                 self.assertEqual([], bgpvpn['networks'])
 
-    def test_db_find_conn_for_net(self):
+    def test_db_find_bgpvpn_for_net(self):
         with self.network() as net:
             net_id = net['network']['id']
             with self.bgpvpn() as bgpvpn:
@@ -124,8 +155,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 with self.assoc_net(id, net_id=net_id):
                     bgpvpn_list = self.plugin_db.\
                         find_bgpvpns_for_network(self.ctx, net_id)
-                    self.assertEqual([net_id],
-                                     bgpvpn_list[0]['networks'])
+                    self.assertEqual(id, bgpvpn_list[0]['id'])
 
     def test_db_delete_net(self):
         with self.bgpvpn() as bgpvpn:
@@ -135,3 +165,23 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 self.assoc_net(id, net_id=net_id, do_disassociate=False)
             bgpvpn_db = self.plugin_db.get_bgpvpn(self.ctx, id)
             self.assertEqual([], bgpvpn_db['networks'])
+
+#     def test_db_get_assoc_list(self):
+#         with self.bgpvpn() as bgpvpn:
+#             bgpvpn_id = bgpvpn['bgpvpn']['id']
+#             net1 = self.network()
+#             net1_id = net1['network']['id']
+#             net2 = self.network(name='net2')
+#             net2_id = net2['network']['id']
+#             with self.assoc_net(bgpvpn_id, net1_id) as assoc1:
+#                 assoc1_id = assoc1['network_association']['id']
+#                 with self.assoc_net(bgpvpn_id, net2_id) as assoc2:
+#                     assoc2_id = assoc2['network_association']['id']
+#                     bgpvpns_list = self.plugin_db.get_bgpvpns(self.ctx)
+#                     expected_res = [{'id': assoc1_id,
+#                                      'network_id': net1_id,
+#                                      'bgpvpn_id': bgpvpn_id},
+#                                     {'id': assoc2_id,
+#                                      'network_id': net2_id,
+#                                      'bgpvpn_id': bgpvpn_id}]
+#                     self.assertEqual(expected_res, bgpvpns_list)
