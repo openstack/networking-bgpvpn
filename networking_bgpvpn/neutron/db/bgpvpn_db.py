@@ -21,8 +21,11 @@ from neutron.common import exceptions as q_exc
 from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
+
+from neutron.i18n import _
 from neutron.i18n import _LI
 from neutron.i18n import _LW
+
 from oslo_log import log
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
