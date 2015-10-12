@@ -39,8 +39,12 @@ the forwarding plane) you have to:
 	source openrc admin admin
 	neutron bgpvpn-create --route-targets 64512:1 --tenant-id b954279e1e064dc9b8264474cb3e6bd2
 	neutron bgpvpn-list
-	neutron bgpvpn-update 1009a0f326b6403180c18f3caa1430de --name foo
-	neutron bgpvpn-associate foo --network 828cddad3b834e79b79abc1b87b6cca0
+	neutron bgpvpn-update 1009a0f326b6403180c18f3caa1430de --name myBGPVPN
+	neutron bgpvpn-net-assoc-create myBGPVPN --network 828cddad3b834e79b79abc1b87b6cca0
+	# returns <net-assoc-uuid>
+	neutron bgpvpn-net-assoc-list myBGPVPN
+	neutron bgpvpn-net-assoc-show <net-assoc-uuid> myBGPVPN 
+	neutron bgpvpn-net-assoc-delete <net-assoc-uuid> myBGPVPN
 
 To test this framework with the **bagpipe** reference driver, you can follow :doc:`README-bagpipe.rst` .
 

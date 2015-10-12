@@ -19,19 +19,23 @@ from neutronclient.common import extension
 from neutronclient.i18n import _
 from neutronclient.neutron import v2_0 as neutronv20
 
+# To understand how neutronclient extensions work
+# read neutronclient/v2.0/client.py (extend_* methods and _register_extension)
+
 
 class BGPVPN(extension.NeutronClientExtension):
     resource = 'bgpvpn'
-    path = 'bgpvpns'
     resource_plural = '%ss' % resource
-    object_path = '/bgpvpn/%s' % path
-    resource_path = '/bgpvpn/%s/%%s' % path
+
+    object_path = '/bgpvpn/%s' % resource_plural
+    resource_path = '/bgpvpn/%s/%%s' % resource_plural
+
     versions = ['2.0']
 
 
 class BGPVPNCreateUpdateCommon(BGPVPN):
 
-    def add_known_args(self, parser):
+    def add_known_arguments(self, parser):
         """Adds to parser arguments common to create and update commands."""
 
         parser.add_argument(
@@ -81,7 +85,7 @@ class BGPVPNCreate(BGPVPNCreateUpdateCommon,
 
     def add_known_arguments(self, parser):
 
-        BGPVPNCreateUpdateCommon.add_known_args(self, parser)
+        BGPVPNCreateUpdateCommon.add_known_arguments(self, parser)
 
         # type is read-only, hence specific to create
         parser.add_argument(
@@ -91,18 +95,18 @@ class BGPVPNCreate(BGPVPNCreateUpdateCommon,
                    'EVPN (l2), default:l3'))
 
 
-class BGPVPNConnectionUpdate(BGPVPNCreateUpdateCommon,
-                             extension.ClientExtensionUpdate):
+class BGPVPNUpdate(BGPVPNCreateUpdateCommon,
+                   extension.ClientExtensionUpdate):
     shell_command = 'bgpvpn-update'
 
 
-class BGPVPNConnectionDelete(extension.ClientExtensionDelete,
-                             BGPVPN):
+class BGPVPNDelete(extension.ClientExtensionDelete,
+                   BGPVPN):
     shell_command = 'bgpvpn-delete'
 
 
-class BGPVPNConnectionList(extension.ClientExtensionList,
-                           BGPVPN):
+class BGPVPNList(extension.ClientExtensionList,
+                 BGPVPN):
     shell_command = 'bgpvpn-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
@@ -111,72 +115,96 @@ class BGPVPNConnectionList(extension.ClientExtensionList,
     sorting_support = True
 
 
-class BGPVPNConnectionShow(extension.ClientExtensionShow,
-                           BGPVPN):
+class BGPVPNShow(extension.ClientExtensionShow,
+                 BGPVPN):
     shell_command = 'bgpvpn-show'
 
 
-class BGPVPNAssociationCommand(BGPVPN, neutronv20.NeutronCommand):
+# BGPVPN  associations
 
-    shell_command_fmt = 'bgpvpn-%s'
 
-    def success_message(self, bgpvpn_id, associated_rsrc, rsrc_id):
-        return (_('%(command)s %(associated_rsrc)s %(rsrc_id)s to '
-                  'BGPVPN %(bgpvpn)s.') %
-                {'command': self.command.title(),
-                 'associated_rsrc': associated_rsrc,
-                 'rsrc_id': rsrc_id,
-                 'bgpvpn': bgpvpn_id
-                 })
+def _get_bgpvpn_id(client, name_or_id):
+    return neutronv20.find_resourceid_by_name_or_id(
+        client, BGPVPN.resource, name_or_id)
 
-    def call_api(self, neutron_client, bgpvpn_id, associated_rsrc, rsrc_id):
-        if not self.command:
-            raise NotImplementedError()
 
-        body = {'%s_id' % associated_rsrc: rsrc_id}
+class BGPVPNAssociation(object):
 
-        return neutron_client.put("%s/%s_%s" %
-                                  ((self.resource_path % bgpvpn_id),
-                                   self.command, associated_rsrc),
-                                  body=body)
+    def add_known_arguments(self, parser):
+        parser.add_argument('bgpvpn', metavar='BGPVPN',
+                            help=_('ID or name of the BGPVPN.'))
 
-    def get_parser(self, prog_name):
-        parser = super(BGPVPNAssociationCommand, self).get_parser(prog_name)
-        parser.add_argument(
-            'bgpvpn',
-            help=_('ID or name of the BGPVPN.'))
+    def set_extra_attrs(self, parsed_args):
+        self.parent_id = _get_bgpvpn_id(self.get_client(), parsed_args.bgpvpn)
+
+
+# BGPVPN Network associations
+
+
+class BGPVPNNetAssoc(BGPVPNAssociation,
+                     extension.NeutronClientExtension):
+
+    resource = 'network_association'
+    resource_plural = '%ss' % resource
+
+    # (parent_resource set to True so that the
+    # first %s in *_path will be replaced with parent_id)
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False  # network associations have no name
+
+
+class BGPVPNNetAssocCreate(BGPVPNNetAssoc,
+                           extension.ClientExtensionCreate):
+    shell_command = "bgpvpn-net-assoc-create"
+
+    def add_known_arguments(self, parser):
+
+        BGPVPNNetAssoc.add_known_arguments(self, parser)
+
         parser.add_argument(
             '--network', required=True,
             help=_('ID or name of the network.'))
-        # TODO(whoever): add --router argument
-        return parser
 
-    def run(self, parsed_args):
-        self.log.debug('run(%s)' % parsed_args)
-        neutron_client = self.get_client()
-        neutron_client.format = parsed_args.request_format
+    def args2body(self, parsed_args):
 
-        _bgpvpn_id = neutronv20.find_resourceid_by_name_or_id(
-            neutron_client, self.resource, parsed_args.bgpvpn)
+        body = {
+            self.resource: {},
+        }
 
-        _network_id = neutronv20.find_resourceid_by_name_or_id(
-            neutron_client, 'network', parsed_args.network)
+        net = neutronv20.find_resourceid_by_name_or_id(self.get_client(),
+                                                       'network',
+                                                       parsed_args.network)
 
-        # TODO(whoever): support --router argument
-        out = self.call_api(neutron_client, _bgpvpn_id,
-                            'network', _network_id)
-        self.log.debug("out: %s", out)
+        body[self.resource]['network_id'] = net
 
-        print(self.success_message(parsed_args.bgpvpn, 'network',
-                                   parsed_args.network),
-              file=self.app.stdout)
+        return body
 
 
-class BGPVPNAssociate(BGPVPNAssociationCommand):
-    command = 'associate'
-    shell_command = BGPVPNAssociationCommand.shell_command_fmt % command
+class BGPVPNNetAssocUpdate(extension.ClientExtensionUpdate,
+                           BGPVPNNetAssoc):
+    shell_command = "bgpvpn-net-assoc-update"
 
 
-class BGPVPNDisassociate(BGPVPNAssociationCommand):
-    command = 'disassociate'
-    shell_command = BGPVPNAssociationCommand.shell_command_fmt % command
+class BGPVPNNetAssocDelete(extension.ClientExtensionDelete,
+                           BGPVPNNetAssoc):
+    shell_command = "bgpvpn-net-assoc-delete"
+
+
+class BGPVPNNetAssocList(extension.ClientExtensionList,
+                         BGPVPNNetAssoc):
+    shell_command = "bgpvpn-net-assoc-list"
+
+    list_columns = ['id', 'network_id']
+    pagination_support = True
+    sorting_support = True
+
+
+class BGPVPNNetAssocShow(extension.ClientExtensionShow,
+                         BGPVPNNetAssoc):
+    shell_command = "bgpvpn-net-assoc-show"
