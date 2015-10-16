@@ -221,23 +221,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                     context,
                     self._format_bgpvpn(bgpvpn, net_id))
 
-    def associate_network_postcommit(self, context, bgpvpn_id, network_id):
-        if get_network_ports(context,
-                             network_id):
-            bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
-            formated_bgpvpn = self._format_bgpvpn(bgpvpn, network_id)
-            self.agent_rpc.update_bgpvpn(
-                context,
-                formated_bgpvpn)
-
-    def disassociate_network_postcommit(self, context, bgpvpn_id, network_id):
-        if get_network_ports(context,
-                             network_id):
-            LOG.debug("bagpipe disassoc")
-            bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
-            formated_bgpvpn = self._format_bgpvpn(bgpvpn, network_id)
-            self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
-
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
             self._get_bgpvpn_differences(bgpvpn, old_bgpvpn))
@@ -256,6 +239,24 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                         context,
                         self._format_bgpvpn(bgpvpn, net_id)
                     )
+
+    def create_net_assoc_postcommit(self, context, net_assoc):
+        if get_network_ports(context,
+                             net_assoc['network_id']):
+            bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
+            formated_bgpvpn = self._format_bgpvpn(bgpvpn,
+                                                  net_assoc['network_id'])
+            self.agent_rpc.update_bgpvpn(
+                context,
+                formated_bgpvpn)
+
+    def delete_net_assoc_postcommit(self, context, net_assoc):
+        if get_network_ports(context,
+                             net_assoc['network_id']):
+            bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
+            formated_bgpvpn = self._format_bgpvpn(bgpvpn,
+                                                  net_assoc['network_id'])
+            self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
     def _get_port_host(self, port_id):
         # the port dict, as provided by the registry callback

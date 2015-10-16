@@ -53,14 +53,13 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                             "running multiple drivers in parallel is not yet"
                             "supported"))
 
-    def _validate_network_body(self, context, bgpvpn_id, network_body):
-        # Check that the tenant of the network is the same as the tenant of the
-        # bgpvpn resource
-        if (not network_body or 'network_id' not in network_body):
+    def _validate_network(self, context, network):
+        if (not network or 'network_id' not in network):
             msg = 'no network specified'
             raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+
         plugin = manager.NeutronManager.get_plugin()
-        return plugin.get_network(context, network_body['network_id'])
+        return plugin.get_network(context, network['network_id'])
 
     def get_plugin_type(self):
         return constants.BGPVPN
@@ -83,15 +82,32 @@ class BGPVPNPlugin(BGPVPNPluginBase):
     def delete_bgpvpn(self, context, id):
         self.driver.delete_bgpvpn(context, id)
 
-    def associate_network(self, context, id, network_body):
-        net = self._validate_network_body(context, id, network_body)
-        bgpvpn = self.get_bgpvpn(context, id)
+    def create_bgpvpn_network_association(self, context, bgpvpn_id,
+                                          network_association):
+        net_assoc = network_association['network_association']
+        net = self._validate_network(context, net_assoc)
+        bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
         if not net['tenant_id'] == bgpvpn['tenant_id']:
             msg = 'network doesn\'t belong to the bgpvpn owner'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        if not (net_assoc['tenant_id'] == bgpvpn['tenant_id']):
+            msg = 'network association and bgpvpn should belong to\
+                the same tenant'
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        return self.driver.create_net_assoc(context, bgpvpn_id, net['id'])
 
-        self.driver.associate_network(context, id, net['id'])
+    def get_bgpvpn_network_association(self, context, id, bgpvpn_id,
+                                       fields=None):
+        return self.driver.get_net_assoc(context, id, fields)
 
-    def disassociate_network(self, context, id, network_body):
-        net = self._validate_network_body(context, id, network_body)
-        self.driver.disassociate_network(context, id, net['id'])
+    def get_bgpvpn_network_associations(self, context, bgpvpn_id,
+                                        filters=None, fields=None):
+        return self.driver.get_net_assocs(context, bgpvpn_id, filters, fields)
+
+    def update_bgpvpn_network_association(self, context, id, bgpvpn_id,
+                                          network_association):
+        # TODO(matrohon) : raise an unsuppported error
+        pass
+
+    def delete_bgpvpn_network_association(self, context, id, bgpvpn_id):
+        self.driver.delete_net_assoc(context, id)

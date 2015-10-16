@@ -108,20 +108,28 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
 
     @contextlib.contextmanager
     def assoc_net(self, bgpvpn_id, net_id, do_disassociate=True):
-        data = {'network_id': net_id}
-        assoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                              data=data, fmt=self.fmt, id=bgpvpn_id,
-                              action='associate_network')
-        res = assoc_req.get_response(self.ext_api)
+        fmt = 'json'
+        data = {'network_association': {'network_id': net_id,
+                                        'tenant_id': self._tenant_id}}
+        bgpvpn_net_req = self.new_create_request(
+            'bgpvpn/bgpvpns',
+            data=data,
+            fmt=fmt,
+            id=bgpvpn_id,
+            subresource='network_associations')
+        res = bgpvpn_net_req.get_response(self.ext_api)
         if res.status_int >= 400:
             raise webob.exc.HTTPClientError(code=res.status_int)
-        yield
+        assoc = self.deserialize('json', res)
+        yield assoc
         if do_disassociate:
-            disassoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                     data=data, fmt=self.fmt,
-                                     id=bgpvpn_id,
-                                     action='disassociate_network')
-            res = disassoc_req.get_response(self.ext_api)
+            del_req = self.new_delete_request(
+                'bgpvpn/bgpvpns',
+                bgpvpn_id,
+                fmt=self.fmt,
+                subresource='network_associations',
+                sub_id=assoc['network_association']['id'])
+            res = del_req.get_response(self.ext_api)
             if res.status_int >= 400:
                 raise webob.exc.HTTPClientError(code=res.status_int)
 
@@ -131,56 +139,45 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
     def setUp(self):
         super(TestBGPVPNServicePlugin, self).setUp()
 
-    @mock.patch.object(plugin.BGPVPNPlugin, '_validate_network_body')
-    def test_associate_network(self, mock_validate):
+    @mock.patch.object(plugin.BGPVPNPlugin, '_validate_network')
+    def test_bgpvpn_net_assoc_create(self, mock_validate):
         with self.network() as net:
             net_id = net['network']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 mock_validate.return_value = net['network']
                 with self.assoc_net(id, net_id):
-                    net_body = {'network_id': net['network']['id']}
-                    mock_validate.assert_called_once_with(mock.ANY, id,
-                                                          net_body)
-
-    @mock.patch.object(plugin.BGPVPNPlugin, '_validate_network_body')
-    def test_disassociate_network(self, mock_validate, ):
-        with self.network() as net:
-            net_id = net['network']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                mock_validate.return_value = net['network']
-                with self.assoc_net(id, net_id, do_disassociate=False):
-                    mock_validate.reset_mock()
-                    net_body = {'network_id': net['network']['id']}
-                    disassoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                             data=net_body, fmt=self.fmt,
-                                             id=id,
-                                             action='disassociate_network')
-                    res = disassoc_req.get_response(self.ext_api)
-                    if res.status_int >= 400:
-                        raise webob.exc.HTTPClientError(code=res.status_int)
-                    mock_validate.assert_called_once_with(mock.ANY, id,
+                    net_body = {'network_id': net['network']['id'],
+                                'tenant_id': self._tenant_id}
+                    mock_validate.assert_called_once_with(mock.ANY,
                                                           net_body)
 
     def test_associate_empty_network(self):
         with self.bgpvpn() as bgpvpn:
             id = bgpvpn['bgpvpn']['id']
             data = {}
-            assoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                  data=data, fmt=self.fmt, id=id,
-                                  action='associate_network')
-            res = assoc_req.get_response(self.ext_api)
+            bgpvpn_net_req = self.new_create_request(
+                'bgpvpn/bgpvpns',
+                data=data,
+                fmt=self.fmt,
+                id=id,
+                subresource='network_associations')
+            res = bgpvpn_net_req.get_response(self.ext_api)
             self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_associate_unknown_network(self):
         with self.bgpvpn() as bgpvpn:
             id = bgpvpn['bgpvpn']['id']
-            data = {'network_id': 'unknown_uuid'}
-            assoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                  data=data, fmt=self.fmt, id=id,
-                                  action='associate_network')
-            res = assoc_req.get_response(self.ext_api)
+            net_id = _uuid()
+            data = {'network_association': {'network_id': net_id,
+                                            'tenant_id': self._tenant_id}}
+            bgpvpn_net_req = self.new_create_request(
+                'bgpvpn/bgpvpns',
+                data=data,
+                fmt=self.fmt,
+                id=id,
+                subresource='network_associations')
+            res = bgpvpn_net_req.get_response(self.ext_api)
             self.assertEqual(res.status_int, webob.exc.HTTPNotFound.code)
 
     def test_associate_unauthorized_net(self):
@@ -188,11 +185,31 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             net_id = net['network']['id']
             with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
-                data = {'network_id': net_id}
-                assoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                      data=data, fmt=self.fmt, id=id,
-                                      action='associate_network')
-                res = assoc_req.get_response(self.ext_api)
+                data = {'network_association': {'network_id': net_id,
+                                                'tenant_id': self._tenant_id}}
+                bgpvpn_net_req = self.new_create_request(
+                    'bgpvpn/bgpvpns',
+                    data=data,
+                    fmt=self.fmt,
+                    id=id,
+                    subresource='network_associations')
+                res = bgpvpn_net_req.get_response(self.ext_api)
+                self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+
+    def test_net_assoc_belong_to_diff_tenant(self):
+        with self.network() as net:
+            net_id = net['network']['id']
+            with self.bgpvpn() as bgpvpn:
+                id = bgpvpn['bgpvpn']['id']
+                data = {'network_association': {'network_id': net_id,
+                                                'tenant_id': 'another_tenant'}}
+                bgpvpn_net_req = self.new_create_request(
+                    'bgpvpn/bgpvpns',
+                    data=data,
+                    fmt=self.fmt,
+                    id=id,
+                    subresource='network_associations')
+                res = bgpvpn_net_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
 
@@ -274,44 +291,71 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                 mock.ANY, old_bgpvpn, new_bgpvpn)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
-                       'associate_network_postcommit')
-    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
-                       'associate_network')
-    def test_associate_network(self, mock_assoc_db, mock_assoc_postcommit):
-        with self.network() as net:
-            net_id = net['network']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                with self.assoc_net(id, net_id=net_id):
-                    mock_assoc_db.assert_called_once_with(mock.ANY,
-                                                          id,
-                                                          net_id)
+                       'create_net_assoc_postcommit')
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'create_net_assoc')
+    def test_create_bgpvpn_net_assoc(self, mock_db_create_assoc,
+                                     mock_post_commit):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.network() as net:
+                net_id = net['network']['id']
+                assoc_id = _uuid()
+                net_assoc = {'id': assoc_id,
+                             'network_id': net_id,
+                             'bgpvpn_id': bgpvpn_id}
+                mock_db_create_assoc.return_value = net_assoc
+                with self.assoc_net(bgpvpn_id, net_id=net_id,
+                                    do_disassociate=False):
+                    mock_db_create_assoc.assert_called_once_with(mock.ANY,
+                                                                 bgpvpn_id,
+                                                                 net_id)
+                    mock_post_commit.assert_called_once_with(mock.ANY,
+                                                             net_assoc)
 
-                    mock_assoc_postcommit.assert_called_once_with(mock.ANY,
-                                                                  id,
-                                                                  net_id)
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_net_assoc')
+    def test_get_bgpvpn_net_assoc(self, mock_get_db):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.network() as net:
+                net_id = net['network']['id']
+                with self.assoc_net(bgpvpn_id, net_id=net_id) as assoc:
+                    assoc_id = assoc['network_association']['id']
+                    res = 'bgpvpn/bgpvpns/' + bgpvpn_id + \
+                          '/network_associations'
+                    self._show(res, assoc_id)
+                    mock_get_db.assert_called_once_with(mock.ANY,
+                                                        assoc_id,
+                                                        [])
+
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_net_assocs')
+    def test_get_bgpvpn_net_assoc_list(self, mock_get_db):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.network() as net:
+                net_id = net['network']['id']
+                with self.assoc_net(bgpvpn_id, net_id=net_id):
+                    res = 'bgpvpn/bgpvpns/' + bgpvpn_id + \
+                          '/network_associations'
+                    self._list(res)
+                    mock_get_db.assert_called_once_with(mock.ANY,
+                                                        bgpvpn_id,
+                                                        mock.ANY, mock.ANY)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
-                       'disassociate_network_postcommit')
-    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
-                       'disassociate_network')
-    def test_disassociate_network(self, mock_disassoc_db,
-                                  mock_disassoc_postcommit):
-        with self.network() as net:
-            net_id = net['network']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                data = {'network_id': net_id}
-                disassoc_req = self._req('PUT', 'bgpvpn/bgpvpns',
-                                         data=data, fmt=self.fmt, id=id,
-                                         action='disassociate_network')
-                res = disassoc_req.get_response(self.ext_api)
-                if res.status_int >= 400:
-                    raise webob.exc.HTTPClientError(code=res.status_int)
-                mock_disassoc_db.assert_called_once_with(mock.ANY,
-                                                         id,
-                                                         net_id)
-
-                mock_disassoc_postcommit.assert_called_once_with(mock.ANY,
-                                                                 id,
-                                                                 net_id)
+                       'delete_net_assoc_postcommit')
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'delete_net_assoc')
+    def test_delete_bgpvpn_net_assoc(self, mock_db_del, mock_postcommit):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.network() as net:
+                net_id = net['network']['id']
+                with self.assoc_net(bgpvpn_id, net_id=net_id) as assoc:
+                    assoc_id = assoc['network_association']['id']
+                    net_assoc = {'id': assoc_id,
+                                 'network_id': net_id,
+                                 'bgpvpn_id': bgpvpn_id}
+                    mock_db_del.return_value = net_assoc
+            mock_db_del.assert_called_once_with(mock.ANY,
+                                                assoc_id)
+            mock_postcommit.assert_called_once_with(mock.ANY,
+                                                    net_assoc)

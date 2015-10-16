@@ -20,7 +20,9 @@ import six
 from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
+from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
+from neutron import manager
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
 from oslo_log import log
@@ -127,6 +129,28 @@ RESOURCE_ATTRIBUTE_MAP = {
     },
 }
 
+SUB_RESOURCE_ATTRIBUTE_MAP = {
+    'network_associations': {
+        'parent': {'collection_name': 'bgpvpns',
+                   'member_name': 'bgpvpn'},
+        'parameters': {
+            'id': {'allow_post': False, 'allow_put': False,
+                   'validate': {'type:uuid': None},
+                   'is_visible': True,
+                   'primary_key': True},
+            'tenant_id': {'allow_post': True, 'allow_put': False,
+                          'validate': {'type:string': None},
+                          'required_by_policy': True,
+                          'is_visible': True,
+                          'enforce_policy': True},
+            'network_id': {'allow_post': True, 'allow_put': False,
+                           'validate': {'type:uuid': None},
+                           'is_visible': True,
+                           'enforce_policy': True}
+        }
+    }
+}
+
 
 class Bgpvpn(extensions.ExtensionDescriptor):
 
@@ -154,16 +178,36 @@ class Bgpvpn(extensions.ExtensionDescriptor):
         plural_mappings['import_targets'] = 'import_target'
         plural_mappings['export_targets'] = 'export_target'
         plural_mappings['route_distinguishers'] = 'route_distinguishers'
+        plural_mappings['network_associations'] = 'network_association'
         attr.PLURALS.update(plural_mappings)
-        action_map = {'bgpvpn':
-                      {'associate_network': 'PUT',
-                       'disassociate_network': 'PUT'}}
-        return resource_helper.build_resource_info(plural_mappings,
-                                                   RESOURCE_ATTRIBUTE_MAP,
-                                                   constants.BGPVPN,
-                                                   action_map=action_map,
-                                                   register_quota=True,
-                                                   translate_name=True)
+        resources = resource_helper.build_resource_info(plural_mappings,
+                                                        RESOURCE_ATTRIBUTE_MAP,
+                                                        constants.BGPVPN,
+                                                        register_quota=True,
+                                                        translate_name=True)
+        plugin = manager.NeutronManager.get_service_plugins()[constants.BGPVPN]
+        for collection_name in SUB_RESOURCE_ATTRIBUTE_MAP:
+            # Special handling needed for sub-resources with 'y' ending
+            # (e.g. proxies -> proxy)
+            resource_name = collection_name[:-1]
+            parent = SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].get('parent')
+            params = SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].get(
+                'parameters')
+
+            controller = base.create_resource(collection_name, resource_name,
+                                              plugin, params,
+                                              allow_bulk=True,
+                                              parent=parent,
+                                              allow_pagination=True,
+                                              allow_sorting=True)
+
+            resource = extensions.ResourceExtension(
+                collection_name,
+                controller, parent,
+                path_prefix='bgpvpn',
+                attr_map=params)
+            resources.append(resource)
+        return resources
 
     @classmethod
     def get_plugin_interface(cls):
@@ -213,9 +257,25 @@ class BGPVPNPluginBase(ServicePluginBase):
         pass
 
     @abc.abstractmethod
-    def associate_network(self, context, id, network_body):
+    def create_bgpvpn_network_association(self, context, bgpvpn_id,
+                                          network_association):
         pass
 
     @abc.abstractmethod
-    def disassociate_network(self, context, id, network_body):
+    def get_bgpvpn_network_association(self, context, id, bgpvpn_id,
+                                       fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_network_associations(self, context, bgpvpn_id,
+                                        filters=None, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def update_bgpvpn_network_association(self, context, id, bgpvpn_id,
+                                          network_association):
+        pass
+
+    @abc.abstractmethod
+    def delete_bgpvpn_network_association(self, context, id, bgpvpn_id):
         pass
