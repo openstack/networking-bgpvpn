@@ -1,0 +1,48 @@
+blockdiag components-sdn {
+       span_width = 40;
+       shadow_style=none;
+       default_shape = roundedbox;
+
+       group bgpvpn {
+          label="BGPVPN service plugin";
+          color=red;
+
+          api[label="BGPVPN API"];
+          db[shape=flowchart.database,label="DB"];
+          driver;
+       }
+
+       group backend_g {
+          label="Backend";
+          color=orange;
+
+          comment[label="can be e.g.\nan 'SDN' solution...",shape=note,color=orange,style=none];
+
+          backend[label="...",shape=box,stacked,color=none];
+          vswitches[stacked,label="vswitches\nand/or routers"];
+          bgpspeakers[stacked,label="MP-BGP Speakers"];
+       }
+
+       group routers {
+          color=lightgrey;
+          shape=line;
+          style=dashed;
+
+          bgppeers[label="BGP Peers",stacked,color=green];
+          mplsrouters[label="MPLS routers"];
+          bgppeers -- mplsrouters[style=dotted,folded];
+       }
+
+       admin_or_tenant [shape=actor,label="admin, tenant"];
+       admin_or_tenant -> api[color=blue];
+
+       api -> driver ;
+       api -> db[folded];
+       driver -> db[folded];
+       driver -> backend;
+       backend <-> bgpspeakers;
+       bgpspeakers <-> bgppeers[color=green,label="MP-BGP",textcolor=green];
+       backend -> vswitches[folded];
+
+       vswitches <-> mplsrouters[label="MPLS or ..",folded];
+}

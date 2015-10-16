@@ -19,12 +19,13 @@ implementation based on an Open Source BGP implementation is also provided.
 * Free software: Apache license
 * Source: http://git.openstack.org/cgit/openstack/networking-bgpvpn
 * Bugs: http://bugs.launchpad.net/bgpvpn
+* Doc: http://docs.openstack.org/developer/networking-bgpvpn
 
-Quick start
------------
+Devstack Quick start
+--------------------
 
 To test this framework with the **dummy** driver (not doing any real interaction with BGP nor
-the forwarding plane) you have to:
+the forwarding plane) you can:
 
 * install devstack
 
@@ -42,5 +43,4 @@ the forwarding plane) you have to:
 	neutron bgpvpn-update 1009a0f326b6403180c18f3caa1430de --name foo
 	neutron bgpvpn-associate foo --network 828cddad3b834e79b79abc1b87b6cca0
 
-To test this framework with the **bagpipe** reference driver, you can follow :doc:`README-bagpipe.rst` .
 

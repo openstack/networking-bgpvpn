@@ -1,11 +1,41 @@
-How to use bagpipe driver for the BGPVPN plugin, jointly with the openvswitch ML2 mech driver ?
------------------------------------------------------------------------------------------------
+..
+ This work is licensed under a Creative Commons Attribution 3.0 Unported
+ License.
+
+ http://creativecommons.org/licenses/by/3.0/legalcode
+
+=====================
+BGPVPN bagpipe driver
+=====================
+
+Introduction
+------------
 
 The **bagpipe** driver for the BGPVPN service plugin is designed to work jointly with the openvswitch
-ML2 mechanism driver.  It relies on the use of the _bagpipe-bgp BGP VPN implementation on compute node
+ML2 mechanism driver.  
+
+It relies on the use of the _bagpipe-bgp BGP VPN implementation on compute node
 and the MPLS implementation in OpenVSwitch.
 
-In devstack:
+Architecture overview
+---------------------
+
+The bagpipe driver for the BGPVPN service plugin interacts with the openvswitch agent on compute
+node, which is extended to support new RPCs to trigger the local configuration on compute nodes
+of BGP VPN instances and of their MPLS dataplane.
+
+  .. blockdiag:: overview.blockdiag
+
+How to use ?
+------------
+
+On an Openstack Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[TBC (package installation + config)]
+
+In devstack
+~~~~~~~~~~~
 
 * follow the instruction in README.rst
 
