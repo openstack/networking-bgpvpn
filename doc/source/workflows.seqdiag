@@ -1,0 +1,43 @@
+diagram {
+        span_width = 40;
+
+        os-admin [label="Openstack Admin",color="lightgray"];
+        tenant [label="Openstack Tenant X",color="lightblue"];
+        api [label="Neutron BGPVPN API",color="red"];
+        driver [label="BGPVPN Driver for\nbackend Foo",color="red"];
+        backend [label="BGPVPN Backend Foo\n",color="orange"];
+        bgppeers [label="BGP Peers",color="green"];
+
+        backend --> bgppeers[label="BGP peerings",color=green];
+        backend <-- bgppeers[rightnote="BGP sessions live in parallel\nto BGPVPN service plugin",color=green];
+
+        os-admin  -> api [label="POST: create a BGP VPN\nresource corresponding to a\nBGP VPN",color=blue];
+                     api  -> driver [leftnote="persist resource"];
+                             driver --> backend [label="(driver-backend exchanges\nvarying bw. backends)"];
+                             driver <-- backend;
+                     api <-- driver;
+        os-admin <-- api [label="BGPVPN Y",color=blue];
+        os-admin  -> api [label="UPDATE: set tenant X as\nowner of BGPVPN Y",color=blue];
+                     api  -> driver;
+                             driver --> backend [label="(?)"];
+                             driver <-- backend;
+                     api <-- driver;
+        os-admin <-- api;
+
+        tenant  -> api [label="GET:Learns that it\nowns BGPVPN Y",color=blue];
+                     api  -> driver;
+                             driver --> backend [label="(?)"];
+                             driver <-- backend;
+                     api <-- driver;
+        tenant <-- api;
+        tenant  -> api [label="UPDATE:Associate BGPVPN Y to\nnetwork Z",color=blue];
+
+        api -> driver;
+               driver -> backend [rightnote="now ready to interconnect\nNetwork Z and BGPVPN Y"];
+               driver <-- backend;
+                          backend  -> bgppeers[label="MP-BGP VPNv4 routes\ntoward Network Z exported\nto BGP VPN Y",color=green];
+                          backend <-- bgppeers[label="MP-BGP VPNv4 routes\nfrom BGP VPN Y prefixes",
+                                               leftnote="forwarding plane setup\n(e.g. MPLS/GRE)",color=green];
+        api <-- driver;
+}
+

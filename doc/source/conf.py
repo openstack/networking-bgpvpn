@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.abspath('../..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinxcontrib.blockdiag',
+    'sphinxcontrib.seqdiag',
     #'sphinx.ext.intersphinx',
     'oslosphinx'
 ]
@@ -73,3 +75,10 @@ latex_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 #intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+#blockdiag_antialias = True
+seq_antialias = True
+seqdiag_html_image_format = "svg"
+blockdiag_html_image_format = "svg"
+
