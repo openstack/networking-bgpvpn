@@ -68,12 +68,12 @@ In devstack
 
     * install networking-bagpipe-l2_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
-        enable_plugin networking-bagpipe-l2 git://git.openstack.org/stackforge/networking-bagpipe-l2.git
+        enable_plugin networking-bagpipe-l2 git://git.openstack.org/openstack/networking-bagpipe-l2.git
 
     * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
 
 .. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
-.. _networking-bagpipe-l2: https://github.com/stackforge/networking-bagpipe-l2
+.. _networking-bagpipe-l2: https://github.com/openstack/networking-bagpipe-l2
 
 
 
