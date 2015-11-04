@@ -51,8 +51,9 @@ def upgrade(active_plugins=None, options=None):
     op.create_table(
         'bgpvpn_network_associations',
         sa.Column('id', sa.String(length=36), nullable=False),
+        sa.Column('tenant_id', sa.String(length=255), nullable=False),
         sa.Column('bgpvpn_id', sa.String(36), nullable=False),
-        sa.Column('network_id', sa.String(36), nullable=True),
+        sa.Column('network_id', sa.String(36), nullable=False),
         sa.ForeignKeyConstraint(['network_id'], ['networks.id'],
                                 ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['bgpvpn_id'], ['bgpvpns.id'],

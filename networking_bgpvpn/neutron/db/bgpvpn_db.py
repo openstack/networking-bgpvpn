@@ -31,7 +31,8 @@ from sqlalchemy.orm import exc
 LOG = log.getLogger(__name__)
 
 
-class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId):
+class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId,
+                           models_v2.HasTenant):
     """Represents the association between a bgpvpn and a network."""
     __tablename__ = 'bgpvpn_network_associations'
 
@@ -123,19 +124,15 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._fields(res, fields)
 
     def create_bgpvpn(self, context, bgpvpn):
-        bgpvpn = bgpvpn['bgpvpn']
-
         rt = self._rtrd_list2str(bgpvpn['route_targets'])
         i_rt = self._rtrd_list2str(bgpvpn['import_targets'])
         e_rt = self._rtrd_list2str(bgpvpn['export_targets'])
         rd = self._rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
 
-        tenant_id = self._get_tenant_id_for_create(context, bgpvpn)
-
         with context.session.begin(subtransactions=True):
             bgpvpn_db = BGPVPN(
                 id=uuidutils.generate_uuid(),
-                tenant_id=tenant_id,
+                tenant_id=bgpvpn['tenant_id'],
                 name=bgpvpn['name'],
                 type=bgpvpn['type'],
                 route_targets=rt,
@@ -164,9 +161,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._make_bgpvpn_dict(bgpvpn_db, fields)
 
     def update_bgpvpn(self, context, id, bgpvpn):
-        bgpvpn = bgpvpn['bgpvpn']
         fields = None
-
         with context.session.begin(subtransactions=True):
             bgpvpn_db = self._get_bgpvpn(context, id)
             if bgpvpn:
@@ -209,6 +204,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
     def _make_net_assoc_dict(self, net_assoc_db, fields=None):
         res = {'id': net_assoc_db['id'],
+               'tenant_id': net_assoc_db['tenant_id'],
                'bgpvpn_id': net_assoc_db['bgpvpn_id'],
                'network_id': net_assoc_db['network_id']}
         return self._fields(res, fields)
@@ -222,14 +218,12 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         except exc.NoResultFound:
             raise BGPVPNNetAssocNotFound(id=assoc_id, bgpvpn_id=bgpvpn_id)
 
-    def create_net_assoc(self, context, bgpvpn_id, network_id):
-        LOG.info(_LI("associating network %(net)s to bgpvpn %(bgpvpn)s"),
-                 net=network_id, bgpvpn=bgpvpn_id)
-        if not network_id:
-            return
+    def create_net_assoc(self, context, bgpvpn_id, net_assoc):
         with context.session.begin(subtransactions=True):
-            net_assoc_db = BGPVPNNetAssociation(bgpvpn_id=bgpvpn_id,
-                                                network_id=network_id)
+            net_assoc_db = BGPVPNNetAssociation(
+                tenant_id=net_assoc['tenant_id'],
+                bgpvpn_id=bgpvpn_id,
+                network_id=net_assoc['network_id'])
             context.session.add(net_assoc_db)
         return self._make_net_assoc_dict(net_assoc_db)
 

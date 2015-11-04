@@ -111,6 +111,7 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
         fmt = 'json'
         data = {'network_association': {'network_id': net_id,
                                         'tenant_id': self._tenant_id}}
+#         data = {'network_association': {'network_id': net_id}}
         bgpvpn_net_req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -222,12 +223,12 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                        'create_bgpvpn_postcommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'create_bgpvpn')
     def test_create_bgpvpn(self, mock_create_db, mock_create_postcommit):
-        mock_create_db.return_value = self.converted_data
+        mock_create_db.return_value = self.converted_data['bgpvpn']
         with self.bgpvpn(do_delete=False):
-            mock_create_db.assert_called_once_with(mock.ANY,
-                                                   self.converted_data)
-            mock_create_postcommit.assert_called_once_with(mock.ANY,
-                                                           self.converted_data)
+            mock_create_db.assert_called_once_with(
+                mock.ANY, self.converted_data['bgpvpn'])
+            mock_create_postcommit.assert_called_once_with(
+                mock.ANY, self.converted_data['bgpvpn'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
@@ -286,7 +287,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                          new_data)
 
             mock_update_db.assert_called_once_with(
-                mock.ANY, bgpvpn['bgpvpn']['id'], new_data)
+                mock.ANY, bgpvpn['bgpvpn']['id'], new_data['bgpvpn'])
             mock_update_postcommit.assert_called_once_with(
                 mock.ANY, old_bgpvpn, new_bgpvpn)
 
@@ -300,17 +301,18 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             with self.network() as net:
                 net_id = net['network']['id']
                 assoc_id = _uuid()
-                net_assoc = {'id': assoc_id,
-                             'network_id': net_id,
-                             'bgpvpn_id': bgpvpn_id}
-                mock_db_create_assoc.return_value = net_assoc
+                data = {'tenant_id': self._tenant_id,
+                        'network_id': net_id}
+                net_assoc_dict = copy.copy(data)
+                net_assoc_dict.update({'id': assoc_id,
+                                       'bgpvpn_id': bgpvpn_id})
+                mock_db_create_assoc.return_value = net_assoc_dict
                 with self.assoc_net(bgpvpn_id, net_id=net_id,
                                     do_disassociate=False):
-                    mock_db_create_assoc.assert_called_once_with(mock.ANY,
-                                                                 bgpvpn_id,
-                                                                 net_id)
+                    mock_db_create_assoc.assert_called_once_with(
+                        mock.ANY, bgpvpn_id, data)
                     mock_post_commit.assert_called_once_with(mock.ANY,
-                                                             net_assoc)
+                                                             net_assoc_dict)
 
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_net_assoc')
     def test_get_bgpvpn_net_assoc(self, mock_get_db):
