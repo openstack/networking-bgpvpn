@@ -182,6 +182,7 @@ class BGPVPNNetAssocCreate(BGPVPNNetAssoc,
                                                        parsed_args.network)
 
         body[self.resource]['network_id'] = net
+        neutronv20.update_dict(parsed_args, body[self.resource], ['tenant_id'])
 
         return body
 
