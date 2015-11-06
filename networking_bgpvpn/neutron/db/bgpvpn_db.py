@@ -73,11 +73,6 @@ class BGPVPNNetAssocNotFound(q_exc.NotFound):
     message = _("BGPVPN network association %(id)s could not be found")
 
 
-class BGPVPNMissingRouteTarget(q_exc.BadRequest):
-    message = _("BGPVPN could not be created. Missing one of"
-                " route_targets, import_targets or export_targets attribute")
-
-
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGPVPN service plugin database class using SQLAlchemy models."""
 
@@ -129,15 +124,10 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     def create_bgpvpn(self, context, bgpvpn):
         bgpvpn = bgpvpn['bgpvpn']
 
-        # Check that route_targets is not empty
-        if (not bgpvpn['route_targets']):
-            raise BGPVPNMissingRouteTarget
-        else:
-            rt = self._rtrd_list2str(bgpvpn['route_targets'])
-            i_rt = self._rtrd_list2str(bgpvpn['import_targets'])
-            e_rt = self._rtrd_list2str(bgpvpn['export_targets'])
-            rd = self._rtrd_list2str(
-                bgpvpn.get('route_distinguishers', ''))
+        rt = self._rtrd_list2str(bgpvpn['route_targets'])
+        i_rt = self._rtrd_list2str(bgpvpn['import_targets'])
+        e_rt = self._rtrd_list2str(bgpvpn['export_targets'])
+        rd = self._rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
 
         tenant_id = self._get_tenant_id_for_create(context, bgpvpn)
 
