@@ -14,10 +14,8 @@
 #    under the License.
 
 from neutron.common import exceptions as n_exc
-from neutron.db import servicetype_db as st_db
 from neutron.i18n import _LI
 from neutron import manager
-from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 from oslo_log import log
 
@@ -34,12 +32,14 @@ class BGPVPNPlugin(BGPVPNPluginBase):
     def __init__(self):
         super(BGPVPNPlugin, self).__init__()
 
-        # Need to look into /etc/neutron/networking_bgpvpn.conf for
-        # service_provider definitions:
-        service_type_manager = st_db.ServiceTypeManager.get_instance()
-        service_type_manager.add_provider_configuration(
-            constants.BGPVPN,
-            pconf.ProviderConfiguration('networking_bgpvpn'))
+        # (enikher) In kilo service provider is set in
+        # /etc/neutron/neutron.conf
+        # # Need to look into /etc/neutron/networking_bgpvpn.conf for
+        # # service_provider definitions:
+        # service_type_manager = st_db.ServiceTypeManager.get_instance()
+        # service_type_manager.add_provider_configuration(
+        #    constants.BGPVPN,
+        #    pconf.ProviderConfiguration('networking_bgpvpn'))
 
         # Load the default driver
         drivers, default_provider = service_base.load_drivers(constants.BGPVPN,

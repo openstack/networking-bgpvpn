@@ -228,7 +228,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
                                      fmt=self.fmt))
 
         self.instance.get_bgpvpn_network_association.assert_called_with(
-            mock.ANY, self.assoc_id, self.bgpvpn_id, fields=mock.ANY
+            mock.ANY, self.assoc_id, bgpvpn_id=self.bgpvpn_id, fields=mock.ANY
         )
         self.assertEqual(res.status_int, exc.HTTPOk.code)
         res = self.deserialize(res)
@@ -243,5 +243,5 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
                                         id=self.assoc_id,
                                         fmt=self.fmt))
         self.instance.delete_bgpvpn_network_association.assert_called_with(
-            mock.ANY, self.assoc_id, self.bgpvpn_id)
+            mock.ANY, self.assoc_id, bgpvpn_id=self.bgpvpn_id)
         self.assertEqual(res.status_int, exc.HTTPNoContent.code)

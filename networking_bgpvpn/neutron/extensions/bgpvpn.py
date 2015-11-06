@@ -38,6 +38,10 @@ RT_REGEX = (r'^((?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]'
             r'\d|6553[0-5]):(?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d'
             r'{2}|655[0-2]\d|6553[0-5]))$')
 
+# (enikher) Hack around neutrons fixed plugins behaviour
+n_const.ALLOWED_SERVICES.append('BGPVPN')
+n_const.COMMON_PREFIXES['BGPVPN'] = '/bgpvpn'
+
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
 n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
 
@@ -169,6 +173,10 @@ class Bgpvpn(extensions.ExtensionDescriptor):
     @classmethod
     def get_updated(cls):
         return "2014-06-10T17:00:00-00:00"
+
+    @classmethod
+    def get_namespace(cls):
+        return "None"
 
     @classmethod
     def get_resources(cls):
