@@ -20,24 +20,8 @@ neutron_installed=$(echo "import neutron" | python 2>/dev/null ; echo $?)
 
 set -e
 
-if [ $neutron_installed -eq 0 ]; then
-    echo "ALREADY INSTALLED" > /tmp/tox_install.txt
-    echo "Neutron already installed; using existing package"
-elif [ -x "$ZUUL_CLONER" ]; then
-    echo "ZUUL CLONER" > /tmp/tox_install.txt
-    cwd=$(/bin/pwd)
-    cd /tmp
-    $ZUUL_CLONER --cache-dir \
-        /opt/git \
-        git://git.openstack.org \
-        openstack/neutron
-    cd openstack/neutron
-    pip install -e .
-    cd "$cwd"
-else
-    echo "PIP HARDCODE" > /tmp/tox_install.txt
-    pip install -U -egit+https://git.openstack.org/openstack/neutron@stable/liberty#egg=neutron
-fi
-
+# (enikher) To be indepented from already installed neutron (master)
+echo "PIP HARDCODE" > /tmp/tox_install.txt
+pip install -U -egit+https://git.openstack.org/openstack/neutron@stable/kilo#egg=neutron
 pip install -U $*
 exit $?

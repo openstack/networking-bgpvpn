@@ -2,12 +2,12 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-pbr>=1.6
+pbr!=0.7,<1.0,>=0.6
 Babel>=1.3
-oslo.concurrency>=2.3.0 # Apache-2.0
-oslo.messaging!=1.17.0,!=1.17.1,!=2.6.0,!=2.6.1,>=1.16.0 # Apache-2.0
-oslo.service>=0.9.0 # Apache-2.0
+oslo.concurrency<1.9.0,>=1.8.2 # Apache-2.0
+oslo.messaging<1.9.0,>=1.8.0 # Apache-2.0
+oslo.service
 sphinxcontrib-blockdiag
 sphinxcontrib-seqdiag
 
-
+oslo.utils!=1.4.1,<1.5.0,>=1.4.0 # Apache-2.0
