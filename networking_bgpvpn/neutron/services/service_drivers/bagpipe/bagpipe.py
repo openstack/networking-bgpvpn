@@ -28,7 +28,7 @@ from oslo_log import log as logging
 
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
-from networking_bagpipe_l2.agent.bgpvpn import rpc_client
+from networking_bagpipe.agent.bgpvpn import rpc_client
 
 LOG = logging.getLogger(__name__)
 

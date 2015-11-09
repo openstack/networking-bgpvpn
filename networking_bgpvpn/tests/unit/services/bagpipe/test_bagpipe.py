@@ -27,7 +27,7 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
 
     def setUp(self):
         self.mocked_bagpipeAPI = mock.patch(
-            'networking_bagpipe_l2.agent.bgpvpn.rpc_client'
+            'networking_bagpipe.agent.bgpvpn.rpc_client'
             '.BGPVPNAgentNotifyApi').start().return_value
 
         provider = ('networking_bgpvpn.neutron.services.service_drivers.'

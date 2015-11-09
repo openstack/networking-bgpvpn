@@ -42,7 +42,7 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     validate_local_ip
 
-from networking_bagpipe_l2.agent import bagpipe_bgp_agent
+from networking_bagpipe.agent import bagpipe_bgp_agent
 
 LOG = logging.getLogger(__name__)
 cfg.CONF.import_group('AGENT', 'neutron.plugins.ml2.drivers.openvswitch.'
