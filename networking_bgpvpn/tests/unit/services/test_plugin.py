@@ -325,6 +325,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     self._show(res, assoc_id)
                     mock_get_db.assert_called_once_with(mock.ANY,
                                                         assoc_id,
+                                                        bgpvpn_id,
                                                         [])
 
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_net_assocs')
@@ -356,6 +357,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                  'bgpvpn_id': bgpvpn_id}
                     mock_db_del.return_value = net_assoc
             mock_db_del.assert_called_once_with(mock.ANY,
-                                                assoc_id)
+                                                assoc_id,
+                                                bgpvpn_id)
             mock_postcommit.assert_called_once_with(mock.ANY,
                                                     net_assoc)

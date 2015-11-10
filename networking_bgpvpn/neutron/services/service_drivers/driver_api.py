@@ -59,7 +59,7 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def get_net_assoc(self, context, id, fields=None):
+    def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         pass
 
     @abc.abstractmethod
@@ -67,7 +67,7 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def delete_net_assoc(self, context, id):
+    def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
         pass
 
 
@@ -75,7 +75,7 @@ class BGPVPNDriverBase(object):
 class BGPVPNDriverDBMixin(BGPVPNDriverBase):
     """BGPVPNDriverDB Mixin to provision the database on behalf of the driver
 
-    That driver interface persists BGPVPN data in its database and forward
+    That driver interface persists BGPVPN data in its database and forwards
     the result to postcommit methods
     """
 
@@ -115,15 +115,18 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         self.create_net_assoc_postcommit(context, assoc)
         return assoc
 
-    def get_net_assoc(self, context, assoc_id, fields=None):
-        return self.bgpvpn_db.get_net_assoc(context, assoc_id, fields)
+    def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        return self.bgpvpn_db.get_net_assoc(context, assoc_id, bgpvpn_id,
+                                            fields)
 
     def get_net_assocs(self, context, bgpvpn_id, filters=None, fields=None):
         return self.bgpvpn_db.get_net_assocs(context, bgpvpn_id,
                                              filters, fields)
 
-    def delete_net_assoc(self, context, id):
-        net_assoc = self.bgpvpn_db.delete_net_assoc(context, id)
+    def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
+        net_assoc = self.bgpvpn_db.delete_net_assoc(context,
+                                                    assoc_id,
+                                                    bgpvpn_id)
         self.delete_net_assoc_postcommit(context, net_assoc)
 
     @abc.abstractmethod
