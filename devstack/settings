@@ -2,8 +2,5 @@ NETWORKING_BGPVPN_DIR="$DEST/networking-bgpvpn"
 NETWORKING_BGPVPN_CONF="$NEUTRON_CONF_DIR/networking_bgpvpn.conf"
 BGPVPN_PLUGIN_CLASS="networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
 
-NETWORKING_BGPVPN_DRIVER_DUMMY="BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default"
-NETWORKING_BGPVPN_DRIVER_BAGPIPE="BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
-
-NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-$NETWORKING_BGPVPN_DRIVER_DUMMY}
+NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default}
 

@@ -45,7 +45,7 @@ In devstack
 
   * add the following to enable the BaGPipe driver for the BGPVPN service plugin::
 
-     NETWORKING_BGPVPN_DRIVER=$NETWORKING_BGPVPN_DRIVER_BAGPIPE
+     NETWORKING_BGPVPN_DRIVER="BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
 
 * on a control node, if you want to run the Fake Route-Reflector there::
 
