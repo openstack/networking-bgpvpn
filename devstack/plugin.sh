@@ -20,6 +20,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
                 mkdir -v -p $(dirname $NETWORKING_BGPVPN_CONF) && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/networking_bgpvpn.conf $NETWORKING_BGPVPN_CONF
                 inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
                 iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
+                bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
         fi
 fi
 if [[ "$1" == "unstack" ]]; then

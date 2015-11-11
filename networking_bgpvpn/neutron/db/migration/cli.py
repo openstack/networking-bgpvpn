@@ -1,5 +1,3 @@
-# Copyright 2015 Orange
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -11,21 +9,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
 
-"""contract initial
-Revision ID: 180baa4183e0
-Revises: start_networking_bgpvpn
-Create Date: 2015-10-01 17:35:11.000000
-"""
-
-from neutron.db.migration import cli
-
-# revision identifiers, used by Alembic.
-revision = '180baa4183e0'
-down_revision = 'start_networking_bgpvpn'
-branch_labels = (cli.CONTRACT_BRANCH,)
+from neutron.db.migration.cli import alembic_config
+from neutron.db.migration.cli import CONF
+import os
 
 
-def upgrade():
-    pass
+def main():
+    config = alembic_config.Config(
+        os.path.join(os.path.dirname(__file__), 'alembic.ini'))
+    config.set_main_option('script_location',
+                           ('networking_bgpvpn.neutron.db.migration:'
+                            'alembic_migrations'))
+    config.neutron_config = CONF
+    CONF()
+    CONF.command.func(config, CONF.command.name)
