@@ -45,8 +45,6 @@ def upgrade(active_plugins=None, options=None):
         sa.Column('route_distinguishers', sa.String(255), nullable=True),
         sa.Column('auto_aggregate', sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
-        mysql_default_charset='utf8',
-        mysql_engine='InnoDB'
     )
     op.create_table(
         'bgpvpn_network_associations',
