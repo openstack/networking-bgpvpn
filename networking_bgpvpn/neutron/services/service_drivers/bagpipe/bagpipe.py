@@ -241,8 +241,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                     )
 
     def create_net_assoc_postcommit(self, context, net_assoc):
-        if get_network_ports(context,
-                             net_assoc['network_id']):
+        if get_network_ports(context, net_assoc['network_id']):
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
             formated_bgpvpn = self._format_bgpvpn(bgpvpn,
                                                   net_assoc['network_id'])
@@ -251,8 +250,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 formated_bgpvpn)
 
     def delete_net_assoc_postcommit(self, context, net_assoc):
-        if get_network_ports(context,
-                             net_assoc['network_id']):
+        if get_network_ports(context, net_assoc['network_id']):
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
             formated_bgpvpn = self._format_bgpvpn(bgpvpn,
                                                   net_assoc['network_id'])

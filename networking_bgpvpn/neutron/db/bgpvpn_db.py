@@ -70,7 +70,8 @@ class BGPVPNNotFound(q_exc.NotFound):
 
 
 class BGPVPNNetAssocNotFound(q_exc.NotFound):
-    message = _("BGPVPN network association %(id)s could not be found")
+    message = _("BGPVPN network association %(id)s could not be found"
+                "for BGPVPN %(bgpvpn_id)s")
 
 
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
@@ -212,14 +213,18 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                'network_id': net_assoc_db['network_id']}
         return self._fields(res, fields)
 
-    def _get_net_assoc(self, context, id):
+    def _get_net_assoc(self, context, assoc_id, bgpvpn_id):
         try:
-            return self._get_by_id(context, BGPVPNNetAssociation, id)
+            query = self._model_query(context, BGPVPNNetAssociation)
+            return query.filter(BGPVPNNetAssociation.id == assoc_id,
+                                BGPVPNNetAssociation.bgpvpn_id == bgpvpn_id
+                                ).one()
         except exc.NoResultFound:
-            raise BGPVPNNetAssocNotFound(id=id)
+            raise BGPVPNNetAssocNotFound(id=assoc_id, bgpvpn_id=bgpvpn_id)
 
     def create_net_assoc(self, context, bgpvpn_id, network_id):
-        LOG.info(_LI("associating network %s"), network_id)
+        LOG.info(_LI("associating network %(net)s to bgpvpn %(bgpvpn)s"),
+                 net=network_id, bgpvpn=bgpvpn_id)
         if not network_id:
             return
         with context.session.begin(subtransactions=True):
@@ -228,8 +233,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             context.session.add(net_assoc_db)
         return self._make_net_assoc_dict(net_assoc_db)
 
-    def get_net_assoc(self, context, id, fields=None):
-        net_assoc_db = self._get_net_assoc(context, id)
+    def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
         return self._make_net_assoc_dict(net_assoc_db, fields=None)
 
     def get_net_assocs(self, context, bgpvpn_id, filters=None, fields=None):
@@ -240,10 +245,11 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     self._make_net_assoc_dict,
                                     filters, fields)
 
-    def delete_net_assoc(self, context, id):
-        LOG.info(_LI("deleting network association %s"), id)
+    def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
+        LOG.info(_LI("deleting network association %(id)s for"
+                     "BGPVPN %(bgppvn)s"), id=assoc_id, bgpvpn=bgpvpn_id)
         with context.session.begin():
-            net_assoc_db = self._get_net_assoc(context, id)
+            net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
             net_assoc = self._make_net_assoc_dict(net_assoc_db)
             context.session.delete(net_assoc_db)
         return net_assoc

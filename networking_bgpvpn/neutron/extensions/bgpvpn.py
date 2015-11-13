@@ -262,7 +262,7 @@ class BGPVPNPluginBase(ServicePluginBase):
         pass
 
     @abc.abstractmethod
-    def get_bgpvpn_network_association(self, context, id, bgpvpn_id,
+    def get_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
                                        fields=None):
         pass
 
@@ -272,10 +272,10 @@ class BGPVPNPluginBase(ServicePluginBase):
         pass
 
     @abc.abstractmethod
-    def update_bgpvpn_network_association(self, context, id, bgpvpn_id,
+    def update_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
                                           network_association):
         pass
 
     @abc.abstractmethod
-    def delete_bgpvpn_network_association(self, context, id, bgpvpn_id):
+    def delete_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id):
         pass

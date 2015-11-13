@@ -96,18 +96,18 @@ class BGPVPNPlugin(BGPVPNPluginBase):
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
         return self.driver.create_net_assoc(context, bgpvpn_id, net['id'])
 
-    def get_bgpvpn_network_association(self, context, id, bgpvpn_id,
+    def get_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
                                        fields=None):
-        return self.driver.get_net_assoc(context, id, fields)
+        return self.driver.get_net_assoc(context, assoc_id, bgpvpn_id, fields)
 
     def get_bgpvpn_network_associations(self, context, bgpvpn_id,
                                         filters=None, fields=None):
         return self.driver.get_net_assocs(context, bgpvpn_id, filters, fields)
 
-    def update_bgpvpn_network_association(self, context, id, bgpvpn_id,
+    def update_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
                                           network_association):
         # TODO(matrohon) : raise an unsuppported error
         pass
 
-    def delete_bgpvpn_network_association(self, context, id, bgpvpn_id):
-        self.driver.delete_net_assoc(context, id)
+    def delete_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id):
+        self.driver.delete_net_assoc(context, assoc_id, bgpvpn_id)
