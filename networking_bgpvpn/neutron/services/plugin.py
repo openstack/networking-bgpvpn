@@ -68,6 +68,7 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         return "Neutron BGPVPN Service Plugin"
 
     def create_bgpvpn(self, context, bgpvpn):
+        bgpvpn = bgpvpn['bgpvpn']
         return self.driver.create_bgpvpn(context, bgpvpn)
 
     def get_bgpvpns(self, context, filters=None, fields=None):
@@ -77,6 +78,7 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         return self.driver.get_bgpvpn(context, id, fields)
 
     def update_bgpvpn(self, context, id, bgpvpn):
+        bgpvpn = bgpvpn['bgpvpn']
         return self.driver.update_bgpvpn(context, id, bgpvpn)
 
     def delete_bgpvpn(self, context, id):
@@ -85,7 +87,9 @@ class BGPVPNPlugin(BGPVPNPluginBase):
     def create_bgpvpn_network_association(self, context, bgpvpn_id,
                                           network_association):
         net_assoc = network_association['network_association']
+        # check net exists
         net = self._validate_network(context, net_assoc)
+        # check every resource belong to the same tenant
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
         if not net['tenant_id'] == bgpvpn['tenant_id']:
             msg = 'network doesn\'t belong to the bgpvpn owner'
@@ -94,7 +98,7 @@ class BGPVPNPlugin(BGPVPNPluginBase):
             msg = 'network association and bgpvpn should belong to\
                 the same tenant'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
-        return self.driver.create_net_assoc(context, bgpvpn_id, net['id'])
+        return self.driver.create_net_assoc(context, bgpvpn_id, net_assoc)
 
     def get_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id,
                                        fields=None):

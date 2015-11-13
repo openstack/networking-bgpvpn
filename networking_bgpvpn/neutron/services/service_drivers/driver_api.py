@@ -55,7 +55,7 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def create_net_assoc(self, context, bgpvpn_id, network_id):
+    def create_net_assoc(self, bgpvpn_id, network_association):
         pass
 
     @abc.abstractmethod
@@ -108,10 +108,10 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         bgpvpn = self.bgpvpn_db.delete_bgpvpn(context, id)
         self.delete_bgpvpn_postcommit(context, bgpvpn)
 
-    def create_net_assoc(self, context, bgpvpn_id, network_id):
+    def create_net_assoc(self, context, bgpvpn_id, network_association):
         assoc = self.bgpvpn_db.create_net_assoc(context,
                                                 bgpvpn_id,
-                                                network_id)
+                                                network_association)
         self.create_net_assoc_postcommit(context, assoc)
         return assoc
 

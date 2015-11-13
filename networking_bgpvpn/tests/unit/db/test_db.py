@@ -33,20 +33,22 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             # create
             bgpvpn = self.plugin_db.create_bgpvpn(
                 self.ctx,
-                {"bgpvpn": {
-                    "type": "l3",
-                    "name": "",
-                    "route_targets": ["64512:1"],
-                    "import_targets": ["64512:11", "64512:12"],
-                    "export_targets": ["64512:13", "64512:14"],
-                    "route_distinguishers": ["64512:15", "64512:16"],
-                    "auto_aggregate": False
-                }}
+                {"tenant_id": self._tenant_id,
+                 "type": "l3",
+                 "name": "",
+                 "route_targets": ["64512:1"],
+                 "import_targets": ["64512:11", "64512:12"],
+                 "export_targets": ["64512:13", "64512:14"],
+                 "route_distinguishers": ["64512:15", "64512:16"],
+                 "auto_aggregate": False
+                 }
             )
 
+            net_assoc = {'network_id': net['network']['id'],
+                         'tenant_id': self._tenant_id}
             # associate network
             assoc1 = self.plugin_db.create_net_assoc(self.ctx, bgpvpn['id'],
-                                                     net['network']['id'])
+                                                     net_assoc)
 
             # retrieve
             bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn['id'])
@@ -70,10 +72,12 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual(bgpvpn['id'], assoc1['bgpvpn_id'])
 
             with self.network(name='net2') as net2:
+                net_assoc2 = {'network_id': net2['network']['id'],
+                              'tenant_id': self._tenant_id}
                 # associate network
                 assoc2 = self.plugin_db.create_net_assoc(self.ctx,
                                                          bgpvpn['id'],
-                                                         net2['network']['id'])
+                                                         net_assoc2)
                 # retrieve
                 assoc2 = self.plugin_db.get_net_assoc(self.ctx, assoc2['id'],
                                                       bgpvpn['id'])
@@ -86,15 +90,14 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.plugin_db.update_bgpvpn(
                 self.ctx,
                 bgpvpn['id'],
-                {"bgpvpn": {
-                    "type": "l2",
-                    "name": "foo",
-                    "tenant_id": "a-b-c-d",
-                    "route_targets": [],
-                    "import_targets": ["64512:22"],
-                    "route_distinguishers": [],
-                    "auto_aggregate": True
-                }})
+                {"type": "l2",
+                 "name": "foo",
+                 "tenant_id": "a-b-c-d",
+                 "route_targets": [],
+                 "import_targets": ["64512:22"],
+                 "route_distinguishers": [],
+                 "auto_aggregate": True
+                 })
 
             # retrieve
             bgpvpn2 = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn['id'])
@@ -174,23 +177,3 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 self.assoc_net(id, net_id=net_id, do_disassociate=False)
             bgpvpn_db = self.plugin_db.get_bgpvpn(self.ctx, id)
             self.assertEqual([], bgpvpn_db['networks'])
-
-#     def test_db_get_assoc_list(self):
-#         with self.bgpvpn() as bgpvpn:
-#             bgpvpn_id = bgpvpn['bgpvpn']['id']
-#             net1 = self.network()
-#             net1_id = net1['network']['id']
-#             net2 = self.network(name='net2')
-#             net2_id = net2['network']['id']
-#             with self.assoc_net(bgpvpn_id, net1_id) as assoc1:
-#                 assoc1_id = assoc1['network_association']['id']
-#                 with self.assoc_net(bgpvpn_id, net2_id) as assoc2:
-#                     assoc2_id = assoc2['network_association']['id']
-#                     bgpvpns_list = self.plugin_db.get_bgpvpns(self.ctx)
-#                     expected_res = [{'id': assoc1_id,
-#                                      'network_id': net1_id,
-#                                      'bgpvpn_id': bgpvpn_id},
-#                                     {'id': assoc2_id,
-#                                      'network_id': net2_id,
-#                                      'bgpvpn_id': bgpvpn_id}]
-#                     self.assertEqual(expected_res, bgpvpns_list)
