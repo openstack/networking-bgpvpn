@@ -72,7 +72,7 @@ class BGPVPNNotFound(q_exc.NotFound):
 
 class BGPVPNNetAssocNotFound(q_exc.NotFound):
     message = _("BGPVPN network association %(id)s could not be found"
-                "for BGPVPN %(bgpvpn_id)s")
+                " for BGPVPN %(bgpvpn_id)s")
 
 
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
