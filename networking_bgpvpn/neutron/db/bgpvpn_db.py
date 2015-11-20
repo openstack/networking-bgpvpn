@@ -17,16 +17,17 @@ import sqlalchemy as sa
 
 from oslo_utils import uuidutils
 
-from neutron.common import exceptions as q_exc
 from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
 
-from neutron.i18n import _
 from neutron.i18n import _LI
 from oslo_log import log
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
+
+from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
+from networking_bgpvpn.neutron.services.common import utils
 
 LOG = log.getLogger(__name__)
 
@@ -66,31 +67,8 @@ class BGPVPN(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
                                             cascade='all, delete-orphan')
 
 
-class BGPVPNNotFound(q_exc.NotFound):
-    message = _("BGPVPN %(id)s could not be found")
-
-
-class BGPVPNNetAssocNotFound(q_exc.NotFound):
-    message = _("BGPVPN network association %(id)s could not be found"
-                " for BGPVPN %(bgpvpn_id)s")
-
-
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGPVPN service plugin database class using SQLAlchemy models."""
-
-    def _rtrd_list2str(self, list):
-        """Format Route Target list to string"""
-        if not list:
-            return ''
-
-        return ','.join(list)
-
-    def _rtrd_str2list(self, str):
-        """Format Route Target string to list"""
-        if not str:
-            return []
-
-        return str.split(',')
 
     def _get_bgpvpns_for_tenant(self, session, tenant_id, fields):
         try:
@@ -112,22 +90,22 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             'name': bgpvpn_db['name'],
             'type': bgpvpn_db['type'],
             'route_targets':
-                self._rtrd_str2list(bgpvpn_db['route_targets']),
+                utils.rtrd_str2list(bgpvpn_db['route_targets']),
             'route_distinguishers':
-                self._rtrd_str2list(bgpvpn_db['route_distinguishers']),
+                utils.rtrd_str2list(bgpvpn_db['route_distinguishers']),
             'import_targets':
-                self._rtrd_str2list(bgpvpn_db['import_targets']),
+                utils.rtrd_str2list(bgpvpn_db['import_targets']),
             'export_targets':
-                self._rtrd_str2list(bgpvpn_db['export_targets']),
+                utils.rtrd_str2list(bgpvpn_db['export_targets']),
             'auto_aggregate': bgpvpn_db['auto_aggregate']
         }
         return self._fields(res, fields)
 
     def create_bgpvpn(self, context, bgpvpn):
-        rt = self._rtrd_list2str(bgpvpn['route_targets'])
-        i_rt = self._rtrd_list2str(bgpvpn['import_targets'])
-        e_rt = self._rtrd_list2str(bgpvpn['export_targets'])
-        rd = self._rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
+        rt = utils.rtrd_list2str(bgpvpn['route_targets'])
+        i_rt = utils.rtrd_list2str(bgpvpn['import_targets'])
+        e_rt = utils.rtrd_list2str(bgpvpn['export_targets'])
+        rd = utils.rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
 
         with context.session.begin(subtransactions=True):
             bgpvpn_db = BGPVPN(
@@ -146,15 +124,14 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._make_bgpvpn_dict(bgpvpn_db)
 
     def get_bgpvpns(self, context, filters=None, fields=None):
-        return self._get_collection(context, BGPVPN,
-                                    self._make_bgpvpn_dict,
+        return self._get_collection(context, BGPVPN, self._make_bgpvpn_dict,
                                     filters=filters, fields=fields)
 
     def _get_bgpvpn(self, context, id):
         try:
             return self._get_by_id(context, BGPVPN, id)
         except exc.NoResultFound:
-            raise BGPVPNNotFound(id=id)
+            raise bgpvpn_ext.BGPVPNNotFound(id=id)
 
     def get_bgpvpn(self, context, id, fields=None):
         bgpvpn_db = self._get_bgpvpn(context, id)
@@ -167,17 +144,16 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             if bgpvpn:
                 # Format Route Target lists to string
                 if 'route_targets' in bgpvpn:
-                    rt = self._rtrd_list2str(bgpvpn['route_targets'])
+                    rt = utils.rtrd_list2str(bgpvpn['route_targets'])
                     bgpvpn['route_targets'] = rt
                 if 'import_targets' in bgpvpn:
-                    i_rt = self._rtrd_list2str(bgpvpn['import_targets'])
+                    i_rt = utils.rtrd_list2str(bgpvpn['import_targets'])
                     bgpvpn['import_targets'] = i_rt
                 if 'export_targets' in bgpvpn:
-                    e_rt = self._rtrd_list2str(bgpvpn['export_targets'])
+                    e_rt = utils.rtrd_list2str(bgpvpn['export_targets'])
                     bgpvpn['export_targets'] = e_rt
                 if 'route_distinguishers' in bgpvpn:
-                    rd = self._rtrd_list2str(
-                        bgpvpn['route_distinguishers'])
+                    rd = utils.rtrd_list2str(bgpvpn['route_distinguishers'])
                     bgpvpn['route_distinguishers'] = rd
 
                 bgpvpn_db.update(bgpvpn)
@@ -216,7 +192,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                 BGPVPNNetAssociation.bgpvpn_id == bgpvpn_id
                                 ).one()
         except exc.NoResultFound:
-            raise BGPVPNNetAssocNotFound(id=assoc_id, bgpvpn_id=bgpvpn_id)
+            raise bgpvpn_ext.BGPVPNNetAssocNotFound(id=assoc_id,
+                                                    bgpvpn_id=bgpvpn_id)
 
     def create_net_assoc(self, context, bgpvpn_id, net_assoc):
         with context.session.begin(subtransactions=True):

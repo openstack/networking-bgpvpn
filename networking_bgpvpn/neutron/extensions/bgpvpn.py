@@ -22,6 +22,7 @@ from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
+from neutron.common import exceptions as n_exc
 from neutron import manager
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
@@ -40,6 +41,24 @@ RT_REGEX = (r'^((?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]'
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
 n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
+
+
+class BGPVPNNotFound(n_exc.NotFound):
+    message = _("BGPVPN %(id)s could not be found")
+
+
+class BGPVPNNetAssocNotFound(n_exc.NotFound):
+    message = _("BGPVPN network association %(id)s could not be found "
+                "for BGPVPN %(bgpvpn_id)s")
+
+
+class BGPVPNTypeNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support %(type)s type")
+
+
+class BGPVPNRDNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support to manually set "
+                "route distinguisher")
 
 
 def _validate_rt_list(data, valid_values=None):

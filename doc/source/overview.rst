@@ -136,7 +136,7 @@ The BGPVPN service plugin support or will support the following drivers:
 
 * *bagpipe*, the reference driver working jointly with the *openvswitch* ML2 mechanism driver (see :doc:`bagpipe/index`)
 
-* *opencontrail*, for [OpenContrail]_ (work in progress) 
+* *opencontrail*, for [OpenContrail]_ (see :doc:`opencontrail/index`)
 
 * *opendaylight*, for [OpenDaylight]_ (work in progress)
 
@@ -146,6 +146,7 @@ The BGPVPN service plugin support or will support the following drivers:
    :maxdepth: 1
 
    bagpipe/index
+   opencontrail/index
 
 ==========
 References

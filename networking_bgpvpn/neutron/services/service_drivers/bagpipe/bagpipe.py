@@ -26,6 +26,7 @@ from neutron.common import constants as const
 from neutron.db import models_v2
 from oslo_log import log as logging
 
+from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
@@ -193,26 +194,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         return bgpvpn_network_info
 
-    def _get_bgpvpn_differences(self, current_dict, old_dict):
-        """Compare 2 BGPVPNs
-
-        - added elements (route_targets, import_targets or export_targets)
-        - removed elements (route_targets, import_targets or export_targets)
-        - changed values for keys in both dictionaries  (network_id,
-          route_targets, import_targets or export_targets)
-        """
-        set_current = set(current_dict.keys())
-        set_old = set(old_dict.keys())
-        intersect = set_current.intersection(set_old)
-
-        added = set_current - intersect
-        removed = set_old - intersect
-        changed = set(
-            key for key in intersect if old_dict[key] != current_dict[key]
-        )
-
-        return (added, removed, changed)
-
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
         for net_id in bgpvpn['networks']:
             if get_network_ports(context, net_id):
@@ -223,7 +204,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
-            self._get_bgpvpn_differences(bgpvpn, old_bgpvpn))
+            utils.get_bgpvpn_differences(bgpvpn, old_bgpvpn))
         for net_id in bgpvpn['networks']:
             if (get_network_ports(context, net_id)):
                 if ((key in added_keys for key in ('route_targets',
