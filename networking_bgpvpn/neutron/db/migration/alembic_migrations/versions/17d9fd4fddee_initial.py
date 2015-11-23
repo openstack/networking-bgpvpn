@@ -22,7 +22,7 @@ Create Date: 2015-10-01 17:35:11.000000
 from alembic import op
 import sqlalchemy as sa
 
-from neutron.db.migration import cli
+from networking_bgpvpn.neutron.db.migration import cli
 
 # revision identifiers, used by Alembic.
 revision = '17d9fd4fddee'
