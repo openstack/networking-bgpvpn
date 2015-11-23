@@ -13,6 +13,7 @@
 from neutron.db.migration.cli import alembic_config
 from neutron.db.migration.cli import CONF
 import os
+EXPAND_BRANCH = 'expand'
 
 
 def main():
