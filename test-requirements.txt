@@ -16,4 +16,3 @@ testrepository>=0.0.18
 testscenarios>=0.4
 testtools>=1.4.0
 
--e git+https://git.openstack.org/openstack/networking-bagpipe#egg=networking-bagpipe
