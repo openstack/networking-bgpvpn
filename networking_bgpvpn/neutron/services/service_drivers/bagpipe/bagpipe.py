@@ -16,14 +16,15 @@
 from sqlalchemy.orm import exc
 from sqlalchemy import sql
 
-from neutron import context as n_context
-from neutron import manager
-
 from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
 from neutron.common import constants as const
+from neutron import context as n_context
 from neutron.db import models_v2
+from neutron.extensions import portbindings
+from neutron import manager
+
 from oslo_log import log as logging
 
 from networking_bgpvpn.neutron.services.common import utils
@@ -81,8 +82,16 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         registry.subscribe(self.registry_port_updated, resources.PORT,
                            events.AFTER_UPDATE)
 
+        # we need to subscribe to before_delete events, because
+        # on after_delete events the port is already removed from the db
+        # and we can't retrieve the binding:host_id information (which
+        # is not passed in the event either)
         registry.subscribe(self.registry_port_deleted, resources.PORT,
-                           events.AFTER_DELETE)
+                           events.BEFORE_DELETE)
+
+        # REVISIT(tmorin): if/when port ABORT_DELETE events are implemented
+        #  we will have to revisit the issue, so that the action done after
+        #  BEFORE_DELETE is reverted if needed (or a different solution)
 
     def _format_bgpvpn(self, bgpvpn, network_id):
         """JSON-format BGPVPN
@@ -237,20 +246,21 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                   net_assoc['network_id'])
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
-    def _get_port_host(self, port_id):
-        # the port dict, as provided by the registry callback
-        # has no binding:host_id information, it seems the reason is
-        # because the context is not admin
-        # let's switch to an admin context and retrieve full port info
+    def _get_port(self, context, port_id):
         _core_plugin = manager.NeutronManager.get_plugin()
-        full_port = _core_plugin.get_port(n_context.get_admin_context(),
-                                          port_id)
+        # TODO(tmorin): should not need an admin context
+        return _core_plugin.get_port(n_context.get_admin_context(), port_id)
 
-        if 'binding:host_id' not in full_port:
+    def _get_port_host(self, context, port_id):
+        # the port dict, as provided by the registry callback
+        # has no binding:host_id information, so let's retrieve full port info
+        port = self._get_port(context, port_id)
+
+        if portbindings.HOST_ID not in port:
             raise Exception("cannot determine host_id for port %s, "
                             "aborting BGPVPN update", port_id)
 
-        return full_port.get('binding:host_id')
+        return port.get(portbindings.HOST_ID)
 
     def notify_port_updated(self, context, port):
         LOG.info("notify_port_updated on port %s status %s",
@@ -264,7 +274,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             LOG.info("Port %s is DHCP, ignoring", port['id'])
             return
 
-        agent_host = self._get_port_host(port['id'])
+        agent_host = self._get_port_host(context, port['id'])
 
         if port['status'] == const.PORT_STATUS_ACTIVE:
             bgpvpn_network_info = (
@@ -284,11 +294,10 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         else:
             LOG.info("no action since new port status is %s", port['status'])
 
-    def remove_port_from_bgpvpn_agent(self, context, port):
-        LOG.info("remove_port_from_bgpvpn_agent port updated on port %s "
-                 "status %s",
-                 port['id'],
-                 port['status'])
+    def remove_port_from_bgpvpn_agent(self, context, port_id):
+        LOG.info("remove_port_from_bgpvpn_agent on port %s ", port_id)
+
+        port = self._get_port(context, port_id)
 
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
@@ -297,7 +306,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             LOG.info("Port %s is DHCP, ignoring", port['id'])
             return
 
-        agent_host = self._get_port_host(port['id'])
+        agent_host = self._get_port_host(context, port_id)
 
         self.agent_rpc.detach_port_from_bgpvpn(context,
                                                port_bgpvpn_info,
@@ -310,5 +319,5 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
         context = kwargs.get('context')
-        port_dict = kwargs.get('port')
-        self.remove_port_from_bgpvpn_agent(context, port_dict)
+        port_id = kwargs.get('port_id')
+        self.remove_port_from_bgpvpn_agent(context, port_id)
