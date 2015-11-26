@@ -138,7 +138,7 @@ The BGPVPN service plugin support or will support the following drivers:
 
 * *opencontrail*, for [OpenContrail]_ (see :doc:`opencontrail/index`)
 
-* *opendaylight*, for [OpenDaylight]_ (work in progress)
+* *opendaylight*, for [OpenDaylight]_ (see :doc:`opendaylight/index`)
 
 * *nuage*, for [Nuage-Networks]_
 
@@ -147,6 +147,7 @@ The BGPVPN service plugin support or will support the following drivers:
 
    bagpipe/index
    opencontrail/index
+   opendaylight/index
 
 ==========
 References
