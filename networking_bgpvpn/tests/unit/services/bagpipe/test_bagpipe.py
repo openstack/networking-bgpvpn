@@ -28,6 +28,8 @@ from neutron.plugins.ml2 import rpc as ml2_rpc
 
 from networking_bgpvpn.tests.unit.services import test_plugin
 
+from networking_bgpvpn.neutron.services.service_drivers.bagpipe import bagpipe
+
 
 class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
 
@@ -353,3 +355,14 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             mock.ANY,
             self._build_expected_return_down(port),
             TESTHOST)
+
+    def test_exception_on_callback(self):
+        with mock.patch.object(bagpipe.LOG, 'exception') as log_exc:
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=None
+            )
+            self.assertEqual(self.mock_attach_rpc.call_count, 0)
+            self.assertEqual(self.mock_detach_rpc.call_count, 0)
+            self.assertEqual(log_exc.call_count, 1)
