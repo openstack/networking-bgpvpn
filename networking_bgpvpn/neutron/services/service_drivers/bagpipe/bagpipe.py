@@ -23,6 +23,7 @@ from neutron.common import constants as const
 from neutron import context as n_context
 from neutron.db import models_v2
 from neutron.extensions import portbindings
+from neutron.i18n import _LE
 from neutron import manager
 
 from oslo_log import log as logging
@@ -313,11 +314,31 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                agent_host)
 
     def registry_port_updated(self, resource, event, trigger, **kwargs):
-        context = kwargs.get('context')
-        port_dict = kwargs.get('port')
-        self.notify_port_updated(context, port_dict)
+        try:
+            context = kwargs.get('context')
+            port_dict = kwargs.get('port')
+            self.notify_port_updated(context, port_dict)
+        except Exception as e:
+            LOG.exception(_LE("Error during notification processing "
+                              "%(resource)s %(event)s, %(trigger)s, "
+                              "%(kwargs)s: %(exc)s"),
+                          {'trigger': trigger,
+                           'resource': resource,
+                           'event': event,
+                           'kwargs': kwargs,
+                           'exc': e})
 
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
-        context = kwargs.get('context')
-        port_id = kwargs.get('port_id')
-        self.remove_port_from_bgpvpn_agent(context, port_id)
+        try:
+            context = kwargs.get('context')
+            port_id = kwargs.get('port_id')
+            self.remove_port_from_bgpvpn_agent(context, port_id)
+        except Exception as e:
+            LOG.exception(_LE("Error during notification processing "
+                              "%(resource)s %(event)s, %(trigger)s, "
+                              "%(kwargs)s: %(exc)s"),
+                          {'trigger': trigger,
+                           'resource': resource,
+                           'event': event,
+                           'kwargs': kwargs,
+                           'exc': e})
