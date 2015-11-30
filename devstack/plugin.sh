@@ -22,6 +22,9 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
                 iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
                 bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
         fi
+        if is_service_enabled tempest; then
+                iniadd $TEMPEST_CONFIG service_available bgpvpn True
+        fi
 fi
 if [[ "$1" == "unstack" ]]; then
 	#no-op
