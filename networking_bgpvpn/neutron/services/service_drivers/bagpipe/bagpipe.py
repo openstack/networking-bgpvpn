@@ -27,10 +27,10 @@ from neutron import manager
 
 from oslo_log import log as logging
 
+from networking_bagpipe.agent.bgpvpn import rpc_client
+
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
-
-from networking_bagpipe.agent.bgpvpn import rpc_client
 
 LOG = logging.getLogger(__name__)
 

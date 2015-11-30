@@ -17,7 +17,6 @@ import abc
 
 import six
 
-from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import base
@@ -26,8 +25,10 @@ from neutron.common import exceptions as n_exc
 from neutron import manager
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
+
 from oslo_log import log
 
+from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)

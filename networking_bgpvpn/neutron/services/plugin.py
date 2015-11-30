@@ -91,10 +91,10 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         net = self._validate_network(context, net_assoc)
         # check every resource belong to the same tenant
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
-        if not net['tenant_id'] == bgpvpn['tenant_id']:
+        if net['tenant_id'] != bgpvpn['tenant_id']:
             msg = 'network doesn\'t belong to the bgpvpn owner'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
-        if not (net_assoc['tenant_id'] == bgpvpn['tenant_id']):
+        if net_assoc['tenant_id'] != bgpvpn['tenant_id']:
             msg = 'network association and bgpvpn should belong to\
                 the same tenant'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)

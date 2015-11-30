@@ -13,16 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sqlalchemy as sa
-
-from oslo_utils import uuidutils
-
 from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
 
 from neutron.i18n import _LI
+
 from oslo_log import log
+
+from oslo_utils import uuidutils
+
+import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
