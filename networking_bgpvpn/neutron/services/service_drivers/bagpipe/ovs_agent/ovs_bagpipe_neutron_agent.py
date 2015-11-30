@@ -18,14 +18,10 @@ import sys
 import eventlet
 eventlet.monkey_patch()
 
-from neutron.i18n import _LE
-
 from neutron.common import config as common_config
 from neutron.common import constants as q_const
 from neutron.common import utils as n_utils
-
-from oslo_config import cfg
-from oslo_log import log as logging
+from neutron.i18n import _LE
 
 from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
     br_int
@@ -41,6 +37,9 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     prepare_xen_compute
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     validate_local_ip
+
+from oslo_config import cfg
+from oslo_log import log as logging
 
 from networking_bagpipe.agent import bagpipe_bgp_agent
 

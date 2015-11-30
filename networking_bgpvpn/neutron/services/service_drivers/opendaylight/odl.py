@@ -14,13 +14,15 @@
 #  under the License.
 #
 
+import requests
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
-import requests
+
+from networking_odl.common import client as odl_client
 
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
-from networking_odl.common import client as odl_client
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
