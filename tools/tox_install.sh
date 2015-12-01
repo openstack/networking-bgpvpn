@@ -17,6 +17,7 @@
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 neutron_installed=$(echo "import neutron" | python 2>/dev/null ; echo $?)
+openstack_branch=stable/liberty
 
 set -e
 
@@ -27,7 +28,7 @@ elif [ -x "$ZUUL_CLONER" ]; then
     echo "ZUUL CLONER" > /tmp/tox_install.txt
     cwd=$(/bin/pwd)
     cd /tmp
-    $ZUUL_CLONER --cache-dir \
+    $ZUUL_CLONER --branch $openstack_branch --cache-dir \
         /opt/git \
         git://git.openstack.org \
         openstack/neutron
@@ -36,7 +37,7 @@ elif [ -x "$ZUUL_CLONER" ]; then
     cd "$cwd"
 else
     echo "PIP HARDCODE" > /tmp/tox_install.txt
-    pip install -U -egit+https://git.openstack.org/openstack/neutron@stable/liberty#egg=neutron
+    pip install -U -egit+https://git.openstack.org/openstack/neutron@${openstack_branch}#egg=neutron
 fi
 
 pip install -U $*
