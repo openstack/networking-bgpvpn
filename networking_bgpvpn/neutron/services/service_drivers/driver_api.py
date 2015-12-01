@@ -24,7 +24,7 @@ class BGPVPNDriverBase(object):
     """BGPVPNDriver interface for driver
 
     That driver interface does not persist BGPVPN data in any database. The
-    driver need to do it by itself.
+    driver needs to do it by itself.
     """
 
     def __init__(self, service_plugin):

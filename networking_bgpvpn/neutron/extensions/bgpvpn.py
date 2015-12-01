@@ -22,6 +22,10 @@ from neutron.api import extensions
 from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
+# (enikher) There is a bug in neutron kilo that config has to be
+# included before running extensions.append_api_extensions_path
+from neutron.common import config  # noqa # pylint: disable=W0611
+from neutron.common import exceptions as n_exc
 from neutron import manager
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
@@ -44,6 +48,24 @@ n_const.COMMON_PREFIXES['BGPVPN'] = '/bgpvpn'
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
 n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
+
+
+class BGPVPNNotFound(n_exc.NotFound):
+    message = _("BGPVPN %(id)s could not be found")
+
+
+class BGPVPNNetAssocNotFound(n_exc.NotFound):
+    message = _("BGPVPN network association %(id)s could not be found "
+                "for BGPVPN %(bgpvpn_id)s")
+
+
+class BGPVPNTypeNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support %(type)s type")
+
+
+class BGPVPNRDNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support to manually set "
+                "route distinguisher")
 
 
 def _validate_rt_list(data, valid_values=None):
