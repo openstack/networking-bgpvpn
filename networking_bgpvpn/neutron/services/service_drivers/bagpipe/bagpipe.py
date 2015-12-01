@@ -26,6 +26,7 @@ from neutron.extensions import portbindings
 from neutron.i18n import _LE
 from neutron import manager
 
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
@@ -248,25 +249,26 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
     def _get_port(self, context, port_id):
+        # we need to look in the db for two reasons:
+        # - the port dict, as provided by the registry callback has no
+        #   port binding information
+        # - for some notifications, the current port is not included
+
         _core_plugin = manager.NeutronManager.get_plugin()
         # TODO(tmorin): should not need an admin context
         return _core_plugin.get_port(n_context.get_admin_context(), port_id)
 
-    def _get_port_host(self, context, port_id):
-        # the port dict, as provided by the registry callback
-        # has no binding:host_id information, so let's retrieve full port info
-        port = self._get_port(context, port_id)
-
+    def _get_port_host(self, context, port):
         if portbindings.HOST_ID not in port:
             raise Exception("cannot determine host_id for port %s, "
-                            "aborting BGPVPN update", port_id)
+                            "aborting BGPVPN update", port['id'])
 
         return port.get(portbindings.HOST_ID)
 
-    def notify_port_updated(self, context, port):
-        LOG.info("notify_port_updated on port %s status %s",
-                 port['id'],
-                 port['status'])
+    def notify_port_updated(self, context, port_id):
+        LOG.info("notify_port_updated on port %s", port_id)
+
+        port = self._get_port(context, port_id)
 
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
@@ -275,9 +277,10 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             LOG.info("Port %s is DHCP, ignoring", port['id'])
             return
 
-        agent_host = self._get_port_host(context, port['id'])
+        agent_host = self._get_port_host(context, port)
 
         if port['status'] == const.PORT_STATUS_ACTIVE:
+            LOG.info("notify_port_updated, active")
             bgpvpn_network_info = (
                 self._retrieve_bgpvpn_network_info_for_port(context, port)
             )
@@ -289,14 +292,15 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                      port_bgpvpn_info,
                                                      agent_host)
         elif port['status'] == const.PORT_STATUS_DOWN:
+            LOG.info("notify_port_updated, down")
             self.agent_rpc.detach_port_from_bgpvpn(context,
                                                    port_bgpvpn_info,
                                                    agent_host)
         else:
-            LOG.info("no action since new port status is %s", port['status'])
+            LOG.info("new port status is %s, no action", port['status'])
 
-    def remove_port_from_bgpvpn_agent(self, context, port_id):
-        LOG.info("remove_port_from_bgpvpn_agent on port %s ", port_id)
+    def notify_port_deleted(self, context, port_id):
+        LOG.info("notify_port_deleted on port %s ", port_id)
 
         port = self._get_port(context, port_id)
 
@@ -307,17 +311,24 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             LOG.info("Port %s is DHCP, ignoring", port['id'])
             return
 
-        agent_host = self._get_port_host(context, port_id)
+        agent_host = self._get_port_host(context, port)
 
         self.agent_rpc.detach_port_from_bgpvpn(context,
                                                port_bgpvpn_info,
                                                agent_host)
 
+    @log_helpers.log_method_call
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs.get('context')
-            port_dict = kwargs.get('port')
-            self.notify_port_updated(context, port_dict)
+            port = kwargs.get('port')
+            origin_port = kwargs.get('origin_port')
+            # In notifications coming from ml2/plugin.py update_port
+            # it is possible that 'port' may be None, in this
+            # case we will use origin_port
+            if port is None:
+                port = origin_port
+            self.notify_port_updated(context, port['id'])
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
@@ -328,11 +339,12 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                            'kwargs': kwargs,
                            'exc': e})
 
+    @log_helpers.log_method_call
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs.get('context')
             port_id = kwargs.get('port_id')
-            self.remove_port_from_bgpvpn_agent(context, port_id)
+            self.notify_port_deleted(context, port_id)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
