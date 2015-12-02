@@ -86,7 +86,6 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
                                        'route_targets': ['1234:56'],
-                                       'auto_aggregate': False,
                                        'tenant_id': self._tenant_id}}
         self.converted_data = copy.copy(self.bgpvpn_data)
         self.converted_data['bgpvpn'].update({'export_targets': [],
@@ -104,7 +103,6 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
             bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                       'type': 'l3',
                                       'route_targets': ['1234:56'],
-                                      'auto_aggregate': False,
                                       'tenant_id': tenant_id}}
         bgpvpn_req = self.new_create_request(
             'bgpvpn/bgpvpns', bgpvpn_data, fmt=fmt)

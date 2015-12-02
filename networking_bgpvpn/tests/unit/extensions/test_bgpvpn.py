@@ -61,7 +61,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['1234:56'],
-                       'auto_aggregate': False,
                        'tenant_id': _uuid()}
         }
         expected_ret_val = copy.copy(data['bgpvpn'])
@@ -89,7 +88,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['ASN:NN'],
-                       'auto_aggregate': False,
                        'tenant_id': _uuid()}
         }
 
@@ -105,7 +103,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['65536:0'],
-                       'auto_aggregate': False,
                        'tenant_id': _uuid()}
         }
 
@@ -131,7 +128,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         return_value = [{'name': 'bgpvpn1',
                          'type': 'l3',
                          'route_targets': ['1234:56'],
-                         'auto_aggregate': False,
                          'id': bgpvpn_id}]
 
         self.instance.get_bgpvpns.return_value = return_value
@@ -150,7 +146,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         return_value = {'name': 'bgpvpn1',
                         'type': 'l3',
                         'route_targets': ['1234:56'],
-                        'auto_aggregate': False,
                         'tenant_id': _uuid(),
                         'id': bgpvpn_id}
 
@@ -176,7 +171,6 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         return_value = {'name': 'bgpvpn1',
                         'type': 'l3',
                         'route_targets': ['1234:56'],
-                        'auto_aggregate': False,
                         'tenant_id': _uuid(),
                         'id': bgpvpn_id}
 

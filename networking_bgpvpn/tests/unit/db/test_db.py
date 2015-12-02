@@ -39,8 +39,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                  "route_targets": ["64512:1"],
                  "import_targets": ["64512:11", "64512:12"],
                  "export_targets": ["64512:13", "64512:14"],
-                 "route_distinguishers": ["64512:15", "64512:16"],
-                 "auto_aggregate": False
+                 "route_distinguishers": ["64512:15", "64512:16"]
                  }
             )
 
@@ -61,7 +60,6 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                              bgpvpn['import_targets'])
             self.assertEqual(["64512:13", "64512:14"],
                              bgpvpn['export_targets'])
-            self.assertEqual(False, bgpvpn['auto_aggregate'])
             self.assertEqual(["64512:15", "64512:16"],
                              bgpvpn['route_distinguishers'])
             self.assertEqual([net['network']['id']], bgpvpn['networks'])
@@ -95,8 +93,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                  "tenant_id": "a-b-c-d",
                  "route_targets": [],
                  "import_targets": ["64512:22"],
-                 "route_distinguishers": [],
-                 "auto_aggregate": True
+                 "route_distinguishers": []
                  })
 
             # retrieve
@@ -110,7 +107,6 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual(["64512:13", "64512:14"],
                              bgpvpn2['export_targets'])
             self.assertEqual([], bgpvpn2['route_distinguishers'])
-            self.assertEqual(True, bgpvpn2['auto_aggregate'])
 
             # find bgpvpn by network_id
             bgpvpn3 = self.plugin_db.find_bgpvpns_for_network(

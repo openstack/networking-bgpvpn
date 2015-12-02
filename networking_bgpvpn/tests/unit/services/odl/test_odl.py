@@ -45,8 +45,7 @@ class TestOdlServiceDriver(TestBgpvpnOdlCommon):
                 with self.assoc_net(id, net_id):
                     formatted_bgpvpn = {
                         'bgpvpn':
-                        {'auto_aggregate': mock.ANY,
-                         'export_targets': mock.ANY,
+                        {'export_targets': mock.ANY,
                          'name': mock.ANY,
                          'route_targets': rt,
                          'tenant_id': mock.ANY,

@@ -8,13 +8,22 @@ Specifications for the following attributes have been defined but not implemente
     :header: Attribute Name,Type,Access,Default Value,Validation/Constraint,Description
 
     technique, string, RW admin only, None, for instance "ipvpn" or "evpn", (optional) selection of the technique used to implement the VPN
+    auto_aggregate,bool,RW admin only,False,{ True | False },enable prefix aggregation or not (type l3 only) but no support in any driver
     admin_state_up,bool,RW admin only,True,{ True | False },interconnection with this BGPVPN is enabled by the admin
     vnid,integer,RW admin only,None,24bit integer,Globally-assigned VXLAN id
+
+'auto_aggregate' attribute
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The 'auto_aggregate' flag controls whether or not routes should be automatically
+aggregated before being advertised outside Neutron.
+A backend may or may not support this behavior, and its driver should report
+an API error in the latter case.
 
 'technique' attribute
 ~~~~~~~~~~~~~~~~~~~~~
 
-The 'technique' field is optional and can be used by the admin to select one
+The 'technique' attribute is optional and can be used by the admin to select one
 of multiple techniques when more than one is supported by the driver. When no
 technique is specified, the driver will use a default value. An API call will
 be available to let the API user know about the types supported by the driver
