@@ -15,9 +15,9 @@
 
 from neutron import context
 
-from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNNetAssocNotFound
-from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNNotFound
 from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
+from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNetAssocNotFound
+from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNotFound
 from networking_bgpvpn.tests.unit.services import test_plugin
 
 
