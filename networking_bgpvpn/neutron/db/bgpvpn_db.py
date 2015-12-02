@@ -217,8 +217,9 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     filters, fields)
 
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
-        LOG.info(_LI("deleting network association %(id)s for"
-                     "BGPVPN %(bgppvn)s"), id=assoc_id, bgpvpn=bgpvpn_id)
+        LOG.info(_LI("deleting network association %(id)s for "
+                     "BGPVPN %(bgpvpn)s"), {'id': assoc_id,
+                                            'bgpvpn': bgpvpn_id})
         with context.session.begin():
             net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
             net_assoc = self._make_net_assoc_dict(net_assoc_db)

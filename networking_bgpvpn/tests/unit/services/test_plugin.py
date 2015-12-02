@@ -20,6 +20,8 @@ import webob.exc
 
 from oslo_utils import uuidutils
 
+from neutron import manager
+
 from neutron.api import extensions as api_extensions
 from neutron.db import servicetype_db as sdb
 from neutron.tests.unit.db import test_db_base_plugin_v2
@@ -35,7 +37,7 @@ _uuid = uuidutils.generate_uuid
 
 class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
 
-    def setUp(self, service_provider=None):
+    def setUp(self, service_provider=None, core_plugin=None):
         if not service_provider:
             provider = (constants.BGPVPN +
                         ':dummy:networking_bgpvpn.neutron.services.'
@@ -62,15 +64,24 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase):
                              'BGPVPNPlugin')
         service_plugins = {'bgpvpn_plugin': bgpvpn_plugin_str}
 
-        self.bgpvpn_plugin = plugin.BGPVPNPlugin()
         extensions_path = ':'.join(extensions.__path__)
+
+        # we need to provide a plugin instance, although
+        # the extension manager will create a new instance
+        # of the plugin
         ext_mgr = api_extensions.PluginAwareExtensionManager(
             extensions_path,
-            {constants.BGPVPN: self.bgpvpn_plugin})
+            {constants.BGPVPN: plugin.BGPVPNPlugin()})
 
         super(BgpvpnTestCaseMixin, self).setUp(
+            plugin=core_plugin,
             service_plugins=service_plugins,
             ext_mgr=ext_mgr)
+
+        # find the BGPVPN plugin that was instantiated by the
+        # extension manager:
+        self.bgpvpn_plugin = (manager.NeutronManager.get_service_plugins()
+                              [constants.BGPVPN])
 
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
