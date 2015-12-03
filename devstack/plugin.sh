@@ -26,6 +26,10 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
         iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
     fi
+    if is_service_enabled h-eng;then
+        echo_summary "Enabling bgpvpn in $HEAT_CONF"
+        iniset $HEAT_CONF DEFAULT plugin_dirs $NETWORKING_BGPVPN_DIR/networking_bgpvpn_heat
+    fi
 fi
 if [[ "$1" == "unstack" ]]; then
     #no-op

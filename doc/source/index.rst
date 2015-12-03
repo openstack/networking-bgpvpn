@@ -38,6 +38,7 @@ Contents
    api
    installation
    usage
+   heat
    contributing
    specs
    future/index
