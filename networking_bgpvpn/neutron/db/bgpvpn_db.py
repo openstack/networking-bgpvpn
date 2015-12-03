@@ -18,9 +18,10 @@ from neutron.db import model_base
 from neutron.db import models_v2
 
 from neutron.i18n import _LI
+from neutron.i18n import _LW
 
+from oslo_db import exception as db_exc
 from oslo_log import log
-
 from oslo_utils import uuidutils
 
 import sqlalchemy as sa
@@ -197,13 +198,21 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                                     bgpvpn_id=bgpvpn_id)
 
     def create_net_assoc(self, context, bgpvpn_id, net_assoc):
-        with context.session.begin(subtransactions=True):
-            net_assoc_db = BGPVPNNetAssociation(
-                tenant_id=net_assoc['tenant_id'],
-                bgpvpn_id=bgpvpn_id,
-                network_id=net_assoc['network_id'])
-            context.session.add(net_assoc_db)
-        return self._make_net_assoc_dict(net_assoc_db)
+        try:
+            with context.session.begin(subtransactions=True):
+                net_assoc_db = BGPVPNNetAssociation(
+                    tenant_id=net_assoc['tenant_id'],
+                    bgpvpn_id=bgpvpn_id,
+                    network_id=net_assoc['network_id'])
+                context.session.add(net_assoc_db)
+            return self._make_net_assoc_dict(net_assoc_db)
+        except db_exc.DBDuplicateEntry:
+            LOG.warning(_LW("network %(net_id)s is already associated to "
+                            "BGPVPN %(bgpvpn_id)s"),
+                        {'net_id': net_assoc['network_id'],
+                         'bgpvpn_id': bgpvpn_id})
+            raise bgpvpn_ext.BGPVPNNetAssocAlreadyExists(
+                bgpvpn_id=bgpvpn_id, net_id=net_assoc['network_id'])
 
     def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)

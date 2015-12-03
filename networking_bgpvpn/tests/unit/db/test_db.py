@@ -16,6 +16,8 @@
 from neutron import context
 
 from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
+from networking_bgpvpn.neutron.extensions.bgpvpn \
+    import BGPVPNNetAssocAlreadyExists
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNetAssocNotFound
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNotFound
 from networking_bgpvpn.tests.unit.services import test_plugin
@@ -158,6 +160,20 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                     self.assertEqual([net_id], bgpvpn['networks'])
                 bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, id)
                 self.assertEqual([], bgpvpn['networks'])
+
+    def test_db_associate_twice(self):
+        with self.network() as net, self.bgpvpn() as bgpvpn:
+            net_id = net['network']['id']
+            id = bgpvpn['bgpvpn']['id']
+            with self.assoc_net(id, net_id=net_id):
+                self.assoc_net(id,
+                               net_id=net_id,
+                               do_disassociate=False)
+                self.assertRaises(BGPVPNNetAssocAlreadyExists,
+                                  self.plugin_db.create_net_assoc,
+                                  self.ctx,
+                                  id, {'tenant_id': self._tenant_id,
+                                       'network_id': net_id})
 
     def test_db_find_bgpvpn_for_net(self):
         with self.network() as net:

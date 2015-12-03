@@ -62,6 +62,11 @@ class BGPVPNRDNotSupported(n_exc.BadRequest):
                 "route distinguisher")
 
 
+class BGPVPNNetAssocAlreadyExists(n_exc.BadRequest):
+    message = _("network %(net_id)s is already associated to "
+                "BGPVPN %(bgpvpn_id)s")
+
+
 def _validate_rt_list(data, valid_values=None):
     if not isinstance(data, list):
         msg = _("'%s' is not a list") % data
