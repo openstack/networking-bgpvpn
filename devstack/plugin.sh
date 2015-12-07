@@ -17,9 +17,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         if is_service_enabled q-svc; then
                 echo_summary "Configuring networking-bgpvpn"
                 mkdir -v -p $NEUTRON_CONF_DIR/policy.d && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
-                mkdir -v -p $(dirname $NETWORKING_BGPVPN_CONF) && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/networking_bgpvpn.conf $NETWORKING_BGPVPN_CONF
-                inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
-                iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
+                iniadd $NEUTRON_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
                 bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
         fi
         if is_service_enabled tempest; then
