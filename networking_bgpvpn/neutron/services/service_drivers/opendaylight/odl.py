@@ -22,7 +22,6 @@ from oslo_utils import excutils
 
 from networking_odl.common import client as odl_client
 
-from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -82,18 +81,19 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         url = BGPVPNS + '/' + bgpvpn['id']
         self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
 
-    def create_router_assoc(self, context, bgpvpn_id, router_association):
-        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
-            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
+    def create_router_assoc_postcommit(self, context, router_assoc):
+        bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
+        url = BGPVPNS + '/' + bgpvpn['id']
+        try:
+            self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
+        except requests.exceptions.RequestException:
+            with excutils.save_and_reraise_exception():
+                # delete from db
+                d_routerassoc = self.bgpvpn_db.delete_router_assoc(
+                    context, router_assoc['id'], router_assoc['bgpvpn_id'])
+                LOG.debug("Deleted router_assoc %s from db", d_routerassoc)
 
-    def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
-        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
-            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
-
-    def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
-        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
-            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
-
-    def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
-            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
+    def delete_router_assoc_postcommit(self, context, router_assoc):
+        bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
+        url = BGPVPNS + '/' + bgpvpn['id']
+        self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
