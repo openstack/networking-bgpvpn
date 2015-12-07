@@ -21,6 +21,7 @@ from neutron.callbacks import registry
 from neutron.callbacks import resources
 from neutron.common import constants as const
 from neutron import context as n_context
+from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.extensions import portbindings
 from neutron.i18n import _LE
@@ -31,6 +32,7 @@ from oslo_log import log as logging
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
 
+from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
@@ -72,6 +74,59 @@ def get_network_ports(context, network_id):
         return
 
 
+def get_router_ports(context, router_id):
+    try:
+        return (
+            context.session.query(models_v2.Port).
+            filter(
+                models_v2.Port.device_id == router_id,
+                models_v2.Port.device_owner == const.DEVICE_OWNER_ROUTER_INTF
+            ).all()
+        )
+    except exc.NoResultFound:
+        return
+
+
+def get_router_bgpvpn_assocs(context, router_id):
+    try:
+        return (
+            context.session.query(bgpvpn_db.BGPVPNRouterAssociation).
+            filter(
+                bgpvpn_db.BGPVPNRouterAssociation.router_id == router_id
+            ).all()
+        )
+    except exc.NoResultFound:
+        return []
+
+
+def get_network_bgpvpn_assocs(context, net_id):
+    try:
+        return (
+            context.session.query(bgpvpn_db.BGPVPNNetAssociation).
+            filter(
+                bgpvpn_db.BGPVPNNetAssociation.network_id == net_id
+            ).all()
+        )
+    except exc.NoResultFound:
+        return
+
+
+def get_bgpvpns_of_router_assocs_by_network(context, net_id):
+    try:
+        return (
+            context.session.query(bgpvpn_db.BGPVPN).
+            join(bgpvpn_db.BGPVPN.router_associations).
+            join(bgpvpn_db.BGPVPNRouterAssociation.router).
+            join(l3_db.Router.attached_ports).
+            join(l3_db.RouterPort.port).
+            filter(
+                models_v2.Port.network_id == net_id
+            ).all()
+        )
+    except exc.NoResultFound:
+        return
+
+
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     """BGPVPN Service Driver class for BaGPipe"""
@@ -94,6 +149,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         # REVISIT(tmorin): if/when port ABORT_DELETE events are implemented
         #  we will have to revisit the issue, so that the action done after
         #  BEFORE_DELETE is reverted if needed (or a different solution)
+
+        registry.subscribe(self.registry_port_created, resources.PORT,
+                           events.AFTER_CREATE)
 
     def _format_bgpvpn(self, bgpvpn, network_id):
         """JSON-format BGPVPN
@@ -183,6 +241,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         # Check if port is connected on a BGP VPN network
         bgpvpns = (
             self.bgpvpn_db.find_bgpvpns_for_network(context, network_id)
+            or self.retrieve_bgpvpns_of_router_assocs_by_network(context,
+                                                                 network_id)
         )
 
         if not bgpvpns:
@@ -204,6 +264,11 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         bgpvpn_network_info.update(network_info)
 
         return bgpvpn_network_info
+
+    def retrieve_bgpvpns_of_router_assocs_by_network(self, context,
+                                                     network_id):
+        return [self.bgpvpn_db._make_bgpvpn_dict(bgpvpn) for bgpvpn in
+                get_bgpvpns_of_router_assocs_by_network(context, network_id)]
 
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
         for net_id in bgpvpn['networks']:
@@ -317,18 +382,98 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                port_bgpvpn_info,
                                                agent_host)
 
+    def create_router_assoc_postcommit(self, context, router_assoc):
+        ports = get_router_ports(context, router_assoc['router_id'])
+        if ports:
+            net_ids = set([port['network_id'] for port in ports])
+            for net_id in net_ids:
+                net_assoc = {'network_id': net_id,
+                             'bgpvpn_id': router_assoc['bgpvpn_id']}
+                self.create_net_assoc_postcommit(context, net_assoc)
+
+    def delete_router_assoc_postcommit(self, context, router_assoc):
+        ports = get_router_ports(context, router_assoc['router_id'])
+        if ports:
+            net_ids = set([port['network_id'] for port in ports])
+            for net_id in net_ids:
+                net_assoc = {'network_id': net_id,
+                             'bgpvpn_id': router_assoc['bgpvpn_id']}
+                self.delete_net_assoc_postcommit(context, net_assoc)
+
+    def router_interface_added(self, context, port):
+        net_assocs = get_network_bgpvpn_assocs(context, port['network_id'])
+        router_assocs = get_router_bgpvpn_assocs(context, port['device_id'])
+        if net_assocs and router_assocs:
+            msg = 'Can not add router interface because both router %(rtr)s ' \
+                  'and network %(net)s have bgpvpn association(s)'
+            LOG.error(msg % {'rtr': port['device_id'],
+                             'net': port['network_id']})
+            return
+        for router_assoc in router_assocs:
+            net_assoc = {'network_id': port['network_id'],
+                         'bgpvpn_id': router_assoc['bgpvpn_id']}
+            self.create_net_assoc_postcommit(context, net_assoc)
+
+    def router_interface_removed(self, context, port):
+        for router_assoc in get_router_bgpvpn_assocs(context,
+                                                     port['device_id']):
+            net_assoc = {'network_id': port['network_id'],
+                         'bgpvpn_id': router_assoc['bgpvpn_id']}
+            self.delete_net_assoc_postcommit(context, net_assoc)
+
     @log_helpers.log_method_call
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs.get('context')
             port = kwargs.get('port')
-            origin_port = kwargs.get('origin_port')
+            original_port = kwargs.get('original_port')
             # In notifications coming from ml2/plugin.py update_port
             # it is possible that 'port' may be None, in this
-            # case we will use origin_port
+            # case we will use original_port
             if port is None:
-                port = origin_port
-            self.notify_port_updated(context, port['id'])
+                port = original_port
+
+            rtr_itf_added = self._is_router_intf_added(original_port, port)
+            rtr_itf_removed = self._is_router_intf_added(port, original_port)
+
+            if rtr_itf_added:
+                self.router_interface_added(context, port)
+            elif rtr_itf_removed:
+                self.router_interface_removed(context, original_port)
+            else:
+                self.notify_port_updated(context, port['id'])
+        except Exception as e:
+            LOG.exception(_LE("Error during notification processing "
+                              "%(resource)s %(event)s, %(trigger)s, "
+                              "%(kwargs)s: %(exc)s"),
+                          {'trigger': trigger,
+                           'resource': resource,
+                           'event': event,
+                           'kwargs': kwargs,
+                           'exc': e})
+
+    def _is_router_intf_added(self, original_port, port):
+        if not (original_port and port):
+            # This happens when the ml2 rpc.py sends a port update
+            # notification. original port will be None. However, this rpc
+            # notification will never be from a port device_id/device_owner
+            # update, so return False
+            return False
+        return (original_port['device_owner']
+                != const.DEVICE_OWNER_ROUTER_INTF
+                == port['device_owner'])
+
+    @log_helpers.log_method_call
+    def registry_port_deleted(self, resource, event, trigger, **kwargs):
+        try:
+            context = kwargs.get('context')
+            port_id = kwargs.get('port_id')
+            port = self._get_port(context, port_id)
+
+            if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
+                self.router_interface_removed(context, port)
+            else:
+                self.notify_port_deleted(context, port_id)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
@@ -340,11 +485,12 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                            'exc': e})
 
     @log_helpers.log_method_call
-    def registry_port_deleted(self, resource, event, trigger, **kwargs):
+    def registry_port_created(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs.get('context')
-            port_id = kwargs.get('port_id')
-            self.notify_port_deleted(context, port_id)
+            port = kwargs.get('port')
+            if port and port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
+                self.router_interface_added(context, port)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "

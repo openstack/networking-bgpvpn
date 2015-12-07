@@ -53,6 +53,11 @@ class BGPVPNNetAssocNotFound(n_exc.NotFound):
                 "for BGPVPN %(bgpvpn_id)s")
 
 
+class BGPVPNRouterAssocNotFound(n_exc.NotFound):
+    message = _("BGPVPN router association %(id)s could not be found "
+                "for BGPVPN %(bgpvpn_id)s")
+
+
 class BGPVPNTypeNotSupported(n_exc.BadRequest):
     message = _("BGPVPN %(driver)s driver does not support %(type)s type")
 
@@ -64,6 +69,16 @@ class BGPVPNRDNotSupported(n_exc.BadRequest):
 
 class BGPVPNNetAssocAlreadyExists(n_exc.BadRequest):
     message = _("network %(net_id)s is already associated to "
+                "BGPVPN %(bgpvpn_id)s")
+
+
+class BGPVPNRouterAssociationNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support router "
+                "associations")
+
+
+class BGPVPNRouterAssocAlreadyExists(n_exc.BadRequest):
+    message = _("router %(router_id)s is already associated to "
                 "BGPVPN %(bgpvpn_id)s")
 
 
@@ -150,7 +165,10 @@ RESOURCE_ATTRIBUTE_MAP = {
                            'enforce_policy': True},
         'networks': {'allow_post': False, 'allow_put': False,
                      'is_visible': True,
-                     'enforce_policy': True}
+                     'enforce_policy': True},
+        'routers': {'allow_post': False, 'allow_put': False,
+                    'is_visible': True,
+                    'enforce_policy': True}
     },
 }
 
@@ -172,6 +190,25 @@ SUB_RESOURCE_ATTRIBUTE_MAP = {
                            'validate': {'type:uuid': None},
                            'is_visible': True,
                            'enforce_policy': True}
+        }
+    },
+    'router_associations': {
+        'parent': {'collection_name': 'bgpvpns',
+                   'member_name': 'bgpvpn'},
+        'parameters': {
+            'id': {'allow_post': False, 'allow_put': False,
+                   'validate': {'type:uuid': None},
+                   'is_visible': True,
+                   'primary_key': True},
+            'tenant_id': {'allow_post': True, 'allow_put': False,
+                          'validate': {'type:string': None},
+                          'required_by_policy': True,
+                          'is_visible': True,
+                          'enforce_policy': True},
+            'router_id': {'allow_post': True, 'allow_put': False,
+                          'validate': {'type:uuid': None},
+                          'is_visible': True,
+                          'enforce_policy': True}
         }
     }
 }
@@ -204,6 +241,7 @@ class Bgpvpn(extensions.ExtensionDescriptor):
         plural_mappings['export_targets'] = 'export_target'
         plural_mappings['route_distinguishers'] = 'route_distinguishers'
         plural_mappings['network_associations'] = 'network_association'
+        plural_mappings['router_associations'] = 'router_association'
         attr.PLURALS.update(plural_mappings)
         resources = resource_helper.build_resource_info(plural_mappings,
                                                         RESOURCE_ATTRIBUTE_MAP,
@@ -303,4 +341,23 @@ class BGPVPNPluginBase(ServicePluginBase):
 
     @abc.abstractmethod
     def delete_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id):
+        pass
+
+    @abc.abstractmethod
+    def create_bgpvpn_router_association(self, context, bgpvpn_id,
+                                         router_association):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id,
+                                      fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_bgpvpn_router_associations(self, context, bgpvpn_id, filters=None,
+                                       fields=None):
+        pass
+
+    @abc.abstractmethod
+    def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
         pass

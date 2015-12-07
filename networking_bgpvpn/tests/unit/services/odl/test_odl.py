@@ -54,7 +54,8 @@ class TestOdlServiceDriver(TestBgpvpnOdlCommon):
                          'route_distinguishers': mock.ANY,
                          'type': mock.ANY,
                          'id': id,
-                         'networks': [net_id]}}
+                         'networks': [net_id],
+                         'routers': []}}
                     mocked_sendjson.assert_called_once_with(mock.ANY,
                                                             mock.ANY,
                                                             formatted_bgpvpn)

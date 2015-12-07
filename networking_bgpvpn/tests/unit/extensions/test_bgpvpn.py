@@ -51,9 +51,13 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         self.instance = self.plugin.return_value
         self.bgpvpn_id = _uuid()
         self.net_id = _uuid()
-        self.assoc_id = _uuid()
+        self.router_id = _uuid()
+        self.net_assoc_id = _uuid()
+        self.router_assoc_id = _uuid()
         self.NET_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
             '/network_associations'
+        self.ROUTER_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
+            '/router_associations'
 
     def test_bgpvpn_create(self):
         bgpvpn_id = _uuid()
@@ -201,7 +205,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         data = {'network_association': {'network_id': self.net_id,
                                         'tenant_id': _uuid()}}
         return_value = copy.copy(data['network_association'])
-        return_value.update({'id': self.assoc_id})
+        return_value.update({'id': self.net_assoc_id})
         self.instance.create_bgpvpn_network_association.return_value = \
             return_value
         res = self.api.post(_get_path(self.NET_ASSOC_URI,
@@ -217,18 +221,18 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         self.assertEqual(return_value, res['network_association'])
 
     def test_bgpvpn_net_get(self):
-        return_value = {'id': self.assoc_id,
+        return_value = {'id': self.net_assoc_id,
                         'network_id': self.net_id}
 
         self.instance.get_bgpvpn_network_association.return_value = \
             return_value
 
         res = self.api.get(_get_path(self.NET_ASSOC_URI,
-                                     id=self.assoc_id,
+                                     id=self.net_assoc_id,
                                      fmt=self.fmt))
 
         self.instance.get_bgpvpn_network_association.assert_called_with(
-            mock.ANY, self.assoc_id, self.bgpvpn_id, fields=mock.ANY
+            mock.ANY, self.net_assoc_id, self.bgpvpn_id, fields=mock.ANY
         )
         self.assertEqual(res.status_int, exc.HTTPOk.code)
         res = self.deserialize(res)
@@ -240,8 +244,60 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
 
     def test_bgpvpn_net_delete(self):
         res = self.api.delete(_get_path(self.NET_ASSOC_URI,
-                                        id=self.assoc_id,
+                                        id=self.net_assoc_id,
                                         fmt=self.fmt))
         self.instance.delete_bgpvpn_network_association.assert_called_with(
-            mock.ANY, self.assoc_id, self.bgpvpn_id)
+            mock.ANY, self.net_assoc_id, self.bgpvpn_id)
+        self.assertEqual(res.status_int, exc.HTTPNoContent.code)
+
+    def test_bgpvpn_router_create(self):
+        data = {
+            'router_association': {
+                'router_id': self.router_id,
+                'tenant_id': _uuid()
+            }
+        }
+        return_value = copy.copy(data['router_association'])
+        return_value.update({'id': self.router_assoc_id})
+        self.instance.create_bgpvpn_router_association.return_value = \
+            return_value
+        res = self.api.post(_get_path(self.ROUTER_ASSOC_URI, fmt=self.fmt),
+                            self.serialize(data),
+                            content_type='application/%s' % self.fmt,
+                            expect_errors=True)
+
+        self.instance.create_bgpvpn_router_association.assert_called_with(
+            mock.ANY, bgpvpn_id=self.bgpvpn_id, router_association=data)
+        self.assertIn('router_association', res)
+        res = self.deserialize(res)
+        self.assertEqual(return_value, res['router_association'])
+
+    def test_bgpvpn_router_get(self):
+        return_value = {'id': self.router_assoc_id,
+                        'router_id': self.router_id}
+
+        self.instance.get_bgpvpn_router_association.return_value = \
+            return_value
+
+        res = self.api.get(_get_path(self.ROUTER_ASSOC_URI,
+                                     id=self.router_assoc_id,
+                                     fmt=self.fmt))
+
+        self.instance.get_bgpvpn_router_association.assert_called_with(
+            mock.ANY, self.router_assoc_id, self.bgpvpn_id, fields=mock.ANY
+        )
+        self.assertEqual(res.status_int, exc.HTTPOk.code)
+        res = self.deserialize(res)
+        self.assertIn('router_association', res)
+        self.assertEqual(return_value, res['router_association'])
+
+    def test_bgpvpn_router_update(self):
+        pass
+
+    def test_bgpvpn_router_delete(self):
+        res = self.api.delete(_get_path(self.ROUTER_ASSOC_URI,
+                                        id=self.router_assoc_id,
+                                        fmt=self.fmt))
+        self.instance.delete_bgpvpn_router_association.assert_called_with(
+            mock.ANY, self.router_assoc_id, self.bgpvpn_id)
         self.assertEqual(res.status_int, exc.HTTPNoContent.code)

@@ -13,12 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import mock
 import webob.exc
 
 from neutron import context as n_context
 
 from neutron.common.constants import DEVICE_OWNER_DHCP
+from neutron.common.constants import DEVICE_OWNER_ROUTER_INTF
 from neutron.common.constants import PORT_STATUS_ACTIVE
 from neutron.common.constants import PORT_STATUS_DOWN
 
@@ -28,9 +30,8 @@ from neutron import manager
 from neutron.plugins.ml2 import config as ml2_config
 from neutron.plugins.ml2 import rpc as ml2_rpc
 
-from networking_bgpvpn.tests.unit.services import test_plugin
-
 from networking_bgpvpn.neutron.services.service_drivers.bagpipe import bagpipe
+from networking_bgpvpn.tests.unit.services import test_plugin
 
 
 class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
@@ -64,6 +65,30 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                                          'export_rt': rt}}
                     mocked_update.assert_called_once_with(mock.ANY,
                                                           formatted_bgpvpn)
+
+    def test_bagpipe_associate_router(self):
+        mocked_update = self.mocked_bagpipeAPI.update_bgpvpn
+        with self.router(tenant_id=self._tenant_id) as router:
+            router_id = router['router']['id']
+            with self.subnet() as subnet:
+                with self.port(subnet=subnet) as port:
+                    net_id = port['port']['network_id']
+                    subnet_id = subnet['subnet']['id']
+                    self._router_interface_action('add', router_id,
+                                                  subnet_id, None)
+
+                    with self.bgpvpn() as bgpvpn:
+                        id = bgpvpn['bgpvpn']['id']
+                        rt = bgpvpn['bgpvpn']['route_targets']
+                        mocked_update.reset_mock()
+                        with self.assoc_router(id, router_id):
+                            formatted_bgpvpn = {'id': id,
+                                                'network_id': net_id,
+                                                'l3vpn': {
+                                                    'import_rt': rt,
+                                                    'export_rt': rt}}
+                            mocked_update.assert_called_once_with(
+                                mock.ANY, formatted_bgpvpn)
 
     def test_bagpipe_disassociate_net(self):
         mocked_delete = self.mocked_bagpipeAPI.delete_bgpvpn
@@ -132,6 +157,37 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                     mocked_delete.assert_called_once_with(mock.ANY,
                                                           formatted_bgpvpn)
 
+    def test_bagpipe_callback_to_rpc_update_port_after_router_itf_added(self):
+        driver = self.bgpvpn_plugin.driver
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn:
+            self._router_interface_action('add',
+                                          router['router']['id'],
+                                          subnet['subnet']['id'],
+                                          None)
+            with self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                   router['router']['id']), \
+                    self.port(subnet=subnet) as port:
+                context = n_context.Context(user_id='fake_user',
+                                            tenant_id=self._tenant_id)
+                mac_address = port['port']['mac_address']
+                formatted_ip = (port['port']['fixed_ips'][0]['ip_address'] +
+                                '/' + subnet['subnet']['cidr'].split('/')[-1])
+                expected = {
+                    'gateway_ip': subnet['subnet']['gateway_ip'],
+                    'mac_address': mac_address,
+                    'ip_address': formatted_ip
+                }
+                expected.update(driver._format_bgpvpn_network_route_targets(
+                    [bgpvpn['bgpvpn']]))
+
+                actual = driver._retrieve_bgpvpn_network_info_for_port(
+                    context, port['port'])
+
+                self.assertEqual(expected, actual)
+
 
 TESTHOST = 'testhost'
 
@@ -163,12 +219,16 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
 
         self.bagpipe_driver = self.bgpvpn_plugin.driver
 
-        mock.patch.object(self.bgpvpn_plugin.driver,
-                          '_retrieve_bgpvpn_network_info_for_port',
-                          return_value=BGPVPN_INFO).start()
+        self.patched_driver = mock.patch.object(
+            self.bgpvpn_plugin.driver,
+            '_retrieve_bgpvpn_network_info_for_port',
+            return_value=BGPVPN_INFO)
+        self.patched_driver.start()
 
         self.mock_attach_rpc = self.mocked_bagpipeAPI.attach_port_on_bgpvpn
         self.mock_detach_rpc = self.mocked_bagpipeAPI.detach_port_from_bgpvpn
+        self.mock_update_bgpvpn_rpc = self.mocked_bagpipeAPI.update_bgpvpn
+        self.mock_delete_bgpvpn_rpc = self.mocked_bagpipeAPI.delete_bgpvpn
 
         self.ctxt = n_context.Context('fake_user', 'fake_project')
 
@@ -297,6 +357,87 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                 mock.ANY,
                 self._build_expected_return_down(port['port']),
                 TESTHOST)
+
+    def test_bagpipe_callback_to_rpc_update_port_router_itf_added(self):
+        with self.port() as port, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                mock.patch.object(self.bagpipe_driver, '_get_port_host',
+                                  return_value=TESTHOST), \
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
+                                  return_value=bgpvpn['bgpvpn']),\
+                mock.patch.object(bagpipe,
+                                  'get_router_bgpvpn_assocs',
+                                  return_value=[{
+                                      'bgpvpn_id': bgpvpn['bgpvpn']['id']
+                                  }]).start():
+            original_port = copy.deepcopy(port['port'])
+            port['port']['device_owner'] = DEVICE_OWNER_ROUTER_INTF
+            port['port']['device_id'] = router['router']['id']
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=port['port'],
+                original_port=original_port
+            )
+            self.mock_update_bgpvpn_rpc.assert_called_once_with(
+                mock.ANY,
+                self.bagpipe_driver._format_bgpvpn(bgpvpn['bgpvpn'],
+                                                   port['port']['network_id']))
+
+    def test_bagpipe_callback_to_rpc_update_port_router_itf_removed(self):
+        with self.port() as port, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                mock.patch.object(self.bagpipe_driver, '_get_port_host',
+                                  return_value=TESTHOST), \
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
+                                  return_value=bgpvpn['bgpvpn']),\
+                mock.patch.object(bagpipe,
+                                  'get_router_bgpvpn_assocs',
+                                  return_value=[{
+                                      'bgpvpn_id': bgpvpn['bgpvpn']['id']
+                                  }]).start():
+            original_port = copy.deepcopy(port['port'])
+            original_port['device_owner'] = DEVICE_OWNER_ROUTER_INTF
+            original_port['device_id'] = router['router']['id']
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=port['port'],
+                original_port=original_port
+            )
+            self.mock_delete_bgpvpn_rpc.assert_called_once_with(
+                mock.ANY,
+                self.bagpipe_driver._format_bgpvpn(bgpvpn['bgpvpn'],
+                                                   port['port']['network_id']))
+
+    def test_l3agent_add_remove_router_interface_to_bgpvpn_rpc(self):
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(bagpipe,
+                                  'get_router_bgpvpn_assocs',
+                                  return_value=[{
+                                      'bgpvpn_id': bgpvpn['bgpvpn']['id']
+                                  }]).start():
+            self._router_interface_action('add',
+                                          router['router']['id'],
+                                          subnet['subnet']['id'],
+                                          None)
+            self.mock_update_bgpvpn_rpc.assert_called_once_with(
+                mock.ANY,
+                self.bagpipe_driver._format_bgpvpn(bgpvpn['bgpvpn'],
+                                                   net['network']['id']))
+            self._router_interface_action('remove',
+                                          router['router']['id'],
+                                          subnet['subnet']['id'],
+                                          None)
+            self.mock_delete_bgpvpn_rpc.assert_called_once_with(
+                mock.ANY,
+                self.bagpipe_driver._format_bgpvpn(bgpvpn['bgpvpn'],
+                                                   net['network']['id']))
 
     def test_l2agent_rpc_to_bgpvpn_rpc(self):
         #
