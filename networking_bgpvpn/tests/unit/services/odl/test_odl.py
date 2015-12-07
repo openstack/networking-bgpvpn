@@ -58,3 +58,28 @@ class TestOdlServiceDriver(TestBgpvpnOdlCommon):
                     mocked_sendjson.assert_called_once_with(mock.ANY,
                                                             mock.ANY,
                                                             formatted_bgpvpn)
+
+    def test_odl_associate_router(self):
+        mocked_sendjson = self.mocked_odlclient.sendjson
+        with self.router(tenant_id=self._tenant_id) as router:
+            router_id = router['router']['id']
+            with self.bgpvpn() as bgpvpn:
+                id = bgpvpn['bgpvpn']['id']
+                rt = bgpvpn['bgpvpn']['route_targets']
+                mocked_sendjson.reset_mock()
+                with self.assoc_router(id, router_id):
+                    formatted_bgpvpn = {
+                        'bgpvpn':
+                        {'export_targets': mock.ANY,
+                         'name': mock.ANY,
+                         'route_targets': rt,
+                         'tenant_id': mock.ANY,
+                         'import_targets': mock.ANY,
+                         'route_distinguishers': mock.ANY,
+                         'type': mock.ANY,
+                         'id': id,
+                         'networks': [],
+                         'routers': [router_id]}}
+                    mocked_sendjson.assert_called_once_with(mock.ANY,
+                                                            mock.ANY,
+                                                            formatted_bgpvpn)
