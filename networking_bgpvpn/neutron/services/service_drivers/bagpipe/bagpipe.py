@@ -245,8 +245,12 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                                  network_id)
         )
 
-        if not bgpvpns:
-            return
+        # NOTE(tmorin): We currently need to send 'network_id', 'mac_address',
+        #   'ip_address', 'gateway_ip' to the agent, even in the absence of
+        #   a BGPVPN bound to the port.  If we don't this information will
+        #   lack on an update_bgpvpn RPC. When the agent will have the ability
+        #   to retrieve this info by itself, we'll change this method
+        #   to return {} if there is no bound bgpvpn.
 
         bgpvpn_rts = self._format_bgpvpn_network_route_targets(bgpvpns)
 
@@ -259,6 +263,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         network_info = get_network_info_for_port(context, port_id)
 
         if not network_info:
+            LOG.warning("No network information for net %s", network_id)
             return
 
         bgpvpn_network_info.update(network_info)
@@ -356,6 +361,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 self.agent_rpc.attach_port_on_bgpvpn(context,
                                                      port_bgpvpn_info,
                                                      agent_host)
+            else:
+                # currently not reached, because we need
+                # _retrieve_bgpvpn_network_info_for_port to always
+                # return network information, even in the absence
+                # of any BGPVPN port bound.
+                pass
+
         elif port['status'] == const.PORT_STATUS_DOWN:
             LOG.info("notify_port_updated, down")
             self.agent_rpc.detach_port_from_bgpvpn(context,
