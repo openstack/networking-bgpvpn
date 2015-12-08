@@ -70,6 +70,22 @@ class BGPVPNDriverBase(object):
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
         pass
 
+    @abc.abstractmethod
+    def create_router_assoc(self, context, bgpvpn_id, router_association):
+        pass
+
+    @abc.abstractmethod
+    def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
+        pass
+
 
 @six.add_metaclass(abc.ABCMeta)
 class BGPVPNDriverDBMixin(BGPVPNDriverBase):
@@ -129,6 +145,26 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                     bgpvpn_id)
         self.delete_net_assoc_postcommit(context, net_assoc)
 
+    def create_router_assoc(self, context, bgpvpn_id, router_association):
+        assoc = self.bgpvpn_db.create_router_assoc(context, bgpvpn_id,
+                                                   router_association)
+        self.create_router_assoc_postcommit(context, assoc)
+        return assoc
+
+    def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        return self.bgpvpn_db.get_router_assoc(context, assoc_id,
+                                               bgpvpn_id, fields)
+
+    def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        return self.bgpvpn_db.get_router_assocs(context, bgpvpn_id,
+                                                filters, fields)
+
+    def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
+        router_assoc = self.bgpvpn_db.delete_router_assoc(context,
+                                                          assoc_id,
+                                                          bgpvpn_id)
+        self.delete_router_assoc_postcommit(context, router_assoc)
+
     @abc.abstractmethod
     def create_bgpvpn_postcommit(self, context, bgpvpn):
         pass
@@ -147,6 +183,14 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     @abc.abstractmethod
     def delete_net_assoc_postcommit(self, context, net_assoc):
+        pass
+
+    @abc.abstractmethod
+    def create_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+    @abc.abstractmethod
+    def delete_router_assoc_postcommit(self, context, router_assoc):
         pass
 
 
@@ -173,4 +217,10 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
         pass
 
     def delete_net_assoc_postcommit(self, context, net_assoc):
+        pass
+
+    def create_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+    def delete_router_assoc_postcommit(self, context, router_assoc):
         pass

@@ -13,9 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.common import constants as const
 from neutron.common import exceptions as n_exc
 from neutron.i18n import _LI
 from neutron import manager
+from neutron.plugins.common import constants as plugin_constants
 from neutron.services import service_base
 from oslo_log import log
 
@@ -53,13 +55,64 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                             "running multiple drivers in parallel is not yet"
                             "supported"))
 
-    def _validate_network(self, context, network):
-        if (not network or 'network_id' not in network):
+    def _validate_network(self, context, net_assoc):
+        if not net_assoc or 'network_id' not in net_assoc:
             msg = 'no network specified'
             raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
         plugin = manager.NeutronManager.get_plugin()
-        return plugin.get_network(context, network['network_id'])
+        network = plugin.get_network(context, net_assoc['network_id'])
+        self._validate_network_has_router_assoc(context, network, plugin)
+        return network
+
+    def _validate_network_has_router_assoc(self, context, network, plugin):
+        filter = {'network_id': [network['id']],
+                  'device_owner': [const.DEVICE_OWNER_ROUTER_INTF]}
+        router_port = plugin.get_ports(context, filters=filter)
+        if router_port:
+            router_id = router_port[0]['device_id']
+            filter = {'tenant_id': [network['tenant_id']]}
+            bgpvpns = self.driver.get_bgpvpns(context, filters=filter)
+            bgpvpns = [str(bgpvpn['id']) for bgpvpn in bgpvpns
+                       if router_id in bgpvpn['routers']]
+            if bgpvpns:
+                msg = ('Network %(net_id)s is linked to a router which is '
+                       'already associated to bgpvpn(s) %(bgpvpns)s'
+                       % {'net_id': network['id'],
+                          'bgpvpns': bgpvpns}
+                       )
+                raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+
+    def _validate_router(self, context, router_assoc):
+        if not router_assoc or 'router_id' not in router_assoc:
+            msg = 'no router specified'
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
+
+        l3_plugin = manager.NeutronManager.get_service_plugins().get(
+            plugin_constants.L3_ROUTER_NAT)
+        router = l3_plugin.get_router(context, router_assoc['router_id'])
+        plugin = manager.NeutronManager.get_plugin()
+        self._validate_router_has_net_assocs(context, router, plugin)
+        return router
+
+    def _validate_router_has_net_assocs(self, context, router, plugin):
+        filter = {'device_id': [router['id']],
+                  'device_owner': [const.DEVICE_OWNER_ROUTER_INTF]}
+        router_ports = plugin.get_ports(context, filters=filter)
+        if router_ports:
+            filter = {'tenant_id': [router['tenant_id']]}
+            bgpvpns = self.driver.get_bgpvpns(context, filters=filter)
+            for port in router_ports:
+                bgpvpns = [str(bgpvpn['id']) for bgpvpn in bgpvpns
+                           if port['network_id'] in bgpvpn['networks']]
+                if bgpvpns:
+                    msg = ('router %(rtr_id)s has an attached network '
+                           '%(net_id)s which is already associated to '
+                           'bgpvpn(s) %(bgpvpns)s'
+                           % {'rtr_id': router['id'],
+                              'net_id': port['network_id'],
+                              'bgpvpns': bgpvpns})
+                    raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def get_plugin_type(self):
         return constants.BGPVPN
@@ -115,3 +168,31 @@ class BGPVPNPlugin(BGPVPNPluginBase):
 
     def delete_bgpvpn_network_association(self, context, assoc_id, bgpvpn_id):
         self.driver.delete_net_assoc(context, assoc_id, bgpvpn_id)
+
+    def create_bgpvpn_router_association(self, context, bgpvpn_id,
+                                         router_association):
+        router_assoc = router_association['router_association']
+        router = self._validate_router(context, router_assoc)
+        bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
+        if not router['tenant_id'] == bgpvpn['tenant_id']:
+            msg = "router doesn't belong to the bgpvpn owner"
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        if not (router_assoc['tenant_id'] == bgpvpn['tenant_id']):
+            msg = "router association and bgpvpn should " \
+                  "belong to the same tenant"
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        return self.driver.create_router_assoc(context, bgpvpn_id,
+                                               router_assoc)
+
+    def get_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id,
+                                      fields=None):
+        return self.driver.get_router_assoc(context, assoc_id, bgpvpn_id,
+                                            fields)
+
+    def get_bgpvpn_router_associations(self, context, bgpvpn_id, filters=None,
+                                       fields=None):
+        return self.driver.get_router_assocs(context, bgpvpn_id, filters,
+                                             fields)
+
+    def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
+        self.driver.delete_router_assoc(context, assoc_id, bgpvpn_id)
