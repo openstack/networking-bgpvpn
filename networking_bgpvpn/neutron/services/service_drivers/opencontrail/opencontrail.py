@@ -390,3 +390,19 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
         oc_client.kv_store('DELETE', key=assoc_id)
 
         return net_assoc
+
+    def create_router_assoc(self, context, bgpvpn_id, router_association):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
+
+    def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
+
+    def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
+
+    def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)

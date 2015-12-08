@@ -110,7 +110,7 @@ class BGPVPNList(extension.ClientExtensionList,
     shell_command = 'bgpvpn-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
-        'export_targets', 'tenant_id', 'networks']
+        'export_targets', 'tenant_id', 'networks', 'routers']
     pagination_support = True
     sorting_support = True
 
@@ -209,3 +209,67 @@ class BGPVPNNetAssocList(extension.ClientExtensionList,
 class BGPVPNNetAssocShow(extension.ClientExtensionShow,
                          BGPVPNNetAssoc):
     shell_command = "bgpvpn-net-assoc-show"
+
+
+# BGPVPN Router associations
+
+
+class BGPVPNRouterAssoc(BGPVPNAssociation,
+                        extension.NeutronClientExtension):
+
+    resource = 'router_association'
+    resource_plural = '%ss' % resource
+    parent_resource = True
+
+    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
+    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+
+    versions = ['2.0']
+
+    allow_names = False
+
+
+class BGPVPNRouterAssocCreate(BGPVPNRouterAssoc,
+                              extension.ClientExtensionCreate):
+    shell_command = "bgpvpn-router-assoc-create"
+
+    def add_known_arguments(self, parser):
+        BGPVPNRouterAssoc.add_known_arguments(self, parser)
+        parser.add_argument(
+            '--router', required=True,
+            help=_('ID or name of the router.'))
+
+    def args2body(self, parsed_args):
+        body = {
+            self.resource: {},
+        }
+        router = neutronv20.find_resourceid_by_name_or_id(self.get_client(),
+                                                          'router',
+                                                          parsed_args.router)
+        body[self.resource]['router_id'] = router
+        neutronv20.update_dict(parsed_args, body[self.resource], ['tenant_id'])
+        return body
+
+
+class BGPVPNRouterAssocUpdate(extension.ClientExtensionUpdate,
+                              BGPVPNRouterAssoc):
+    shell_command = "bgpvpn-router-assoc-update"
+
+
+class BGPVPNRouterAssocDelete(extension.ClientExtensionDelete,
+                              BGPVPNRouterAssoc):
+    shell_command = "bgpvpn-router-assoc-delete"
+
+
+class BGPVPNRouterAssocList(extension.ClientExtensionList,
+                            BGPVPNRouterAssoc):
+    shell_command = "bgpvpn-router-assoc-list"
+
+    list_columns = ['id', 'router_id']
+    pagination_support = True
+    sorting_support = True
+
+
+class BGPVPNRouterAssocShow(extension.ClientExtensionShow,
+                            BGPVPNRouterAssoc):
+    shell_command = "bgpvpn-router-assoc-show"
