@@ -81,6 +81,7 @@ class BGPVPNCreateUpdateCommon(BGPVPN):
 
 class BGPVPNCreate(BGPVPNCreateUpdateCommon,
                    extension.ClientExtensionCreate):
+    """Create a BGPVPN."""
     shell_command = 'bgpvpn-create'
 
     def add_known_arguments(self, parser):
@@ -97,16 +98,19 @@ class BGPVPNCreate(BGPVPNCreateUpdateCommon,
 
 class BGPVPNUpdate(BGPVPNCreateUpdateCommon,
                    extension.ClientExtensionUpdate):
+    """Update a given BGPVPN."""
     shell_command = 'bgpvpn-update'
 
 
 class BGPVPNDelete(extension.ClientExtensionDelete,
                    BGPVPN):
+    """Delete a given BGPVPN."""
     shell_command = 'bgpvpn-delete'
 
 
 class BGPVPNList(extension.ClientExtensionList,
                  BGPVPN):
+    """List BGPVPNs that belong to a given tenant."""
     shell_command = 'bgpvpn-list'
     list_columns = [
         'id', 'name', 'type', 'route_targets', 'import_targets',
@@ -117,6 +121,7 @@ class BGPVPNList(extension.ClientExtensionList,
 
 class BGPVPNShow(extension.ClientExtensionShow,
                  BGPVPN):
+    """Show a given BGPVPN."""
     shell_command = 'bgpvpn-show'
 
 
@@ -161,6 +166,7 @@ class BGPVPNNetAssoc(BGPVPNAssociation,
 
 class BGPVPNNetAssocCreate(BGPVPNNetAssoc,
                            extension.ClientExtensionCreate):
+    """Create a BGPVPN-Network association."""
     shell_command = "bgpvpn-net-assoc-create"
 
     def add_known_arguments(self, parser):
@@ -189,16 +195,19 @@ class BGPVPNNetAssocCreate(BGPVPNNetAssoc,
 
 class BGPVPNNetAssocUpdate(extension.ClientExtensionUpdate,
                            BGPVPNNetAssoc):
+    """Update a given BGPVPN-Network association."""
     shell_command = "bgpvpn-net-assoc-update"
 
 
 class BGPVPNNetAssocDelete(extension.ClientExtensionDelete,
                            BGPVPNNetAssoc):
+    """Delete a given BGPVPN-Network association."""
     shell_command = "bgpvpn-net-assoc-delete"
 
 
 class BGPVPNNetAssocList(extension.ClientExtensionList,
                          BGPVPNNetAssoc):
+    """List BGPVPN-Network associations for a given BGPVPN."""
     shell_command = "bgpvpn-net-assoc-list"
 
     list_columns = ['id', 'network_id']
@@ -208,6 +217,7 @@ class BGPVPNNetAssocList(extension.ClientExtensionList,
 
 class BGPVPNNetAssocShow(extension.ClientExtensionShow,
                          BGPVPNNetAssoc):
+    """Show a given BGPVPN-Network association."""
     shell_command = "bgpvpn-net-assoc-show"
 
 
@@ -231,6 +241,7 @@ class BGPVPNRouterAssoc(BGPVPNAssociation,
 
 class BGPVPNRouterAssocCreate(BGPVPNRouterAssoc,
                               extension.ClientExtensionCreate):
+    """Create a BGPVPN-Router association."""
     shell_command = "bgpvpn-router-assoc-create"
 
     def add_known_arguments(self, parser):
@@ -253,16 +264,19 @@ class BGPVPNRouterAssocCreate(BGPVPNRouterAssoc,
 
 class BGPVPNRouterAssocUpdate(extension.ClientExtensionUpdate,
                               BGPVPNRouterAssoc):
+    """Update a given BGPVPN-Router association."""
     shell_command = "bgpvpn-router-assoc-update"
 
 
 class BGPVPNRouterAssocDelete(extension.ClientExtensionDelete,
                               BGPVPNRouterAssoc):
+    """Delete a given BGPVPN-Router association."""
     shell_command = "bgpvpn-router-assoc-delete"
 
 
 class BGPVPNRouterAssocList(extension.ClientExtensionList,
                             BGPVPNRouterAssoc):
+    """List BGPVPN-Router associations for a given BGPVPN."""
     shell_command = "bgpvpn-router-assoc-list"
 
     list_columns = ['id', 'router_id']
@@ -272,4 +286,5 @@ class BGPVPNRouterAssocList(extension.ClientExtensionList,
 
 class BGPVPNRouterAssocShow(extension.ClientExtensionShow,
                             BGPVPNRouterAssoc):
+    """Show a given BGPVPN-Router association."""
     shell_command = "bgpvpn-router-assoc-show"
