@@ -68,7 +68,6 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
         'import_targets': rtrd_str2list(bgpvpn['import_targets']),
         'export_targets': rtrd_str2list(bgpvpn['export_targets']),
         'route_distinguishers': rtrd_str2list(bgpvpn['route_distinguishers']),
-        'auto_aggregate': bgpvpn['auto_aggregate'],
         'networks': bgpvpn.get('networks', []),
     }
     return filter_fields(res, fields)

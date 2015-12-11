@@ -43,7 +43,6 @@ def upgrade(active_plugins=None, options=None):
         sa.Column('import_targets', sa.String(255), nullable=True),
         sa.Column('export_targets', sa.String(255), nullable=True),
         sa.Column('route_distinguishers', sa.String(255), nullable=True),
-        sa.Column('auto_aggregate', sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_table(

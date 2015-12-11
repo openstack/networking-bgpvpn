@@ -60,11 +60,6 @@ class BGPVPNCreateUpdateCommon(BGPVPN):
             help=_('List of RDs that will be used to advertize VPN routes.'
                    'Usage: -- --route-distinguishers list=true '
                    '<asn1>:<nn1> <asn2>:<nn2> ...'))
-        parser.add_argument(
-            '--no-aggregate',
-            dest='auto_aggregate', action='store_false',
-            help=_('Disable auto aggregation (only for '
-                   'L3VPN type)'))
 
     def args2body(self, parsed_args):
         body = {
@@ -74,7 +69,7 @@ class BGPVPNCreateUpdateCommon(BGPVPN):
         neutronv20.update_dict(parsed_args, body[self.resource],
                                ['name', 'tenant_id', 'type', 'route_targets',
                                 'import_targets', 'export_targets',
-                                'route_distinguishers', 'auto_aggregate'])
+                                'route_distinguishers'])
 
         return body
 

@@ -29,7 +29,6 @@ Description of a BGPVPN resource:
     route_targets,list(str),RW admin only,None,List of valid route-target strings (see below),Route Targets that will be both imported and used for export
     import_targets,list(str),RW admin only,None,List of valid route-target strings (see below),additional Route Targets that will be imported
     export_targets,list(str),RW admin only,None,List of valid route-target strings (see below),additional Route Targets that will be used for export
-    auto_aggregate,bool,RW admin only,False,{ True | False },enable prefix aggregation or not (type l3 only)
     route_distinguishers,list(str),RW admin only,None,List of valid route-distinguisher strings (see below),(if this parameter is specified) one of these RDs will be used to advertize VPN routes
     networks,list(uuid-str),RO,None,List of Network UUIDs,This read-only attribute reflects the associations defined by Network association API resources
     routers,list(uuid-str),RO,None,List of Router UUIDs,This read-only attribute reflects the associations defined by Router association API resources
@@ -76,11 +75,6 @@ Valid strings for a Route Target or a Route Distinguisher are the following:
 * <2-byte AS#>:<32bit-number>
 * <4-byte AS#>:<16bit-number>
 * <4-byte IPv4>:<16bit-number>
-
-The auto-aggregate flag controls whether or not routes should be automatically
-aggregated before being advertised outside Neutron.
-A backend may or may not support this behavior, and its driver should report
-an API error in the latter case.
 
 Example API call to manipulate a BGPVPN resource
 ------------------------------------------------

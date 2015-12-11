@@ -80,7 +80,6 @@ class BGPVPN(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
     import_targets = sa.Column(sa.String(255), nullable=False)
     export_targets = sa.Column(sa.String(255), nullable=False)
     route_distinguishers = sa.Column(sa.String(255), nullable=False)
-    auto_aggregate = sa.Column(sa.Boolean(), nullable=False)
     network_associations = orm.relationship("BGPVPNNetAssociation",
                                             backref="bgpvpn",
                                             lazy='joined',
@@ -123,8 +122,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             'import_targets':
                 utils.rtrd_str2list(bgpvpn_db['import_targets']),
             'export_targets':
-                utils.rtrd_str2list(bgpvpn_db['export_targets']),
-            'auto_aggregate': bgpvpn_db['auto_aggregate']
+                utils.rtrd_str2list(bgpvpn_db['export_targets'])
         }
         return self._fields(res, fields)
 
@@ -143,8 +141,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 route_targets=rt,
                 import_targets=i_rt,
                 export_targets=e_rt,
-                route_distinguishers=rd,
-                auto_aggregate=bgpvpn['auto_aggregate']
+                route_distinguishers=rd
             )
             context.session.add(bgpvpn_db)
 
