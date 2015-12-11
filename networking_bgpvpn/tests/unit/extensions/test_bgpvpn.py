@@ -102,30 +102,41 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
 
         self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
 
-    def test_bgpvpn_create_with_invalid_route_target(self):
-        data = {
-            'bgpvpn': {'name': 'bgpvpn1',
-                       'type': 'l3',
-                       'route_targets': ['65536:0'],
-                       'tenant_id': _uuid()}
-        }
+    def _data_for_invalid_rtdt(self, field):
+        values = [['65536:0'],
+                  ['0:65536'],
+                  [':1'],
+                  ['1:'],
+                  ['42'],
+                  ]
+        for value in values:
+            yield {'bgpvpn': {'name': 'bgpvpn1',
+                              'type': 'l3',
+                              field: value,
+                              'auto_aggregate': False,
+                              'tenant_id': _uuid()}
+                   }
 
-        res = self.api.post(_get_path(BGPVPN_URI,
-                                      fmt=self.fmt),
-                            self.serialize(data),
-                            content_type='application/%s' % self.fmt,
-                            expect_errors=True)
+    def _test_invalid_field(self, field):
+        for data in self._data_for_invalid_rtdt(field):
+            res = self.api.post(_get_path(BGPVPN_URI, fmt=self.fmt),
+                                self.serialize(data),
+                                content_type='application/%s' % self.fmt,
+                                expect_errors=True)
 
-        self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
+            self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
 
-        data['bgpvpn']['route_targets'] = ['0:65536']
+    def test_bgpvpn_create_with_invalid_route_targets(self):
+        self._test_invalid_field('route_targets')
 
-        res = self.api.post(_get_path(BGPVPN_URI, fmt=self.fmt),
-                            self.serialize(data),
-                            content_type='application/%s' % self.fmt,
-                            expect_errors=True)
+    def test_bgpvpn_create_with_invalid_import_rts(self):
+        self._test_invalid_field('import_rts')
 
-        self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
+    def test_bgpvpn_create_with_invalid_export_rts(self):
+        self._test_invalid_field('export_rts')
+
+    def test_bgpvpn_create_with_invalid_route_distinguishers(self):
+        self._test_invalid_field('route_distinguishers')
 
     def test_bgpvpn_list(self):
         bgpvpn_id = _uuid()
@@ -202,8 +213,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         return_value.update({'id': self.net_assoc_id})
         self.instance.create_bgpvpn_network_association.return_value = \
             return_value
-        res = self.api.post(_get_path(self.NET_ASSOC_URI,
-                                      fmt=self.fmt),
+        res = self.api.post(_get_path(self.NET_ASSOC_URI, fmt=self.fmt),
                             self.serialize(data),
                             content_type='application/%s' % self.fmt,
                             expect_errors=True)

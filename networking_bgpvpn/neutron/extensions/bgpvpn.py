@@ -83,6 +83,9 @@ class BGPVPNRouterAssocAlreadyExists(n_exc.BadRequest):
 
 
 def _validate_rt_list(data, valid_values=None):
+    if data is None or data is "":
+        return
+
     if not isinstance(data, list):
         msg = _("'%s' is not a list") % data
         LOG.debug(msg)
@@ -99,13 +102,7 @@ def _validate_rt_list(data, valid_values=None):
         LOG.debug(msg)
         return msg
 
-
-def _validate_rt_list_or_none(data, valid_values=None):
-    if not data:
-        return _validate_rt_list(data, valid_values=valid_values)
-
-validators = {'type:route_target_list': _validate_rt_list,
-              'type:route_target_list_or_none': _validate_rt_list_or_none}
+validators = {'type:route_target_list': _validate_rt_list}
 attr.validators.update(validators)
 
 RESOURCE_ATTRIBUTE_MAP = {
@@ -139,22 +136,19 @@ RESOURCE_ATTRIBUTE_MAP = {
         'import_targets': {'allow_post': True, 'allow_put': True,
                            'default': [],
                            'convert_to': attr.convert_to_list,
-                           'validate': {'type:route_target_list_or_none':
-                                        None},
+                           'validate': {'type:route_target_list': None},
                            'is_visible': True,
                            'enforce_policy': True},
         'export_targets': {'allow_post': True, 'allow_put': True,
                            'default': [],
                            'convert_to': attr.convert_to_list,
-                           'validate': {'type:route_target_list_or_none':
-                                        None},
+                           'validate': {'type:route_target_list': None},
                            'is_visible': True,
                            'enforce_policy': True},
         'route_distinguishers': {'allow_post': True, 'allow_put': True,
                                  'default': [],
                                  'convert_to': attr.convert_to_list,
-                                 'validate': {'type:route_target_list_or_none':
-                                              None},
+                                 'validate': {'type:route_target_list': None},
                                  'is_visible': True,
                                  'enforce_policy': True},
         'networks': {'allow_post': False, 'allow_put': False,
