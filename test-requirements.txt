@@ -17,3 +17,5 @@ testscenarios>=0.4
 testtools!=1.2.0,>=0.9.36
 
 -e git+https://git.openstack.org/openstack/networking-odl@stable/kilo#egg=networking-odl
+-e git+https://git.openstack.org/openstack/networking-bagpipe@stable/kilo#egg=networking-bagpipe
+
