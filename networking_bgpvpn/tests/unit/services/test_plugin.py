@@ -103,15 +103,15 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     @contextlib.contextmanager
     def bgpvpn(self, do_delete=True, **kwargs):
         fmt = 'json'
-        tenant_id = kwargs.get('tenant_id') if 'tenant_id' in kwargs\
-            else self._tenant_id
-        if(kwargs.get('data')):
+        if kwargs.get('data'):
             bgpvpn_data = kwargs.get('data')
         else:
-            bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
-                                      'type': 'l3',
-                                      'route_targets': ['1234:56'],
-                                      'tenant_id': tenant_id}}
+            bgpvpn = {'name': 'bgpvpn1',
+                      'type': 'l3',
+                      'route_targets': ['1234:56'],
+                      'tenant_id': self._tenant_id}
+            bgpvpn.update(kwargs)
+            bgpvpn_data = {'bgpvpn': bgpvpn}
         bgpvpn_req = self.new_create_request(
             'bgpvpn/bgpvpns', bgpvpn_data, fmt=fmt)
         res = bgpvpn_req.get_response(self.ext_api)
@@ -313,6 +313,23 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                     subresource='router_associations')
                 res = bgpvpn_router_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
+
+    def test_associate_router_incorrect_bgpvpn_type(self):
+        with self.router(tenant_id=self._tenant_id) as router:
+            router_id = router['router']['id']
+            with self.bgpvpn(tenant_id='another_tenant',
+                             type=constants.BGPVPN_L2) as bgpvpn:
+                id = bgpvpn['bgpvpn']['id']
+                data = {'router_association': {'router_id': router_id,
+                                               'tenant_id': self._tenant_id}}
+                bgpvpn_router_req = self.new_create_request(
+                    'bgpvpn/bgpvpns',
+                    data=data,
+                    fmt=self.fmt,
+                    id=id,
+                    subresource='router_associations')
+                res = bgpvpn_router_req.get_response(self.ext_api)
+                self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
 
     def test_router_assoc_belong_to_diff_tenant(self):
         with self.router(tenant_id=self._tenant_id) as router:
