@@ -19,6 +19,7 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
+from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 from networking_odl.common import client as odl_client
 
@@ -26,6 +27,7 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 LOG = logging.getLogger(__name__)
 BGPVPNS = 'bgpvpns'
+OPENDAYLIGHT_BGPVPN_DRIVER_NAME = 'OpenDaylight'
 
 
 class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
@@ -79,3 +81,19 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
         url = BGPVPNS + '/' + bgpvpn['id']
         self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
+
+    def create_router_assoc(self, context, bgpvpn_id, router_association):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
+
+    def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
+
+    def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
+
+    def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
+        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
+            driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME)
