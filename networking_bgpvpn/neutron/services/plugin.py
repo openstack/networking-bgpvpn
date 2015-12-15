@@ -174,6 +174,10 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         router_assoc = router_association['router_association']
         router = self._validate_router(context, router_assoc)
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
+        if not bgpvpn['type'] == constants.BGPVPN_L3:
+            msg = ("Router associations require the bgpvpn to be of type %s"
+                   % constants.BGPVPN_L3)
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
         if not router['tenant_id'] == bgpvpn['tenant_id']:
             msg = "router doesn't belong to the bgpvpn owner"
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
