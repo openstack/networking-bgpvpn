@@ -24,7 +24,7 @@ The bagpipe driver for the BGPVPN service plugin interacts with the openvswitch 
 node, which is extended to support new RPCs to trigger the local configuration on compute nodes
 of BGP VPN instances and of their MPLS dataplane.
 
-  .. blockdiag:: overview.blockdiag
+  .. image:: overview.png
 
 How to use ?
 ------------
