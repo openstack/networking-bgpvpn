@@ -13,15 +13,15 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
 elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
 	echo_summary "Enabling networking-bgpvpn service plugin"
 	_neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
+	# if bagpipe driver, then add bgpvpn_notify ML2 mech_driver
+	if [[ "$NETWORKING_BGPVPN_DRIVER" =~ "bagpipe" ]]; then
+	       Q_ML2_PLUGIN_MECHANISM_DRIVERS="$Q_ML2_PLUGIN_MECHANISM_DRIVERS,bgpvpn_notify"
+	fi
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         if is_service_enabled q-svc; then
                 echo_summary "Configuring networking-bgpvpn"
                 mkdir -v -p $NEUTRON_CONF_DIR/policy.d && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
                 iniadd $NEUTRON_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
-                # if bagpipe driver, then add bgpvpn_notify ML2 mech_driver
-                if [[ "$NETWORKING_BGPVPN_DRIVER" =~ "bagpipe" ]]; then
-                       Q_ML2_PLUGIN_MECHANISM_DRIVERS="$Q_ML2_PLUGIN_MECHANISM_DRIVERS,bgpvpn_notify"
-                fi
                 bgpvpn-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
         fi
         if is_service_enabled tempest; then
