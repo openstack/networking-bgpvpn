@@ -15,11 +15,10 @@
 
 from neutron.common import constants as const
 from neutron.common import exceptions as n_exc
-from neutron.i18n import _LI
 from neutron import manager
+from neutron.openstack.common import log
 from neutron.plugins.common import constants as plugin_constants
 from neutron.services import service_base
-from oslo_log import log
 
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase
 from networking_bgpvpn.neutron.services.common import constants
@@ -46,14 +45,14 @@ class BGPVPNPlugin(BGPVPNPluginBase):
         # Load the default driver
         drivers, default_provider = service_base.load_drivers(constants.BGPVPN,
                                                               self)
-        LOG.info(_LI("BGP VPN Service Plugin using Service Driver: %s"),
+        LOG.info(_("BGP VPN Service Plugin using Service Driver: %s"),
                  default_provider)
         self.driver = drivers[default_provider]
 
         if len(drivers) > 1:
-            LOG.warning(_LI("Multiple drivers configured for BGPVPN, although"
-                            "running multiple drivers in parallel is not yet"
-                            "supported"))
+            LOG.warning(_("Multiple drivers configured for BGPVPN, although"
+                          "running multiple drivers in parallel is not yet"
+                          "supported"))
 
     def _validate_network(self, context, net_assoc):
         if not net_assoc or 'network_id' not in net_assoc:

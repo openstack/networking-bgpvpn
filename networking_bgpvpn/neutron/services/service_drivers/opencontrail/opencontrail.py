@@ -13,14 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-from oslo_log import log
-from oslo_utils import uuidutils
-
 import json
 
 from neutron.common import exceptions as n_exc
-from neutron.i18n import _LI
+from neutron.openstack.common import log
+from neutron.openstack.common import uuidutils
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import constants
@@ -109,7 +106,7 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
             try:
                 net_ri_id = self._get_ri_id_of_network(oc_client, network_id)
             except n_exc.NetworkNotFound:
-                LOG.info(_LI("Network %s not found, cleanup route targets"),
+                LOG.info(_("Network %s not found, cleanup route targets"),
                          network_id)
                 rts_fq_name = (bgpvpn['route_targets'] +
                                bgpvpn['import_targets'] +

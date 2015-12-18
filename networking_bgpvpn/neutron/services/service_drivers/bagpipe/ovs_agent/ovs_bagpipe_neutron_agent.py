@@ -21,14 +21,12 @@ eventlet.monkey_patch()
 
 from neutron.agent.common import config as agent_cfg
 from neutron.agent.linux import ip_lib
-from neutron.i18n import _LE
-from neutron.i18n import _LI
 
 from neutron.common import config as common_config
 from neutron.common import constants as q_const
 from neutron.common import utils as q_utils
+from neutron.openstack.common import log as logging
 from oslo.config import cfg
-from oslo_log import log as logging
 
 from neutron.plugins.openvswitch.agent.ovs_neutron_agent import \
     create_agent_config_map
@@ -69,7 +67,7 @@ def main():
     try:
         agent_config = create_agent_config_map(cfg.CONF)
     except ValueError as e:
-        LOG.error(_LE('%s Agent terminated!'), e)
+        LOG.error(_('%s Agent terminated!'), e)
         sys.exit(1)
 
     is_xen_compute_host = 'rootwrap-xen-dom0' in cfg.CONF.AGENT.root_helper
@@ -81,10 +79,10 @@ def main():
     try:
         agent = OVSBagpipeNeutronAgent(**agent_config)
     except RuntimeError as e:
-        LOG.error(_LE("%s Agent terminated!"), e)
+        LOG.error(_("%s Agent terminated!"), e)
         sys.exit(1)
     signal.signal(signal.SIGTERM, agent._handle_sigterm)
 
     # Start everything.
-    LOG.info(_LI("Agent initialized successfully, now running... "))
+    LOG.info(_("Agent initialized successfully, now running... "))
     agent.daemon_loop()

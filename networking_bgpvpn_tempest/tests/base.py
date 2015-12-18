@@ -14,7 +14,7 @@
 #    under the License.
 
 from networking_bgpvpn_tempest.services.bgpvpn import bgpvpn_client
-from oslo_log import log as logging
+from neutron.openstack.common import log as logging
 import tempest.api.network.base as test
 from tempest.common.utils import data_utils
 from tempest import config

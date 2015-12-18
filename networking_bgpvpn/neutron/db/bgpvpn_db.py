@@ -15,17 +15,14 @@
 
 import sqlalchemy as sa
 
-from oslo_utils import uuidutils
-
 from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
+from neutron.openstack.common import log
+from neutron.openstack.common import uuidutils
 
-from neutron.i18n import _LI
-from neutron.i18n import _LW
+from oslo.db import exception as db_exc
 
-from oslo_db import exception as db_exc
-from oslo_log import log
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
@@ -245,9 +242,9 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     filters, fields)
 
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
-        LOG.info(_LI("deleting network association %(id)s for "
-                     "BGPVPN %(bgpvpn)s"), {'id': assoc_id,
-                                            'bgpvpn': bgpvpn_id})
+        LOG.info(_("deleting network association %(id)s for "
+                   "BGPVPN %(bgpvpn)s"), {'id': assoc_id,
+                                          'bgpvpn': bgpvpn_id})
         with context.session.begin():
             net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
             net_assoc = self._make_net_assoc_dict(net_assoc_db)
@@ -293,8 +290,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 context.session.add(router_assoc_db)
             return self._make_router_assoc_dict(router_assoc_db)
         except db_exc.DBDuplicateEntry:
-            LOG.warning(_LW("router %(router_id)s is already associated to "
-                            "BGPVPN %(bgpvpn_id)s"),
+            LOG.warning(_("router %(router_id)s is already associated to "
+                          "BGPVPN %(bgpvpn_id)s"),
                         {'router_id': router_id,
                          'bgpvpn_id': bgpvpn_id})
             raise bgpvpn_ext.BGPVPNRouterAssocAlreadyExists(
@@ -313,8 +310,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     filters, fields)
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        LOG.info(_LI("deleting router association %(id)s for "
-                     "BGPVPN %(bgpvpn)s"),
+        LOG.info(_("deleting router association %(id)s for "
+                   "BGPVPN %(bgpvpn)s"),
                  {'id': assoc_id, 'bgpvpn': bgpvpn_id})
         with context.session.begin():
             router_assoc_db = self._get_router_assoc(context, assoc_id,

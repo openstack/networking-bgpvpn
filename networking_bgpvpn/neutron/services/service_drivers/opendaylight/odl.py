@@ -14,10 +14,11 @@
 #  under the License.
 #
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import excutils
+from oslo.config import cfg
 import requests
+
+from neutron.openstack.common import excutils
+from neutron.openstack.common import log as logging
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api

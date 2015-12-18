@@ -21,17 +21,16 @@ from neutron import context as n_context
 from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.extensions import portbindings
-from neutron.i18n import _LE
 from neutron import manager
-
-from oslo_log import helpers as log_helpers
-from oslo_log import log as logging
+from neutron.openstack.common import log as logging
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
+
+from oslo_log import helpers as log_helpers
 
 LOG = logging.getLogger(__name__)
 
@@ -437,9 +436,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             else:
                 self.notify_port_updated(context, port['id'])
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
+            LOG.exception(_("Error during notification processing "
+                            "%(resource)s %(event)s, %(trigger)s, "
+                            "%(kwargs)s: %(exc)s"),
                           {'trigger': trigger,
                            'resource': resource,
                            'event': event,
@@ -469,9 +468,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             else:
                 self.notify_port_deleted(context, port_id)
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
+            LOG.exception(_("Error during notification processing "
+                            "%(resource)s %(event)s, %(trigger)s, "
+                            "%(kwargs)s: %(exc)s"),
                           {'trigger': trigger,
                            'resource': resource,
                            'event': event,
@@ -486,9 +485,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             if port and port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
                 self.router_interface_added(context, port)
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
+            LOG.exception(_("Error during notification processing "
+                            "%(resource)s %(event)s, %(trigger)s, "
+                            "%(kwargs)s: %(exc)s"),
                           {'trigger': trigger,
                            'resource': resource,
                            'event': event,

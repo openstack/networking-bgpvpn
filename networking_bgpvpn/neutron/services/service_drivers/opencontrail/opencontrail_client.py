@@ -13,15 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-from oslo_log import log
-from oslo_utils import uuidutils
+from oslo.config import cfg
 
 import json
 import requests
 import six
 from six.moves import http_client as httplib
 from six.moves.urllib import parse as urlparse
+
+from neutron.openstack.common import log
+from neutron.openstack.common import uuidutils
 
 from networking_bgpvpn.neutron.services.service_drivers.opencontrail import \
     exceptions as oc_exc

@@ -27,9 +27,9 @@ from neutron.api.v2 import resource_helper
 from neutron.common import config  # noqa # pylint: disable=W0611
 from neutron.common import exceptions as n_exc
 from neutron import manager
+from neutron.openstack.common import log
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
-from oslo_log import log
 
 from networking_bgpvpn.neutron.services.common import constants
 

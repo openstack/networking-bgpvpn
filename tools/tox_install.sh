@@ -17,7 +17,7 @@
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 neutron_installed=$(echo "import neutron" | python 2>/dev/null ; echo $?)
-openstack_branch=stable/kilo
+openstack_branch=2014.2.4
 
 set -e
 
@@ -28,8 +28,9 @@ elif [ -x "$ZUUL_CLONER" ]; then
     echo "ZUUL CLONER" > /tmp/tox_install.txt
     cwd=$(/bin/pwd)
     cd /tmp
-    $ZUUL_CLONER --branch $openstack_branch --cache-dir \
-        /opt/git \
+    $ZUUL_CLONER --cache-dir /opt/git \
+        --zuul-ref $openstack_branch --zuul-url git://git.openstack.org \
+        --zuul-branch $openstack_branch \
         git://git.openstack.org \
         openstack/neutron
     cd openstack/neutron

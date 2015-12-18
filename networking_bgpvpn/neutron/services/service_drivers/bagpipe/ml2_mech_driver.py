@@ -13,18 +13,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_log import log
-
-from neutron.callbacks import events
-from neutron.callbacks import resources
-
 from neutron import context as n_context
 from neutron import manager
+from neutron.openstack.common import log
 
 from networking_bgpvpn.neutron.services.common import constants
 from neutron.plugins.ml2 import driver_api as api
 
 LOG = log.getLogger(__name__)
+
+
+class events(object):
+    BEFORE_DELETE = 'before_delete'
+
+    AFTER_CREATE = 'after_create'
+    AFTER_UPDATE = 'after_update'
+
+
+class resources(object):
+    PORT = 'port'
 
 
 class ML2BGPVPNMechanismDriver(api.MechanismDriver):
