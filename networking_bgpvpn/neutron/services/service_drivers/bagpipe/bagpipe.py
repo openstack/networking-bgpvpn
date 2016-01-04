@@ -54,6 +54,7 @@ def get_network_info_for_port(context, port_id):
                         join(models_v2.Subnet,
                              models_v2.IPAllocation.subnet_id ==
                              models_v2.Subnet.id).
+                        filter(models_v2.Subnet.ip_version == 4).
                         filter(models_v2.Port.id == port_id).one())
 
             (mac_address, ip_address, cidr, gateway_ip) = net_info
