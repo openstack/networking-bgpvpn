@@ -27,7 +27,7 @@ elif [ -x "$ZUUL_CLONER" ]; then
     echo "ZUUL CLONER" > /tmp/tox_install.txt
     cwd=$(/bin/pwd)
     cd /tmp
-    $ZUUL_CLONER --cache-dir \
+    $ZUUL_CLONER --branch stable/liberty --cache-dir \
         /opt/git \
         git://git.openstack.org \
         openstack/neutron
@@ -36,7 +36,7 @@ elif [ -x "$ZUUL_CLONER" ]; then
     cd "$cwd"
 else
     echo "PIP HARDCODE" > /tmp/tox_install.txt
-    pip install -U -egit+https://git.openstack.org/openstack/neutron@stable/juno#egg=neutron
+    pip install -U -egit+https://git.openstack.org/openstack/neutron@stable/liberty#egg=neutron
 fi
 
 pip install -U $*
