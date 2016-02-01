@@ -25,7 +25,7 @@ class TestBgpvpnOdlCommon(test_plugin.BgpvpnTestCaseMixin):
     def setUp(self):
         self.mocked_odlclient = mock.patch(
             'networking_odl.common.client'
-            '.OpenDaylightRestClient.create_client').start().return_value
+            '.OpenDaylightRestClient').start().return_value
 
         provider = ('networking_bgpvpn.neutron.services.service_drivers.'
                     'opendaylight.odl.OpenDaylightBgpvpnDriver')
