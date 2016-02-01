@@ -17,7 +17,7 @@
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 neutron_installed=$(echo "import neutron" | python 2>/dev/null ; echo $?)
-openstack_branch=stable/liberty
+openstack_branch=master
 
 set -e
 
