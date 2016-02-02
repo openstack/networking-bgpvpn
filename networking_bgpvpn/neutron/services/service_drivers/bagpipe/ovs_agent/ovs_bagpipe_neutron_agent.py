@@ -30,13 +30,11 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
 from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl import \
     br_tun
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
-    create_agent_config_map
-from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     OVSNeutronAgent
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
     prepare_xen_compute
 from neutron.plugins.ml2.drivers.openvswitch.agent.ovs_neutron_agent import \
-    validate_local_ip
+    validate_tunnel_config
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -71,8 +69,8 @@ class OVSBagpipeNeutronAgent(OVSNeutronAgent):
 def main():
     # this is from neutron.plugins.ml2.drivers.openvswitch.agent.main
     common_config.init(sys.argv[1:])
-    n_utils.log_opt_values(LOG)
     common_config.setup_logging()
+    n_utils.log_opt_values(LOG)
     # this is from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.
     # ovs_ofctl.main
     bridge_classes = {
@@ -82,15 +80,11 @@ def main():
     }
     # this is from neutron.plugins.ml2.drivers.openvswitch.agent.
     # ovs_neutron_agent
-    try:
-        agent_config = create_agent_config_map(cfg.CONF)
-    except ValueError:
-        LOG.exception(_LE("Agent failed to create agent config map"))
-        raise SystemExit(1)
     prepare_xen_compute()
-    validate_local_ip(agent_config['local_ip'])
+    validate_tunnel_config(cfg.CONF.AGENT.tunnel_types, cfg.CONF.OVS.local_ip)
+
     try:
-        agent = OVSBagpipeNeutronAgent(bridge_classes, **agent_config)
+        agent = OVSBagpipeNeutronAgent(bridge_classes, cfg.CONF)
     except (RuntimeError, ValueError) as e:
         LOG.error(_LE("%s Agent terminated!"), e)
         sys.exit(1)

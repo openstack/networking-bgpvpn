@@ -467,6 +467,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
         self.plugin.create_subnet(self.ctxt, {'subnet': subnet_dict})
 
         p_dict = {'network_id': net['id'],
+                  'tenant_id': "fake_project",
                   'name': 'fooport',
                   "admin_state_up": True,
                   "device_id": "tapfoo",
