@@ -20,6 +20,7 @@ eventlet.monkey_patch()
 
 from neutron.common import config as common_config
 from neutron.common import constants as q_const
+from neutron.common import topics
 from neutron.common import utils as n_utils
 from neutron.i18n import _LE
 
@@ -63,7 +64,7 @@ class OVSBagpipeNeutronAgent(OVSNeutronAgent):
             setup_entry_for_arp_reply=self.setup_entry_for_arp_reply)
         )
 
-        self.bgp_agent.setup_rpc(self.endpoints, self.connection, self.topic)
+        self.bgp_agent.setup_rpc([self], self.connection, topics.AGENT)
 
 
 def main():
