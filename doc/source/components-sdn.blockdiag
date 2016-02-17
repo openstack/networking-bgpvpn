@@ -1,6 +1,8 @@
 blockdiag components-sdn {
-       span_width = 40;
+       span_width = 64;
+       node_height = 100;
        shadow_style=none;
+
        default_shape = roundedbox;
 
        group bgpvpn {
@@ -44,5 +46,5 @@ blockdiag components-sdn {
        bgpspeakers <-> bgppeers[color=green,label="MP-BGP",textcolor=green];
        backend -> vswitches[folded];
 
-       vswitches <-> mplsrouters[label="MPLS or ..",folded];
+       vswitches <-> mplsrouters[label="MPLS\nor ..",folded];
 }
