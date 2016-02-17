@@ -13,20 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-from six.moves import http_client as httplib
-from six.moves.urllib import parse as urlparse
-
 import json
-
-import requests
-
+from networking_bgpvpn.neutron.services.service_drivers.opencontrail import \
+    exceptions as oc_exc
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
-
-from networking_bgpvpn.neutron.services.service_drivers.opencontrail import \
-    exceptions as oc_exc
+import requests
+import six
+from six.moves import http_client as httplib
+from six.moves.urllib import parse as urlparse
 
 LOG = log.getLogger(__name__)
 
