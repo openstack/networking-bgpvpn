@@ -1,5 +1,6 @@
 blockdiag components-bagpipe {
-      span_width = 40;
+      span_width = 64;
+      node_height = 100;
 
       shadow_style=none;
       default_shape = roundedbox;
@@ -52,7 +53,7 @@ blockdiag components-bagpipe {
 
       bgpspeaker <-> bgppeers[color=green,label="MP-BGP",textcolor=green];
 
-      mplsvswitch <-> mplsrouters[label="MPLS or ..",folded];
+      mplsvswitch <-> mplsrouters[label="MPLS\nor ..",folded];
 }
 
  
