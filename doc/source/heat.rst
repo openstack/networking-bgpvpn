@@ -47,3 +47,12 @@ Heat Orchestration Template (HOT) example
         properties:
           bgpvpn_id: { get_resource: BGPVPN1 }
           network_id: { get_resource: Net1 }
+
+      Router1:
+        type: OS::Neutron::Router
+
+      BGPVPN_ROUTER_assoc1:
+        type: OS::Neutron::BGPVPN-ROUTER-ASSOCIATION
+        properties:
+          bgpvpn_id: { get_resource: BGPVPN1 }
+          router_id: { get_resource: Router1 }

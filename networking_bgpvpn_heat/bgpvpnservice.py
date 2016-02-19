@@ -204,8 +204,88 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
             self.resource_id, self.properties['bgpvpn_id'])
 
 
+class BGPVPNRouterAssoc(neutron.NeutronResource):
+
+    """A resource for BGPVPNRouterAssoc in neutron.
+
+    """
+
+    PROPERTIES = (
+        BGPVPN_ID, ROUTER_ID
+    ) = (
+        'bgpvpn_id', 'router_id'
+    )
+
+    ATTRIBUTES = (
+        SHOW, STATUS
+    ) = (
+        'show', 'status'
+    )
+
+    properties_schema = {
+        BGPVPN_ID: properties.Schema(
+            properties.Schema.STRING,
+            _('ID for the bgpvpn.'),
+            required=True,
+        ),
+        ROUTER_ID: properties.Schema(
+            properties.Schema.STRING,
+            _('Router which shall be associated with the BGPVPN.'),
+            required=True,
+        )
+    }
+
+    attributes_schema = {
+        STATUS: attributes.Schema(
+            _('Status of bgpvpn.'),
+        ),
+        SHOW: attributes.Schema(
+            _('All attributes.')
+        ),
+    }
+
+    def validate(self):
+        super(BGPVPNRouterAssoc, self).validate()
+
+    def handle_create(self):
+        self.props = self.prepare_properties(self.properties,
+                                             self.physical_resource_name())
+
+        body = self.props.copy()
+        body.pop('bgpvpn_id')
+
+        router_assoc = self.neutron().create_router_association(
+            self.props['bgpvpn_id'],
+            {'router_association': body})
+        self.resource_id_set(router_assoc['router_association']['id'])
+
+    def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        raise NotImplemented()
+
+    def handle_delete(self):
+        try:
+            self.neutron().delete_router_association(
+                self.resource_id, self.properties['bgpvpn_id'])
+        except Exception as ex:
+            self.client_plugin().ignore_not_found(ex)
+        else:
+            return True
+
+    def _confirm_delete(self):
+        while True:
+            try:
+                self._show_resource()
+            except exception.NotFound:
+                return
+
+    def _show_resource(self):
+        return self.neutron().show_router_association(
+            self.resource_id, self.properties['bgpvpn_id'])
+
+
 def resource_mapping():
     return {
         'OS::Neutron::BGPVPN': BGPVPN,
         'OS::Neutron::BGPVPN-NET-ASSOCIATION': BGPVPNNetAssoc,
+        'OS::Neutron::BGPVPN-ROUTER-ASSOCIATION': BGPVPNRouterAssoc,
     }
