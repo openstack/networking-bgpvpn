@@ -28,4 +28,5 @@ Use from Horizon
 Use from Heat
 ------------- 
 
-(not supported yet)
+See :doc:`heat`.
+

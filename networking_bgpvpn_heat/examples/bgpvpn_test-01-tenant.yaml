@@ -1,0 +1,25 @@
+description: BGPVPN networking example (tenant)
+heat_template_version: '2013-05-23'
+
+parameters:
+    bgpvpn:
+       type: string
+       description: id of BGPVPN to bind the network to
+
+resources:
+    Net1:
+        type: OS::Neutron::Net
+
+    SubNet1:
+        type: OS::Neutron::Subnet
+        properties:
+           network: { get_resource: Net1 }
+           cidr: 192.168.10.0/24
+
+    BGPVPN_NET_assoc1:
+        type: OS::Neutron::BGPVPN-NET-ASSOCIATION
+        properties:
+            bgpvpn_id: { get_param: bgpvpn }
+            network_id: { get_resource: Net1 }
+
+
