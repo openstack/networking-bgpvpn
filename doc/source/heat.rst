@@ -59,48 +59,34 @@ Heat Orchestration Template (HOT) example 2
 
 This is a set of two templates:
 
-* one that has to be run with admin rights and will create a BGPVPN for the current tenant:
+* one that has to be run with admin rights and will create a BGPVPN for the 'demo' tenant:
 
-    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-01-admin.yaml
+    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-04-admin.yaml
        :language: yaml
 
     .. code-block:: shell-session
  
-       $ source openrc admin demo
-       $ heat stack-create bgpvpn -f bgpvpn_test-01-admin.yaml
+       $ source openrc admin admin
+       $ heat stack-create bgpvpn -f bgpvpn_test-04-admin.yaml
 
-* one to run as a plain tenant user, that will create Network and bind it to the BGPVPN passed as parameter:
+* one to run as a plain 'demo' tenant user, that will:
 
-    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-01bis-tenant.yaml
+    * create a Network and bind it to the 'default_vpn' BGPVPN
+
+    * create a second Network connected to a Router, and bind the Router to the 'default_vpn'
+
+    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-04-tenant.yaml
        :language: yaml
 
     .. code-block:: shell-session
  
        $ source openrc demo demo
-       $ neutron bgpvpn-show --name "default VPN"
-       +----------+--------------------------------------+
-       | Field    | Value                                |
-       +----------+--------------------------------------+
-       | id       | 473e5218-f4a2-46bd-8086-36d6849ecf8e |
-       | name     | default VPN                          |
-       | networks | cb9c7304-e844-447d-88e9-4a0a2dc14d21 |
-       | routers  |                                      |
-       | type     | l3                                   |
-       +----------+--------------------------------------+
-        
-       $ heat stack-create networks_bgpvpn -f bgpvpn_test-01bis-tenant.yaml -P bgpvpn=473e5218-f4a2-46bd-8086-36d6849ecf8e
+       $ heat stack-create networks_bgpvpn -f bgpvpn_test-04-tenant.yaml
        +--------------------------------------+-----------------+--------------------+---------------------+--------------+
        | id                                   | stack_name      | stack_status       | creation_time       | updated_time |
        +--------------------------------------+-----------------+--------------------+---------------------+--------------+
        | a3cf1c1b-ac6c-425c-a4b5-d8ca894539f2 | networks_bgpvpn | CREATE_IN_PROGRESS | 2016-03-02T09:16:39 | None         |
        +--------------------------------------+-----------------+--------------------+---------------------+--------------+
-
-       $ neutron net-list    
-       +--------------------------------------+-----------------------------------+------------------------------------------------------+
-       | id                                   | name                              | subnets                                              |
-       +--------------------------------------+-----------------------------------+------------------------------------------------------+
-       | 5b1af75b-0608-4e03-aac1-2608728be45d | networks_bgpvpn-Net1-vif5a4uflyau | 9afde538-fc73-4190-8660-e9923fe0b9b8 192.168.10.0/24 |
-       +--------------------------------------+-----------------------------------+------------------------------------------------------+
 
        $ neutron bgpvpn-list 
        +--------------------------------------+-------------+------+-------------------------------------------+------------------------------------------------+
