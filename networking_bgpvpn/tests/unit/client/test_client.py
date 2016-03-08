@@ -41,7 +41,8 @@ class BgpvpnClientTestCase(test_extensions_base.ExtensionTestCase):
 
     def test_api_url_list(self):
         self.client.list_network_associations(BGPVPN_ID)
-        self.client.list_ext.assert_called_once_with(ASSOCS_PATH)
+        self.client.list_ext.assert_called_once_with(mock.ANY, ASSOCS_PATH,
+                                                     mock.ANY)
 
     def test_api_url_create(self):
         self.client.create_network_association(BGPVPN_ID, {})

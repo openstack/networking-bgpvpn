@@ -57,11 +57,10 @@ class OVSBagpipeNeutronAgent(OVSNeutronAgent):
         # Creates an HTTP client for BaGPipe BGP component REST service
         self.bgp_agent = (bagpipe_bgp_agent.BaGPipeBGPAgent(
             q_const.AGENT_TYPE_OVS,
+            None,  # this is broken but needed for pep8 until new bagpipe code
+                   # is merged
             int_br=self.int_br,
-            tun_br=self.tun_br,
-            patch_int_ofport=self.patch_int_ofport,
-            local_vlan_map=self.local_vlan_map,
-            setup_entry_for_arp_reply=self.setup_entry_for_arp_reply)
+            tun_br=self.tun_br)
         )
 
         self.bgp_agent.setup_rpc([self], self.connection, topics.AGENT)
