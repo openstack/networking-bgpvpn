@@ -14,6 +14,8 @@
 from heat.common import exception
 from heat.common.i18n import _
 from heat.engine import attributes
+from heat.engine.clients.os.neutron import neutron_constraints
+from heat.engine import constraints
 from heat.engine import properties
 from heat.engine.resources.openstack.neutron import neutron
 
@@ -50,7 +52,10 @@ class BGPVPN(neutron.NeutronResource):
             _('BGP VPN type selection between L3VPN (l3) and '
               'EVPN (l2), default:l3'),
             required=False,
-            default='l3'
+            default='l3',
+            constraints=[
+                constraints.AllowedValues(['l2', 'l3'])
+            ]
         ),
         DESCRIPTION: properties.Schema(
             properties.Schema.STRING,
@@ -59,28 +64,35 @@ class BGPVPN(neutron.NeutronResource):
         ),
         TENANT_ID: properties.Schema(
             properties.Schema.STRING,
-            _('Tenant id this bgpvpn belongs to.'),
+            _('Tenant this bgpvpn belongs to (name or id).'),
             required=False,
+            constraints=[
+                constraints.CustomConstraint('keystone.project')
+            ]
         ),
         ROUTE_DISTINGUISHERS: properties.Schema(
             properties.Schema.LIST,
             _('List of RDs that will be used to advertize BGPVPN routes.'),
             required=False,
+            # TODO(tmorin): add a pattern constraint
         ),
         IMPORT_TARGETS: properties.Schema(
             properties.Schema.LIST,
             _('List of additional Route Targets to import from.'),
             required=False,
+            # TODO(tmorin): add a pattern constraint
         ),
         EXPORT_TARGETS: properties.Schema(
             properties.Schema.LIST,
             _('List of additional Route Targets to export to.'),
             required=False,
+            # TODO(tmorin): add a pattern constraint
         ),
         ROUTE_TARGETS: properties.Schema(
             properties.Schema.LIST,
             _('Route Targets list to import/export for this BGPVPN.'),
             required=False,
+            # TODO(tmorin): add a pattern constraint
         ),
     }
 
@@ -100,6 +112,12 @@ class BGPVPN(neutron.NeutronResource):
         props = self.prepare_properties(
             self.properties,
             self.physical_resource_name())
+
+        if 'tenant_id' in props:
+            tenant_id = self.client_plugin('keystone').get_project_id(
+                props['tenant_id'])
+            props['tenant_id'] = tenant_id
+
         bgpvpn = self.neutron().create_bgpvpn({'bgpvpn': props})
         self.resource_id_set(bgpvpn['bgpvpn']['id'])
 
@@ -125,6 +143,12 @@ class BGPVPN(neutron.NeutronResource):
         return self.neutron().show_bgpvpn(self.resource_id)
 
 
+# this class is registered to Heat via a setuptools entry point
+# (see setup.cfg)
+class BGPVPNConstraint(neutron_constraints.NeutronConstraint):
+    resource_name = 'bgpvpn'
+
+
 class BGPVPNNetAssoc(neutron.NeutronResource):
 
     """A resource for BGPVPNNetAssoc in neutron.
@@ -146,13 +170,19 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
     properties_schema = {
         BGPVPN_ID: properties.Schema(
             properties.Schema.STRING,
-            _('ID for the bgpvpn.'),
+            _('name or ID of the BGPVPN.'),
             required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.bgpvpn')
+            ]
         ),
         NETWORK_ID: properties.Schema(
             properties.Schema.STRING,
             _('Network which shall be associated with the BGPVPN.'),
             required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.network')
+            ]
         )
     }
 
@@ -175,8 +205,11 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
         body = self.props.copy()
         body.pop('bgpvpn_id')
 
+        bgpvpn_id = self.client_plugin.find_resourceid_by_name_or_id(
+            'bgpvpn', self.props['bgpvpn_id'])
+
         net_assoc = self.neutron().create_network_association(
-            self.props['bgpvpn_id'],
+            bgpvpn_id,
             {'network_association': body})
         self.resource_id_set(net_assoc['network_association']['id'])
 
@@ -225,13 +258,19 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
     properties_schema = {
         BGPVPN_ID: properties.Schema(
             properties.Schema.STRING,
-            _('ID for the bgpvpn.'),
+            _('name or ID of the BGPVPN.'),
             required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.bgpvpn')
+            ]
         ),
         ROUTER_ID: properties.Schema(
             properties.Schema.STRING,
             _('Router which shall be associated with the BGPVPN.'),
             required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.router')
+            ]
         )
     }
 
@@ -254,8 +293,11 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
         body = self.props.copy()
         body.pop('bgpvpn_id')
 
+        bgpvpn_id = self.client_plugin.find_resourceid_by_name_or_id(
+            'bgpvpn', self.props['bgpvpn_id'])
+
         router_assoc = self.neutron().create_router_association(
-            self.props['bgpvpn_id'],
+            bgpvpn_id,
             {'router_association': body})
         self.resource_id_set(router_assoc['router_association']['id'])
 

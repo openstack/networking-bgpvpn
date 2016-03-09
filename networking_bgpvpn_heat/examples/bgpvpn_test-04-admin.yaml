@@ -1,0 +1,14 @@
+description: BGPVPN networking example (admin)
+heat_template_version: '2013-05-23'
+
+resources:
+  BGPVPN1:
+    type: OS::Neutron::BGPVPN
+    properties:
+        import_targets: [ "100:1001"]
+        export_targets: [ "100:1002"]
+        route_targets: [ "100:1000" ]
+        name: "default_vpn"
+        tenant_id: "demo"
+
+

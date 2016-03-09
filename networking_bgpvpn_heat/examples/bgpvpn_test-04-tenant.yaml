@@ -1,0 +1,44 @@
+description: BGPVPN networking example (tenant)
+heat_template_version: '2013-05-23'
+
+resources:
+    Net1:
+        type: OS::Neutron::Net
+
+    SubNet1:
+        type: OS::Neutron::Subnet
+        properties:
+           network: { get_resource: Net1 }
+           cidr: 192.168.10.0/24
+
+    BGPVPN_NET_assoc1:
+        type: OS::Neutron::BGPVPN-NET-ASSOCIATION
+        properties:
+            bgpvpn_id: "default_vpn"
+            network_id: { get_resource: Net1 }
+
+    Net2:
+        type: OS::Neutron::Net
+
+    SubNet2:
+        type: OS::Neutron::Subnet
+        properties:
+           network: { get_resource: Net2 }
+           cidr: 192.168.10.0/24
+
+    Router:
+        type: OS::Neutron::Router
+
+    router_interface:
+        type: OS::Neutron::RouterInterface
+        properties:
+           router_id: { get_resource: Router }
+           subnet_id: { get_resource: SubNet2 }
+
+    BGPVPN_router_assoc1:
+        type: OS::Neutron::BGPVPN-ROUTER-ASSOCIATION
+        properties:
+            bgpvpn_id: "default_vpn"
+            router_id: { get_resource: Router }
+
+
