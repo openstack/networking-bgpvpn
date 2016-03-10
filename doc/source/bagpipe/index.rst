@@ -64,13 +64,13 @@ In devstack
         BAGPIPE_BGP_PEERS=1.2.3.4
         enable_service b-bgp
 
-  * the compute node Neutron agent is ``bagpipe-openvswitch`` (inherits from openvswitch agent, with additions to interact with ``bagpipe-bgp``):
+  * the compute node Neutron agent is ``openvswitch`` (with additions to interact with ``bagpipe-bgp``):
 
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
         enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
 
-    * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
+    * define ``Q_AGENT=openvswitch`` in ``local.conf``
 
 .. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
 .. _networking-bagpipe: https://github.com/openstack/networking-bagpipe

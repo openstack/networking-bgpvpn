@@ -13,6 +13,10 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
 elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Enabling networking-bgpvpn service plugin"
     _neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
+    if [[ "$Q_AGENT" == "bagpipe-openvswitch" ]]; then
+        echo "networking-bagpipe: you don't need to set Q_AGENT=bagpipe-openvswitch anymore"
+        Q_AGENT=openvswitch``
+    fi
 elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
     if is_service_enabled tempest; then
         echo_summary "Enabling bgpvpn in $TEMPEST_CONFIG"
@@ -25,6 +29,10 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         mkdir -v -p $(dirname $NETWORKING_BGPVPN_CONF) && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/networking_bgpvpn.conf $NETWORKING_BGPVPN_CONF
         inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
         iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
+    fi
+    if is_service_enabled q-agt -a [[ "$Q_AGENT" == "openvswitch" ]]; then
+        echo_summary "Configuring OVS agent for bagpipe"
+        iniadd /$Q_PLUGIN_CONF_FILE agent extensions bagpipe_bgpvpn
     fi
     if is_service_enabled h-eng;then
         echo_summary "Enabling bgpvpn in $HEAT_CONF"
