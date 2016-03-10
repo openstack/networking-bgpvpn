@@ -1,0 +1,8 @@
+# This file is hooked from https://github.com/openstack-infra/project-config/blob/master/jenkins/jobs/networking-bgpvpn.yaml
+
+# For now, simply enable bringing stack.sh up with the BGPVPN service plugin.
+# In the future we will run tempest tests as well.
+export DEVSTACK_GATE_TEMPEST=0
+
+export OVERRIDE_ENABLED_SERVICES=q-svc,q-agt,q-dhcp,q-l3,key,mysql,rabbit
+
