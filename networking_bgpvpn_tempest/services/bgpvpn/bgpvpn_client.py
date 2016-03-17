@@ -15,6 +15,9 @@
 
 from tempest.lib.services.network import base
 
+# This is the representation of the bgpvpn
+# client of networking-bgpvpn
+
 BGPVPN_OBJECT_PATH = '/bgpvpn/bgpvpns'
 BGPVPN_RESOURCE_PATH = '/bgpvpn/bgpvpns/%s'
 
