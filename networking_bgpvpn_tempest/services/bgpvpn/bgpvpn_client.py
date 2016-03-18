@@ -13,31 +13,32 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_bgpvpn.neutronclient.neutron.v2_0.bgpvpn.bgpvpn import \
-    BGPVPN
-from tempest.services.network.json import base
+from tempest.lib.services.network import base
+
+BGPVPN_OBJECT_PATH = '/bgpvpn/bgpvpns'
+BGPVPN_RESOURCE_PATH = '/bgpvpn/bgpvpns/%s'
 
 
 class BgpvpnClient(base.BaseNetworkClient):
 
     def create_bgpvpn(self, **kwargs):
-        uri = BGPVPN.object_path
+        uri = BGPVPN_OBJECT_PATH
         post_data = {'bgpvpn': kwargs}
         return self.create_resource(uri, post_data)
 
     def delete_bgpvpn(self, bgpvpn_id):
-        uri = BGPVPN.resource_path % bgpvpn_id
+        uri = BGPVPN_RESOURCE_PATH % bgpvpn_id
         return self.delete_resource(uri)
 
     def show_bgpvpn(self, bgpvpn_id, **fields):
-        uri = BGPVPN.resource_path % bgpvpn_id
+        uri = BGPVPN_RESOURCE_PATH % bgpvpn_id
         return self.show_resource(uri, **fields)
 
     def list_bgpvpns(self, **filters):
-        uri = BGPVPN.object_path
+        uri = BGPVPN_OBJECT_PATH
         return self.list_resources(uri, **filters)
 
     def update_bgpvpn(self, bgpvpn_id, **kwargs):
-        uri = BGPVPN.resource_path % bgpvpn_id
+        uri = BGPVPN_RESOURCE_PATH % bgpvpn_id
         post_data = {'bgpvpn': kwargs}
         return self.update_resource(uri, post_data)
