@@ -156,7 +156,7 @@ References
 .. _Bagpipe-BGP: https://github.com/Orange-OpenSource/bagpipe-bgp
 .. [OpenContrail] http://www.opencontrail.org
 .. [OpenDaylight] http://www.opendaylight.org
-.. [Nuage-Networks] http://http://nuagenetworks.net
+.. [Nuage-Networks] http://www.nuagenetworks.net
 .. [RFC4364] BGP/MPLS IP Virtual Private Networks (IP VPNs) http://tools.ietf.org/html/rfc4364
 .. [RFC7432] BGP MPLS-Based Ethernet VPN (Ethernet VPNs, a.k.a E-VPN) http://tools.ietf.org/html/rfc7432
 .. [draft-ietf-bess-evpn-overlay] E-VPN for VXLAN/NVGRE/MPLS-GRE https://tools.ietf.org/html/draft-ietf-bess-evpn-overlay
