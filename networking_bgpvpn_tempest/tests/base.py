@@ -35,6 +35,8 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
     """
 
     credentials = ['primary', 'admin']
+    bgpvpn_client = None
+    bgpvpn_admin_client = None
 
     @classmethod
     def resource_cleanup(cls):
@@ -70,11 +72,11 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
         if not CONF.service_available.bgpvpn:
             raise cls.skipException("Bgpvpn support is required")
 
-    def create_bgpvpn(self, **kwargs):
+    def create_bgpvpn(self, client, **kwargs):
         if 'name' not in kwargs:
             kwargs['name'] = data_utils.rand_name('test-bgpvpn-')
 
-        body = self.bgpvpn_admin_client.create_bgpvpn(**kwargs)
+        body = client.create_bgpvpn(**kwargs)
         bgpvpn = body['bgpvpn']
         self.bgpvpns.append(bgpvpn)
         return bgpvpn

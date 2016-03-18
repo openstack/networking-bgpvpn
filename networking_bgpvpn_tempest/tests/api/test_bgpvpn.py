@@ -14,6 +14,8 @@
 #    under the License.
 
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
+from tempest.lib import exceptions
+from tempest import test
 
 
 class BgpvpnTest(base):
@@ -29,4 +31,9 @@ class BgpvpnTest(base):
     """
 
     def test_create_bgpvpn(self):
-        self.create_bgpvpn()
+        self.create_bgpvpn(self.bgpvpn_admin_client)
+
+    @test.attr(type=['negative'])
+    def test_create_bgpvpn_as_non_admin_fail(self):
+        self.assertRaises(exceptions.Forbidden,
+                          self.create_bgpvpn, self.bgpvpn_client)
