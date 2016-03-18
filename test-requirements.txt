@@ -16,7 +16,7 @@ testrepository>=0.0.18
 testscenarios>=0.4
 testtools>=1.4.0
 
--e git+https://git.openstack.org/openstack/networking-bagpipe#egg=networking-bagpipe
+-e git+https://git.openstack.org/openstack/networking-bagpipe@stable/liberty#egg=networking-bagpipe
 -e git+https://git.openstack.org/openstack/networking-odl@stable/liberty#egg=networking-odl
 -e git+https://git.openstack.org/openstack/python-neutronclient@stable/liberty#egg=python-neutronclient
 
