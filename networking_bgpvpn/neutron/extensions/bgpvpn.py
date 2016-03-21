@@ -82,6 +82,10 @@ class BGPVPNRouterAssocAlreadyExists(n_exc.BadRequest):
                 "BGPVPN %(bgpvpn_id)s")
 
 
+class BGPVPNDriverError(n_exc.NeutronException):
+    message = _("%(method)s failed.")
+
+
 def _validate_rt_list(data, valid_values=None):
     if data is None or data is "":
         return

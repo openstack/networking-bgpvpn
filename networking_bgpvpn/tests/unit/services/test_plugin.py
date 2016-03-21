@@ -106,12 +106,8 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         if kwargs.get('data'):
             bgpvpn_data = kwargs.get('data')
         else:
-            bgpvpn = {'name': 'bgpvpn1',
-                      'type': 'l3',
-                      'route_targets': ['1234:56'],
-                      'tenant_id': self._tenant_id}
-            bgpvpn.update(kwargs)
-            bgpvpn_data = {'bgpvpn': bgpvpn}
+            bgpvpn_data = copy.copy(self.bgpvpn_data)
+            bgpvpn_data['bgpvpn'].update(kwargs)
         bgpvpn_req = self.new_create_request(
             'bgpvpn/bgpvpns', bgpvpn_data, fmt=fmt)
         res = bgpvpn_req.get_response(self.ext_api)
@@ -450,14 +446,40 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_bgpvpn_postcommit')
+    @mock.patch.object(driver_api.BGPVPNDriver,
+                       'create_bgpvpn_precommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'create_bgpvpn')
-    def test_create_bgpvpn(self, mock_create_db, mock_create_postcommit):
+    def test_create_bgpvpn(self, mock_create_db,
+                           mock_create_precommit,
+                           mock_create_postcommit):
         mock_create_db.return_value = self.converted_data['bgpvpn']
         with self.bgpvpn(do_delete=False):
             mock_create_db.assert_called_once_with(
                 mock.ANY, self.converted_data['bgpvpn'])
+            mock_create_precommit.assert_called_once_with(
+                mock.ANY, self.converted_data['bgpvpn'])
             mock_create_postcommit.assert_called_once_with(
                 mock.ANY, self.converted_data['bgpvpn'])
+
+    def test_create_bgpvpn_precommit_fails(self):
+
+        def raise_bgpvpn_driver_exc(*args, **kwargs):
+            raise extensions.bgpvpn.BGPVPNDriverError(
+                method='create_bgpvpn_precommit')
+
+        with mock.patch.object(driver_api.BGPVPNDriver,
+                               'create_bgpvpn_precommit',
+                               new=raise_bgpvpn_driver_exc):
+            # Assert that an error is returned to the client
+            bgpvpn_req = self.new_create_request(
+                'bgpvpn/bgpvpns', self.bgpvpn_data)
+            res = bgpvpn_req.get_response(self.ext_api)
+            self.assertEqual(webob.exc.HTTPError.code,
+                             res.status_int)
+
+            # Assert that no bgpvpn has been created
+            list = self._list('bgpvpn/bgpvpns', fmt='json')
+            self.assertEqual([], list['bgpvpns'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
@@ -507,11 +529,14 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'update_bgpvpn_postcommit')
+    @mock.patch.object(driver_api.BGPVPNDriver,
+                       'update_bgpvpn_precommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
                        'update_bgpvpn')
-    def test_update_bgpvpn(self, mock_update_db, mock_update_postcommit):
+    def test_update_bgpvpn(self, mock_update_db,
+                           mock_update_precommit,
+                           mock_update_postcommit):
         with self.bgpvpn() as bgpvpn:
-            new_data = {"bgpvpn": {"name": "foo"}}
             old_bgpvpn = copy.copy(self.bgpvpn_data['bgpvpn'])
             old_bgpvpn['id'] = bgpvpn['bgpvpn']['id']
             old_bgpvpn['networks'] = []
@@ -521,14 +546,37 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
             mock_update_db.return_value = new_bgpvpn
 
+            new_data = {"bgpvpn": {"name": "foo"}}
             self._update('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'],
                          new_data)
 
             mock_update_db.assert_called_once_with(
                 mock.ANY, bgpvpn['bgpvpn']['id'], new_data['bgpvpn'])
+            mock_update_precommit.assert_called_once_with(
+                mock.ANY, old_bgpvpn, new_bgpvpn)
             mock_update_postcommit.assert_called_once_with(
                 mock.ANY, old_bgpvpn, new_bgpvpn)
+
+    def test_update_bgpvpn_precommit_fails(self):
+
+        def raise_bgpvpn_driver_exc(*args, **kwargs):
+            raise extensions.bgpvpn.BGPVPNDriverError(
+                method='update_bgpvpn_precommit')
+
+        with self.bgpvpn() as bgpvpn:
+            with mock.patch.object(driver_api.BGPVPNDriver,
+                                   'update_bgpvpn_precommit',
+                                   new=raise_bgpvpn_driver_exc):
+                new_data = {"bgpvpn": {"name": "foo"}}
+                self._update('bgpvpn/bgpvpns',
+                             bgpvpn['bgpvpn']['id'],
+                             new_data,
+                             expected_code=webob.exc.HTTPError.code)
+                show_bgpvpn = self._show('bgpvpn/bgpvpns',
+                                         bgpvpn['bgpvpn']['id'])
+                self.assertEqual(self.bgpvpn_data['bgpvpn']['name'],
+                                 show_bgpvpn['bgpvpn']['name'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_net_assoc_postcommit')

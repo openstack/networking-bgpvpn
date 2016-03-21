@@ -100,8 +100,10 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         self.bgpvpn_db = bgpvpn_db.BGPVPNPluginDb()
 
     def create_bgpvpn(self, context, bgpvpn):
-        bgpvpn = self.bgpvpn_db.create_bgpvpn(
-            context, bgpvpn)
+        with context.session.begin(subtransactions=True):
+            bgpvpn = self.bgpvpn_db.create_bgpvpn(
+                context, bgpvpn)
+            self.create_bgpvpn_precommit(context, bgpvpn)
         self.create_bgpvpn_postcommit(context, bgpvpn)
         return bgpvpn
 
@@ -113,9 +115,10 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     def update_bgpvpn(self, context, id, bgpvpn):
         old_bgpvpn = self.get_bgpvpn(context, id)
-
-        bgpvpn = self.bgpvpn_db.update_bgpvpn(
-            context, id, bgpvpn)
+        with context.session.begin(subtransactions=True):
+            bgpvpn = self.bgpvpn_db.update_bgpvpn(
+                context, id, bgpvpn)
+            self.update_bgpvpn_precommit(context, old_bgpvpn, bgpvpn)
 
         self.update_bgpvpn_postcommit(context, old_bgpvpn, bgpvpn)
         return bgpvpn
@@ -170,7 +173,15 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         pass
 
     @abc.abstractmethod
+    def create_bgpvpn_precommit(self, context, bgpvpn):
+        pass
+
+    @abc.abstractmethod
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
+        pass
+
+    @abc.abstractmethod
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
         pass
 
     @abc.abstractmethod
@@ -197,14 +208,22 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 class BGPVPNDriver(BGPVPNDriverDBMixin):
     """BGPVPNDriver interface for driver with database.
 
-    Each bgpvpn driver that needs a database persistency will should inherit
+    Each bgpvpn driver that needs a database persistency should inherit
     from this driver.
-    It can overload needed methods from the following postcommit methods.
+    It can overload needed methods from the following pre/postcommit methods.
+    Any exception raised during a precommit method will result in not having
+    related records in the databases.
     """
     def __init__(self, service_plugin):
         super(BGPVPNDriver, self).__init__(service_plugin)
 
+    def create_bgpvpn_precommit(self, context, bgpvpn):
+        pass
+
     def create_bgpvpn_postcommit(self, context, bgpvpn):
+        pass
+
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
         pass
 
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
