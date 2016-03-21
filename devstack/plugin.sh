@@ -30,7 +30,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
         iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
     fi
-    if is_service_enabled q-agt -a [[ "$Q_AGENT" == "openvswitch" ]]; then
+    if is_service_enabled q-agt && is_service_enabled b-bgp && [[ "$Q_AGENT" == "openvswitch" ]]; then
         echo_summary "Configuring OVS agent for bagpipe"
         iniadd /$Q_PLUGIN_CONF_FILE agent extensions bagpipe_bgpvpn
     fi
