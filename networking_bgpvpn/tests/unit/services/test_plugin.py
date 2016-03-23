@@ -124,7 +124,6 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         fmt = 'json'
         data = {'network_association': {'network_id': net_id,
                                         'tenant_id': self._tenant_id}}
-#         data = {'network_association': {'network_id': net_id}}
         bgpvpn_net_req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -444,6 +443,10 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
     def setUp(self):
         super(TestBGPVPNServiceDriverDB, self).setUp()
 
+    def _raise_bgpvpn_driver_precommit_exc(self, *args, **kwargs):
+            raise extensions.bgpvpn.BGPVPNDriverError(
+                method='precommit method')
+
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_bgpvpn_postcommit')
     @mock.patch.object(driver_api.BGPVPNDriver,
@@ -462,14 +465,9 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                 mock.ANY, self.converted_data['bgpvpn'])
 
     def test_create_bgpvpn_precommit_fails(self):
-
-        def raise_bgpvpn_driver_exc(*args, **kwargs):
-            raise extensions.bgpvpn.BGPVPNDriverError(
-                method='create_bgpvpn_precommit')
-
         with mock.patch.object(driver_api.BGPVPNDriver,
                                'create_bgpvpn_precommit',
-                               new=raise_bgpvpn_driver_exc):
+                               new=self._raise_bgpvpn_driver_precommit_exc):
             # Assert that an error is returned to the client
             bgpvpn_req = self.new_create_request(
                 'bgpvpn/bgpvpns', self.bgpvpn_data)
@@ -559,15 +557,10 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                 mock.ANY, old_bgpvpn, new_bgpvpn)
 
     def test_update_bgpvpn_precommit_fails(self):
-
-        def raise_bgpvpn_driver_exc(*args, **kwargs):
-            raise extensions.bgpvpn.BGPVPNDriverError(
-                method='update_bgpvpn_precommit')
-
-        with self.bgpvpn() as bgpvpn:
-            with mock.patch.object(driver_api.BGPVPNDriver,
-                                   'update_bgpvpn_precommit',
-                                   new=raise_bgpvpn_driver_exc):
+        with self.bgpvpn() as bgpvpn, \
+            mock.patch.object(driver_api.BGPVPNDriver,
+                              'update_bgpvpn_precommit',
+                              new=self._raise_bgpvpn_driver_precommit_exc):
                 new_data = {"bgpvpn": {"name": "foo"}}
                 self._update('bgpvpn/bgpvpns',
                              bgpvpn['bgpvpn']['id'],
@@ -580,8 +573,11 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_net_assoc_postcommit')
+    @mock.patch.object(driver_api.BGPVPNDriver,
+                       'create_net_assoc_precommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'create_net_assoc')
     def test_create_bgpvpn_net_assoc(self, mock_db_create_assoc,
+                                     mock_pre_commit,
                                      mock_post_commit):
         with self.bgpvpn() as bgpvpn:
             bgpvpn_id = bgpvpn['bgpvpn']['id']
@@ -598,8 +594,34 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                     do_disassociate=False):
                     mock_db_create_assoc.assert_called_once_with(
                         mock.ANY, bgpvpn_id, data)
+                    mock_pre_commit.assert_called_once_with(mock.ANY,
+                                                            net_assoc_dict)
                     mock_post_commit.assert_called_once_with(mock.ANY,
                                                              net_assoc_dict)
+
+    def test_create_bgpvpn_net_assoc_precommit_fails(self):
+        with self.bgpvpn() as bgpvpn, \
+            self.network() as net, \
+            mock.patch.object(driver_api.BGPVPNDriver,
+                              'create_net_assoc_precommit',
+                              new=self._raise_bgpvpn_driver_precommit_exc):
+            fmt = 'json'
+            data = {'network_association': {'network_id': net['network']['id'],
+                                            'tenant_id': self._tenant_id}}
+            bgpvpn_net_req = self.new_create_request(
+                'bgpvpn/bgpvpns',
+                data=data,
+                fmt=fmt,
+                id=bgpvpn['bgpvpn']['id'],
+                subresource='network_associations')
+            res = bgpvpn_net_req.get_response(self.ext_api)
+            # Assert that driver failure returns an error
+            self.assertEqual(webob.exc.HTTPError.code,
+                             res.status_int)
+            # Assert that the bgpvpn is not associated to network
+            bgpvpn_new = self._show('bgpvpn/bgpvpns',
+                                    bgpvpn['bgpvpn']['id'])
+            self.assertEqual([], bgpvpn_new['bgpvpn']['networks'])
 
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_net_assoc')
     def test_get_bgpvpn_net_assoc(self, mock_get_db):
@@ -653,26 +675,55 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_router_assoc_postcommit')
+    @mock.patch.object(driver_api.BGPVPNDriver,
+                       'create_router_assoc_precommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'create_router_assoc')
     def test_create_bgpvpn_router_assoc(self, mock_db_create_assoc,
+                                        mock_pre_commit,
                                         mock_post_commit):
-        with self.bgpvpn() as bgpvpn:
+        with self.bgpvpn() as bgpvpn, \
+            self.router(tenant_id=self._tenant_id) as router:
             bgpvpn_id = bgpvpn['bgpvpn']['id']
-            with self.router(tenant_id=self._tenant_id) as router:
-                router_id = router['router']['id']
-                assoc_id = _uuid()
-                data = {'tenant_id': self._tenant_id,
-                        'router_id': router_id}
-                router_assoc_dict = copy.copy(data)
-                router_assoc_dict.update({'id': assoc_id,
-                                          'bgpvpn_id': bgpvpn_id})
-                mock_db_create_assoc.return_value = router_assoc_dict
-                with self.assoc_router(bgpvpn_id, router_id=router_id,
-                                       do_disassociate=False):
-                    mock_db_create_assoc.assert_called_once_with(
-                        mock.ANY, bgpvpn_id, data)
-                    mock_post_commit.assert_called_once_with(mock.ANY,
-                                                             router_assoc_dict)
+            router_id = router['router']['id']
+            assoc_id = _uuid()
+            data = {'tenant_id': self._tenant_id,
+                    'router_id': router_id}
+            router_assoc_dict = copy.copy(data)
+            router_assoc_dict.update({'id': assoc_id,
+                                      'bgpvpn_id': bgpvpn_id})
+            mock_db_create_assoc.return_value = router_assoc_dict
+            with self.assoc_router(bgpvpn_id, router_id=router_id,
+                                   do_disassociate=False):
+                mock_db_create_assoc.assert_called_once_with(
+                    mock.ANY, bgpvpn_id, data)
+                mock_pre_commit.assert_called_once_with(mock.ANY,
+                                                        router_assoc_dict)
+                mock_post_commit.assert_called_once_with(mock.ANY,
+                                                         router_assoc_dict)
+
+    def test_create_bgpvpn_router_assoc_precommit_fails(self):
+        with self.bgpvpn() as bgpvpn, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                mock.patch.object(driver_api.BGPVPNDriver,
+                                  'create_router_assoc_precommit',
+                                  new=self._raise_bgpvpn_driver_precommit_exc):
+            fmt = 'json'
+            data = {'router_association': {'router_id': router['router']['id'],
+                                           'tenant_id': self._tenant_id}}
+            bgpvpn_router_req = self.new_create_request(
+                'bgpvpn/bgpvpns',
+                data=data,
+                fmt=fmt,
+                id=bgpvpn['bgpvpn']['id'],
+                subresource='router_associations')
+            res = bgpvpn_router_req.get_response(self.ext_api)
+            # Assert that driver failure returns an error
+            self.assertEqual(webob.exc.HTTPError.code,
+                             res.status_int)
+            # Assert that the bgpvpn is not associated to network
+            bgpvpn_new = self._show('bgpvpn/bgpvpns',
+                                    bgpvpn['bgpvpn']['id'])
+            self.assertEqual([], bgpvpn_new['bgpvpn']['routers'])
 
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_router_assoc')
     def test_get_bgpvpn_router_assoc(self, mock_get_db):
