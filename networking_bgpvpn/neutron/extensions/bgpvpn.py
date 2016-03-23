@@ -82,6 +82,17 @@ class BGPVPNRouterAssocAlreadyExists(n_exc.BadRequest):
                 "BGPVPN %(bgpvpn_id)s")
 
 
+class BGPVPNMultipleRouterAssocNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support multiple "
+                "router association with a bgpvpn")
+
+
+class BGPVPNNetworkAssocExistsAnotherBgpvpn(n_exc.BadRequest):
+    message = _("Network %(network)s already associated with %(bgpvpn)s. "
+                "BGPVPN %(driver)s driver does not support same network"
+                " associated to multiple bgpvpns")
+
+
 class BGPVPNDriverError(n_exc.NeutronException):
     message = _("%(method)s failed.")
 
