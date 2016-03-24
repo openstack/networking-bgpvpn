@@ -49,6 +49,41 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
 
 class TestBagpipeServiceDriver(TestBagpipeCommon):
 
+    def test_create_bgpvpn_l2_fails(self):
+        bgpvpn_data = copy.copy(self.bgpvpn_data['bgpvpn'])
+        bgpvpn_data.update({"type": "l2"})
+
+        # Assert that an error is returned to the client
+        bgpvpn_req = self.new_create_request(
+            'bgpvpn/bgpvpns', bgpvpn_data)
+        res = bgpvpn_req.get_response(self.ext_api)
+        self.assertEqual(webob.exc.HTTPBadRequest.code,
+                         res.status_int)
+
+    def test_create_bgpvpn_rds_fails(self):
+        bgpvpn_data = copy.copy(self.bgpvpn_data)
+        bgpvpn_data['bgpvpn'].update({"route_distinguishers": ["4444:55"]})
+
+        # Assert that an error is returned to the client
+        bgpvpn_req = self.new_create_request(
+            'bgpvpn/bgpvpns', bgpvpn_data)
+        res = bgpvpn_req.get_response(self.ext_api)
+        self.assertEqual(webob.exc.HTTPBadRequest.code,
+                         res.status_int)
+
+    def test_bagpipe_update_bgpvpn_rds_fails(self):
+        with self.bgpvpn() as bgpvpn:
+            update_data = {'bgpvpn': {"route_distinguishers": ["4444:55"]}}
+
+            self._update('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'],
+                         update_data,
+                         expected_code=webob.exc.HTTPBadRequest.code)
+            show_bgpvpn = self._show('bgpvpn/bgpvpns',
+                                     bgpvpn['bgpvpn']['id'])
+            self.assertEqual([],
+                             show_bgpvpn['bgpvpn']['route_distinguishers'])
+
     def test_bagpipe_associate_net(self):
         mocked_update = self.mocked_bagpipeAPI.update_bgpvpn
         with self.port() as port1:
