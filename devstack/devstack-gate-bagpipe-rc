@@ -4,9 +4,16 @@
 # In the future we will run tempest tests as well.
 export DEVSTACK_GATE_TEMPEST=0
 
-export OVERRIDE_ENABLED_SERVICES=q-svc,q-agt,q-dhcp,q-l3,key,mysql,rabbit
+export OVERRIDE_ENABLED_SERVICES=q-svc,q-agt,q-dhcp,q-l3,key,mysql,rabbit,b-bgp
 
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver"
 
+# https://bugs.launchpad.net/devstack/+bug/1567052
+# so we need VERBOSE=False until bagpipe-bgp uses rootwrap and is not run with sudo (same for bagpipe-fakerr)
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
+
+# compiling a fresh OVS is done in gate_hook.sh
+export COMPILE_OVS=True
 

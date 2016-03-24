@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Save trace setting
-XTRACE=$(set +o | grep xtrace)
-set +o xtrace
+_XTRACE_NETWORKING_BGPVPN=$(set +o | grep xtrace)
+set -o xtrace
 
 if [[ "$1" == "source" ]]; then
     # no-op
@@ -48,6 +48,6 @@ if [[ "$1" == "clean" ]]; then
     :
 fi
 
-set +x
-$xtrace
+# Restore XTRACE
+${_XTRACE_NETWORKING_BGPVPN}
 
