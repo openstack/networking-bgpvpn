@@ -33,10 +33,15 @@ from oslo_log import log as logging
 from networking_bagpipe.agent.bgpvpn import rpc_client
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
+from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
+from networking_bgpvpn.neutron.services.common import constants
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 LOG = logging.getLogger(__name__)
+
+
+BAGPIPE_DRIVER_NAME = "bagpipe"
 
 
 def get_network_info_for_port(context, port_id):
@@ -276,6 +281,19 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         return [self.bgpvpn_db._make_bgpvpn_dict(bgpvpn) for bgpvpn in
                 get_bgpvpns_of_router_assocs_by_network(context, network_id)]
 
+    def _common_precommit_checks(self, bgpvpn):
+        # No support yet for specifying route distinguishers
+        if bgpvpn.get('route_distinguishers', None):
+            raise bgpvpn_ext.BGPVPNRDNotSupported(driver=BAGPIPE_DRIVER_NAME)
+
+    def create_bgpvpn_precommit(self, context, bgpvpn):
+        # Only l3 type is supported
+        if bgpvpn['type'] != constants.BGPVPN_L3:
+            raise bgpvpn_ext.BGPVPNTypeNotSupported(driver=BAGPIPE_DRIVER_NAME,
+                                                    type=bgpvpn['type'])
+
+        self._common_precommit_checks(bgpvpn)
+
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
         for net_id in bgpvpn['networks']:
             if get_network_ports(context, net_id):
@@ -283,6 +301,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 self.agent_rpc.delete_bgpvpn(
                     context,
                     self._format_bgpvpn(bgpvpn, net_id))
+
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
+        self._common_precommit_checks(bgpvpn)
 
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
