@@ -26,8 +26,11 @@ nodes of BGP VPN instances and of their MPLS dataplane.
 
   .. blockdiag:: overview.blockdiag
 
+Limitations
+-----------
+
 On DHCP ports, Router interface ports, external network ports, etc.
--------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 No connectivity will be setup with BGP VPNs for DHCP ports or Router
 interface ports, or other network specific ports. This improves the load on network nodes by
@@ -37,6 +40,12 @@ interface of a network associated to a BGP VPN.
 
 Similarly, the driver will not bind a port on an external network. This behavior will be
 revisited once a use case is well identified.
+
+On Networks both associated to a BGP VPN and attached to a router
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A network associated to a bgpvpn will loose access to its gateway, hence to any network
+accessible behind its router which holds this gateway.
 
 How to use ?
 ------------
