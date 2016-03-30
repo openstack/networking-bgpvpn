@@ -357,7 +357,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         return port.get(portbindings.HOST_ID)
 
-    def notify_port_updated(self, context, port_id):
+    def notify_port_updated(self, context, port_id, original_port):
         LOG.info("notify_port_updated on port %s", port_id)
 
         port = self._get_port(context, port_id)
@@ -371,8 +371,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         agent_host = self._get_port_host(context, port)
 
-        if port['status'] == const.PORT_STATUS_ACTIVE:
-            LOG.info("notify_port_updated, active")
+        original_port_status = "not present in notification"
+        if original_port:
+            original_port_status = original_port['status']
+
+        if (port['status'] == const.PORT_STATUS_ACTIVE and
+                original_port_status != const.PORT_STATUS_ACTIVE):
+            LOG.info("notify_port_updated, port became ACTIVE")
             bgpvpn_network_info = (
                 self._retrieve_bgpvpn_network_info_for_port(context, port)
             )
@@ -390,13 +395,15 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 # of any BGPVPN port bound.
                 pass
 
-        elif port['status'] == const.PORT_STATUS_DOWN:
-            LOG.info("notify_port_updated, down")
+        elif (port['status'] == const.PORT_STATUS_DOWN and
+                original_port_status != const.PORT_STATUS_DOWN):
+            LOG.info("notify_port_updated, port became DOWN")
             self.agent_rpc.detach_port_from_bgpvpn(context,
                                                    port_bgpvpn_info,
                                                    agent_host)
         else:
-            LOG.info("new port status is %s, no action", port['status'])
+            LOG.debug("new port status is %s, origin status was %s,"
+                      " => no action", port['status'], original_port_status)
 
     def notify_port_deleted(self, context, port_id):
         LOG.info("notify_port_deleted on port %s ", port_id)
@@ -475,7 +482,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             elif rtr_itf_removed:
                 self.router_interface_removed(context, original_port)
             else:
-                self.notify_port_updated(context, port['id'])
+                self.notify_port_updated(context, port['id'], original_port)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
