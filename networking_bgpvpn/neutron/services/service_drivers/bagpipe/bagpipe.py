@@ -20,7 +20,9 @@ from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
 from neutron.common import constants as const
+from neutron.common import exceptions as n_exc
 from neutron import context as n_context
+from neutron.db import external_net_db
 from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.extensions import portbindings
@@ -42,6 +44,11 @@ LOG = logging.getLogger(__name__)
 
 
 BAGPIPE_DRIVER_NAME = "bagpipe"
+
+
+class BGPVPNExternalNetAssociation(n_exc.NeutronException):
+    message = _("driver does not support associating an external"
+                "network to a BGPVPN")
 
 
 def get_network_info_for_port(context, port_id):
@@ -131,6 +138,15 @@ def get_bgpvpns_of_router_assocs_by_network(context, net_id):
         )
     except exc.NoResultFound:
         return
+
+
+def network_is_external(context, net_id):
+    try:
+        context.session.query(external_net_db.ExternalNetwork).filter_by(
+            network_id=net_id).one()
+        return True
+    except exc.NoResultFound:
+        return False
 
 
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
@@ -324,6 +340,10 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                         self._format_bgpvpn(bgpvpn, net_id)
                     )
 
+    def create_net_assoc_precommit(self, context, net_assoc):
+        if network_is_external(context, net_assoc['network_id']):
+            raise BGPVPNExternalNetAssociation()
+
     def create_net_assoc_postcommit(self, context, net_assoc):
         if get_network_ports(context, net_assoc['network_id']):
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
@@ -357,6 +377,19 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         return port.get(portbindings.HOST_ID)
 
+    def _ignore_port(self, context, port):
+        if port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX):
+            LOG.info("Port %s owner is network:*, we'll do nothing",
+                     port['id'])
+            return True
+
+        if network_is_external(context, port['network_id']):
+            LOG.info("Port %s is on an external network, we'll do nothing",
+                     port['id'])
+            return True
+
+        return False
+
     def notify_port_updated(self, context, port_id, original_port):
         LOG.info("notify_port_updated on port %s", port_id)
 
@@ -365,8 +398,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
 
-        if port['device_owner'] == const.DEVICE_OWNER_DHCP:
-            LOG.info("Port %s is DHCP, ignoring", port['id'])
+        if self._ignore_port(context, port):
             return
 
         agent_host = self._get_port_host(context, port)
@@ -413,8 +445,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
 
-        if port['device_owner'] == const.DEVICE_OWNER_DHCP:
-            LOG.info("Port %s is DHCP, ignoring", port['id'])
+        if self._ignore_port(context, port):
             return
 
         agent_host = self._get_port_host(context, port)

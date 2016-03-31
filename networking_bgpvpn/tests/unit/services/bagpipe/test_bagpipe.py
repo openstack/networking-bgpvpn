@@ -19,7 +19,7 @@ import webob.exc
 
 from neutron import context as n_context
 
-from neutron.common.constants import DEVICE_OWNER_DHCP
+from neutron.common.constants import DEVICE_OWNER_NETWORK_PREFIX
 from neutron.common.constants import DEVICE_OWNER_ROUTER_INTF
 from neutron.common.constants import PORT_STATUS_ACTIVE
 from neutron.common.constants import PORT_STATUS_DOWN
@@ -45,6 +45,18 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
                     'bagpipe.bagpipe.BaGPipeBGPVPNDriver')
         super(TestBagpipeCommon, self).setUp(service_provider=provider,
                                              core_plugin=plugin)
+
+        self.ctxt = n_context.Context('fake_user', 'fake_project')
+
+        n_dict = {"name": "netfoo",
+                  "tenant_id": "fake_project",
+                  "admin_state_up": True,
+                  "router:external": True,
+                  "shared": True}
+
+        self.external_net = {'network':
+                             self.plugin.create_network(self.ctxt,
+                                                        {'network': n_dict})}
 
 
 class TestBagpipeServiceDriver(TestBagpipeCommon):
@@ -100,6 +112,21 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                                          'export_rt': rt}}
                     mocked_update.assert_called_once_with(mock.ANY,
                                                           formatted_bgpvpn)
+
+    def test_bagpipe_associate_external_net_failed(self):
+        net_id = self.external_net['network']['id']
+        with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
+            id = bgpvpn['bgpvpn']['id']
+            data = {'network_association': {'network_id': net_id,
+                                            'tenant_id': self._tenant_id}}
+            bgpvpn_net_req = self.new_create_request(
+                'bgpvpn/bgpvpns',
+                data=data,
+                fmt=self.fmt,
+                id=id,
+                subresource='network_associations')
+            res = bgpvpn_net_req.get_response(self.ext_api)
+            self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
     def test_bagpipe_associate_router(self):
         mocked_update = self.mocked_bagpipeAPI.update_bgpvpn
@@ -265,8 +292,6 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
         self.mock_update_bgpvpn_rpc = self.mocked_bagpipeAPI.update_bgpvpn
         self.mock_delete_bgpvpn_rpc = self.mocked_bagpipeAPI.delete_bgpvpn
 
-        self.ctxt = n_context.Context('fake_user', 'fake_project')
-
     def _build_expected_return_active(self, port):
         bgpvpn_info_port = BGPVPN_INFO.copy()
         bgpvpn_info_port.update({'id': port['id'],
@@ -368,8 +393,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                 TESTHOST)
             self.assertFalse(self.mock_attach_rpc.called)
 
-    def test_bagpipe_callback_to_rpc_update_active_ignore_DHCP(self):
-        with self.port(device_owner=DEVICE_OWNER_DHCP,
+    def test_bagpipe_callback_to_rpc_update_active_ignore_net_ports(self):
+        with self.port(device_owner=DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
                        **{portbindings.HOST_ID: TESTHOST}) as port:
             self._update_port_status(port, PORT_STATUS_ACTIVE)
@@ -381,8 +406,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
-    def test_bagpipe_callback_to_rpc_update_down_ignore_DHCP(self):
-        with self.port(device_owner=DEVICE_OWNER_DHCP,
+    def test_bagpipe_callback_to_rpc_update_down_ignore_net_ports(self):
+        with self.port(device_owner=DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
                        **{portbindings.HOST_ID: TESTHOST}) as port:
             self._update_port_status(port, PORT_STATUS_DOWN)
@@ -394,8 +419,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
-    def test_bagpipe_callback_to_rpc_deleted_ignore_DHCP(self):
-        with self.port(device_owner=DEVICE_OWNER_DHCP,
+    def test_bagpipe_callback_to_rpc_deleted_ignore_net_ports(self):
+        with self.port(device_owner=DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
                        **{portbindings.HOST_ID: TESTHOST}) as port:
             self._update_port_status(port, PORT_STATUS_DOWN)
@@ -407,10 +432,49 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
+    def test_bagpipe_callback_to_rpc_update_active_ignore_external_net(self):
+        with self.subnet(network=self.external_net) as subnet, \
+                self.port(subnet=subnet,
+                          arg_list=(portbindings.HOST_ID,),
+                          **{portbindings.HOST_ID: TESTHOST}) as port:
+            self._update_port_status(port, PORT_STATUS_ACTIVE)
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=port['port']
+            )
+            self.assertFalse(self.mock_attach_rpc.called)
+            self.assertFalse(self.mock_detach_rpc.called)
+
+    def test_bagpipe_callback_to_rpc_update_down_ignore_external_net(self):
+        with self.subnet(network=self.external_net) as subnet, \
+                self.port(subnet=subnet,
+                          arg_list=(portbindings.HOST_ID,),
+                          **{portbindings.HOST_ID: TESTHOST}) as port:
+            self._update_port_status(port, PORT_STATUS_DOWN)
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=port['port']
+            )
+            self.assertFalse(self.mock_attach_rpc.called)
+            self.assertFalse(self.mock_detach_rpc.called)
+
+    def test_bagpipe_callback_to_rpc_deleted_ignore_external_net(self):
+        with self.subnet(network=self.external_net) as subnet, \
+                self.port(subnet=subnet,
+                          arg_list=(portbindings.HOST_ID,),
+                          **{portbindings.HOST_ID: TESTHOST}) as port:
+            self._update_port_status(port, PORT_STATUS_DOWN)
+            self.bagpipe_driver.registry_port_deleted(
+                None, None, None,
+                context=self.ctxt,
+                port_id=port['port']['id']
+            )
+            self.assertFalse(self.mock_attach_rpc.called)
+            self.assertFalse(self.mock_detach_rpc.called)
+
     def test_delete_port_to_bgpvpn_rpc(self):
-
-        ctxt = n_context.Context('fake_user', 'fake_project')
-
         with self.network() as net, \
             self.subnet(network=net) as subnet, \
             self.port(subnet=subnet) as port, \
@@ -421,7 +485,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
 
             port['port'].update({'binding:host_id': TESTHOST})
 
-            self.plugin.delete_port(ctxt, port['port']['id'])
+            self.plugin.delete_port(self.ctxt, port['port']['id'])
 
             self.mock_detach_rpc.assert_called_once_with(
                 mock.ANY,
