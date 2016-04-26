@@ -1,0 +1,7 @@
+---
+features:
+  - BaGPipe driver improvement for a clean integration in the Neutron OpenVSwitch agent (see Bug `1492021 <https://launchpad.net/bugs/1492021>`_).
+    Instead of requiring to use a modified OVS agent, we now provide an extension that is loaded
+    into the unmodified OVS agent.
+fixes:
+  - with BaGPipe driver, the OVS agent does not lose BGPVPN flows on restart (Bug `1531459 <https://launchpad.net/bugs/1531459>`_)

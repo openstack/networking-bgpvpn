@@ -1,0 +1,5 @@
+---
+prelude: >
+    Mitaka release is a short-cycle release to compensate for the
+    delayed Liberty release and get the project in sync
+    with Openstack release cycles

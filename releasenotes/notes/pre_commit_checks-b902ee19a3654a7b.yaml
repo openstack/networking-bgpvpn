@@ -1,0 +1,4 @@
+---
+features:
+  - Pre-commit hooks were added in the driver framework, and then leveraged in BaGPipe and OpenDaylight drivers
+
