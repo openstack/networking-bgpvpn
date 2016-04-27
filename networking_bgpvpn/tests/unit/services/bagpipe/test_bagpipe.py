@@ -24,6 +24,8 @@ from neutron.common.constants import DEVICE_OWNER_ROUTER_INTF
 from neutron.common.constants import PORT_STATUS_ACTIVE
 from neutron.common.constants import PORT_STATUS_DOWN
 
+from neutron.debug import debug_agent
+
 from neutron.extensions import portbindings
 
 from neutron import manager
@@ -404,6 +406,24 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                 port=port['port']
             )
             self.assertFalse(self.mock_attach_rpc.called)
+            self.assertFalse(self.mock_detach_rpc.called)
+
+    def test_bagpipe_callback_to_rpc_dont_ignore_probe_ports(self):
+        with self.port(device_owner=debug_agent.DEVICE_OWNER_COMPUTE_PROBE,
+                       arg_list=(portbindings.HOST_ID,),
+                       **{portbindings.HOST_ID: TESTHOST}) as port:
+            self._update_port_status(port, PORT_STATUS_ACTIVE)
+            self.bagpipe_driver.registry_port_updated(
+                None, None, None,
+                context=self.ctxt,
+                port=port['port'],
+                original_port={'status': PORT_STATUS_DOWN,
+                               'device_owner': "foo"}
+            )
+            self.mock_attach_rpc.assert_called_once_with(
+                mock.ANY,
+                self._build_expected_return_active(port['port']),
+                TESTHOST)
             self.assertFalse(self.mock_detach_rpc.called)
 
     def test_bagpipe_callback_to_rpc_update_down_ignore_net_ports(self):
