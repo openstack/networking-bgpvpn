@@ -25,6 +25,7 @@ from neutron import context as n_context
 from neutron.db import external_net_db
 from neutron.db import l3_db
 from neutron.db import models_v2
+from neutron.debug import debug_agent
 from neutron.extensions import portbindings
 from neutron.i18n import _LE
 from neutron import manager
@@ -378,7 +379,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         return port.get(portbindings.HOST_ID)
 
     def _ignore_port(self, context, port):
-        if port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX):
+        if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
+                and not port['device_owner'] ==
+                debug_agent.DEVICE_OWNER_COMPUTE_PROBE):
             LOG.info("Port %s owner is network:*, we'll do nothing",
                      port['id'])
             return True
