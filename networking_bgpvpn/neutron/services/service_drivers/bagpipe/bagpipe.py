@@ -380,8 +380,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     def _ignore_port(self, context, port):
         if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
-                and not port['device_owner'] ==
-                debug_agent.DEVICE_OWNER_COMPUTE_PROBE):
+                and not port['device_owner'] in
+                (debug_agent.DEVICE_OWNER_COMPUTE_PROBE,
+                 debug_agent.DEVICE_OWNER_NETWORK_PROBE)):
             LOG.info("Port %s owner is network:*, we'll do nothing",
                      port['id'])
             return True
