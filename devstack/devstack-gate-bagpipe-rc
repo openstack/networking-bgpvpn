@@ -15,5 +15,6 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_data
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 
 # compiling a fresh OVS is done in gate_hook.sh
-export COMPILE_OVS=True
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_BUILD_OVS_FROM_GIT=True"
 
