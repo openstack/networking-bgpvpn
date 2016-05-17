@@ -132,15 +132,16 @@ backend:
 Drivers
 =======
 
-The BGPVPN service plugin support or will support the following drivers:
+The BGPVPN service plugin supports the following drivers:
 
-* *bagpipe*, the reference driver working jointly with the *openvswitch* ML2 mechanism driver (see :doc:`bagpipe/index`)
+* *bagpipe*, the reference driver working jointly with Neutron's *openvswitch* ML2 mechanism driver (see :doc:`bagpipe/index`)
 
 * *opencontrail*, for [OpenContrail]_ (see :doc:`opencontrail/index`)
 
 * *opendaylight*, for [OpenDaylight]_ (see :doc:`opendaylight/index`)
 
-* *nuage*, for [Nuage-Networks]_
+* *nuage*, for [Nuage-Networks]_ (see :doc:`nuage/index`)
+
 
 .. toctree::
    :maxdepth: 1
@@ -148,6 +149,7 @@ The BGPVPN service plugin support or will support the following drivers:
    bagpipe/index
    opencontrail/index
    opendaylight/index
+   nuage/index
 
 ==========
 References
@@ -160,6 +162,4 @@ References
 .. [RFC4364] BGP/MPLS IP Virtual Private Networks (IP VPNs) http://tools.ietf.org/html/rfc4364
 .. [RFC7432] BGP MPLS-Based Ethernet VPN (Ethernet VPNs, a.k.a E-VPN) http://tools.ietf.org/html/rfc7432
 .. [draft-ietf-bess-evpn-overlay] E-VPN for VXLAN/NVGRE/MPLS-GRE https://tools.ietf.org/html/draft-ietf-bess-evpn-overlay
-
-
 
