@@ -17,6 +17,8 @@ import copy
 import mock
 import webob.exc
 
+import netaddr
+
 from neutron import context as n_context
 
 from neutron.common.constants import DEVICE_OWNER_NETWORK_PREFIX
@@ -30,8 +32,18 @@ from neutron.extensions import portbindings
 
 from neutron import manager
 from neutron.plugins.ml2 import config as ml2_config
+from neutron.plugins.ml2.drivers.openvswitch.agent.common \
+    import constants as ovs_agt_constants
+from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
+    import br_tun as ofctl_br_tun
+from neutron.plugins.ml2.drivers.openvswitch.agent \
+    import ovs_agent_extension_api as ovs_ext_agt
 from neutron.plugins.ml2 import rpc as ml2_rpc
 
+from neutron.tests import base
+
+from networking_bgpvpn.neutron.services.service_drivers.bagpipe import \
+    agent_extension as bagpipe_agt_ext
 from networking_bgpvpn.neutron.services.service_drivers.bagpipe import bagpipe
 from networking_bgpvpn.tests.unit.services import test_plugin
 
@@ -693,3 +705,47 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
             self.assertTrue(log_exc.called)
+
+
+class TestOVSBridgeIntercept(base.DietTestCase):
+
+    def setUp(self):
+        super(TestOVSBridgeIntercept, self).setUp()
+        self.underlying_bridge = ofctl_br_tun.OVSTunnelBridge("br-foo")
+        self.underlying_bridge.do_action_flows = mock.Mock()
+        self.cookie_bridge = ovs_ext_agt.OVSCookieBridge(
+            self.underlying_bridge)
+        self.tested_bridge = bagpipe_agt_ext.OVSBridgeIntercept(
+            self.cookie_bridge)
+
+    def test_add_flow_without_cookie(self):
+        self.tested_bridge.add_flow(in_port=1, actions="output:2")
+        self.underlying_bridge.do_action_flows.assert_called_once_with(
+            'add',
+            [{"in_port": 1,
+              "actions": "output:2",
+              "cookie": self.cookie_bridge._cookie}]
+        )
+
+    def test_install_arp_responder(self):
+        self.tested_bridge.install_arp_responder(42,
+                                                 "7.7.7.7",
+                                                 "de:c0:de:ba:0b:ab")
+
+        # Most of the content below is supposed to reflect what
+        # install_arp_responder does, except 'cookie' which is
+        # the thing we really want to check
+        self.underlying_bridge.do_action_flows.assert_called_once_with(
+            'add',
+            [{"table": ovs_agt_constants.ARP_RESPONDER,
+              "priority": 1,
+              "proto": 'arp',
+              "dl_vlan": 42,
+              "nw_dst": '7.7.7.7',
+              "actions": ovs_agt_constants.ARP_RESPONDER_ACTIONS % {
+                  'mac': netaddr.EUI("de:c0:de:ba:0b:ab",
+                                     dialect=netaddr.mac_unix),
+                  'ip': netaddr.IPAddress("7.7.7.7"),
+                  },
+              "cookie": self.cookie_bridge._cookie}]
+        )
