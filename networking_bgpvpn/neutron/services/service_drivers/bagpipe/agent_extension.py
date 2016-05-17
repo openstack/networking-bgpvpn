@@ -18,6 +18,8 @@ L2 Agent extension to support bagpipe networking-bgpvpn driver RPCs in the
 OpenVSwitch agent
 """
 
+import types
+
 import logging
 
 from networking_bagpipe.agent import bagpipe_bgp_agent
@@ -32,6 +34,8 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.native \
     import br_tun as native_br_tun
 from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
     import br_tun as ofctl_br_tun
+from neutron.plugins.ml2.drivers.openvswitch.agent import \
+    ovs_agent_extension_api
 
 LOG = logging.getLogger(__name__)
 
@@ -44,37 +48,66 @@ class OVSBridgeIntercept(ofctl_br_tun.OVSTunnelBridge,
     code of the cookie bridge.
     """
 
+    _COOKIE_BRIDGE_METHODS = [
+        'add_flow',
+        'del_flow',
+        'mod_flows',
+        'do_action_flows',
+    ]
+
     def __init__(self, bridge):
         """OVSBridgeIntercept
 
         :param bridge: underlying cookie bridge
         :type bridge: OVSCookieBridge
         """
+        # The inheritance from ofctl_br_tun.OVSTunnelBridge and
+        # ofctl_br_tun.OVSTunnelBridge is here to allow calling their
+        # methods with a OVSBridgeIntercept 'self'
+        # This does not result in actual calls to propagate to these mother
+        # classes via simple inheritance, because of the special code in
+        # __getattribute__ that redirect these calls with a vooded self
+
+        if not isinstance(bridge, ovs_agent_extension_api.OVSCookieBridge):
+            raise Exception("Bridge has to be an OVSCookieBridge")
+
         self.bridge = bridge
 
-        self.intercept_method("install_arp_responder")
+    def __getattribute__(self, name):
+        cookie_bridge = object.__getattribute__(self, 'bridge')
 
-    def intercept_method(self, method_name):
-        # The code below will result in calling the <method_name> on the right
-        # parent class of the underlying bridge, but with our instance passed
-        # as 'self'; this ensure that when the said method ends up calling do
-        # action_flows it will use the do_action_flows of the Cookie bridge
-        # not the cookie-less do_action_flows
-        #
-        # the condition that must be respected is that this class is also
-        # a subclass of all the bridge classes implementing the intercepted
-        # functions
-        #
-        # the __getattr__ passthrough below ensures that our instance, passed
-        # instead of contains everything that the underlying bridge contains
-        #
-        method = getattr(self.bridge.__class__, method_name, None)
-        if method is not None:
-            setattr(self, method_name,
-                    lambda *args, **kwargs: method(self, *args, **kwargs))
+        # classes not using add_flow/del_flow etc, but reading
+        # self._default_cookie, such as native_br_tun.OVSTunnelBridge
+        # will get the right cookie:
+        if name == "_default_cookie":
+            return cookie_bridge._cookie
 
-    def __getattr__(self, name):
-        return getattr(self.bridge, name)
+        # the cookie-specific methods need to be mapped to the CookieBridge
+        if name in OVSBridgeIntercept._COOKIE_BRIDGE_METHODS:
+            return getattr(cookie_bridge, name)
+
+        # cookie_bridge.bridge is the bridge behind it and should be an
+        # OVSTunnelBridge
+        attr = getattr(cookie_bridge.bridge.__class__, name, None)
+        # flake8: noqa
+        # pylint: disable=unidiomatic-typecheck
+        if type(attr) is types.MethodType:
+            # The code below will result in calling the <method_name> on the
+            # right parent class of the underlying bridge, but with our
+            # instance passed as 'self'; this ensure that when the said method
+            # ends up calling add/del/mod_flows, it will use the method of the
+            # OVSCookieBridge, that uses the extension-specific cookie.
+            #
+            # The condition that must be respected is that OVSBridgeIntercept
+            # is a subclass of all the bridge classes implementing the
+            # intercepted functions.
+            #
+            # the __getattribute__ implemenation below ensures that our
+            # instance passed instead of self, will still behave like the
+            # underlying bridge.
+            return lambda *args, **kwargs: attr(self, *args, **kwargs)
+
+        return getattr(cookie_bridge, name)
 
 
 class BagpipeBgpvpnAgentExtension(agent_extension.AgentCoreResourceExtension):
@@ -82,7 +115,7 @@ class BagpipeBgpvpnAgentExtension(agent_extension.AgentCoreResourceExtension):
     def initialize(self, connection, driver_type):
 
         if driver_type != ovs_agt_constants.EXTENSION_DRIVER_TYPE:
-            raise Exception("This extension is designed to work with the"
+            raise Exception("This extension is currently works only with the"
                             " OVS Agent")
 
         # Create an HTTP client for BaGPipe BGP component REST service
