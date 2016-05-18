@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron.common import constants as const
 from neutron.common import exceptions as n_exc
 from neutron.db import servicetype_db as st_db
 from neutron.i18n import _LI
@@ -21,6 +20,9 @@ from neutron import manager
 from neutron.plugins.common import constants as plugin_constants
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
+
+from neutron_lib import constants as const
+
 from oslo_log import log
 
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase

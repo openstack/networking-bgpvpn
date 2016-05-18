@@ -10,5 +10,6 @@ oslo.log>=1.8.0 # Apache-2.0
 oslo.utils>=2.0.0 # Apache-2.0
 sphinxcontrib-blockdiag
 sphinxcontrib-seqdiag
+neutron_lib # bot, please fix that for me :)
 
 

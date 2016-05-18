@@ -19,7 +19,6 @@ from sqlalchemy import sql
 from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
-from neutron.common import constants as const
 from neutron.common import exceptions as n_exc
 from neutron import context as n_context
 from neutron.db import external_net_db
@@ -29,6 +28,8 @@ from neutron.debug import debug_agent
 from neutron.extensions import portbindings
 from neutron.i18n import _LE
 from neutron import manager
+
+from neutron_lib import constants as const
 
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging

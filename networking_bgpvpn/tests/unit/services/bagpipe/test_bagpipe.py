@@ -19,7 +19,6 @@ import webob.exc
 
 import netaddr
 
-from neutron.common import constants as const
 from neutron import context as n_context
 
 from neutron.debug import debug_agent
@@ -38,6 +37,8 @@ from neutron.plugins.ml2 import rpc as ml2_rpc
 
 from neutron.tests import base
 from neutron.tests.common import helpers
+
+from neutron_lib import constants as const
 
 from networking_bgpvpn.neutron.services.service_drivers.bagpipe import \
     agent_extension as bagpipe_agt_ext
