@@ -6,7 +6,7 @@ The **OpenContrail** driver for the BGPVPN service plugin is designed to work
 jointly with the `OpenContrail SDN controller`_.
 
 OpenContrail proposes a `contrail installer`_ script which is similar to devstack,
-and can be used to deploy a devi/test environment.
+and can be used to deploy a dev/test environment.
 
 * Clone that OpenContrail installer script::
 
