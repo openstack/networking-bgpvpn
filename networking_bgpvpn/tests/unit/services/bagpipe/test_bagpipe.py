@@ -303,6 +303,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
         # we choose an agent of type const.AGENT_TYPE_OFA
         # because this is the type used by the fake_agent mech driver
         helpers.register_ovs_agent(helpers.HOST, const.AGENT_TYPE_OFA)
+        helpers.register_l3_agent()
 
     def _build_expected_return_active(self, port):
         bgpvpn_info_port = BGPVPN_INFO.copy()
@@ -383,11 +384,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
 
-            self.bagpipe_driver.registry_port_deleted(
-                None, None, None,
-                context=self.ctxt,
-                port_id=port['port']['id']
-            )
+            self.plugin.delete_port(self.ctxt, port['port']['id'])
+
             self.mock_detach_rpc.assert_called_once_with(
                 mock.ANY,
                 self._build_expected_return_down(port['port']),
@@ -510,13 +508,13 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
     def test_delete_port_to_bgpvpn_rpc(self):
         with self.network() as net, \
             self.subnet(network=net) as subnet, \
-            self.port(subnet=subnet) as port, \
+            self.port(subnet=subnet,
+                      arg_list=(portbindings.HOST_ID,),
+                      **{portbindings.HOST_ID: helpers.HOST}) as port, \
             mock.patch.object(self.plugin, 'get_port',
                               return_value=port['port']), \
             mock.patch.object(self.plugin, 'get_network',
                               return_value=net['network']):
-
-            port['port'].update({'binding:host_id': helpers.HOST})
 
             self.plugin.delete_port(self.ctxt, port['port']['id'])
 
@@ -584,6 +582,9 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                 self.subnet(network=net) as subnet, \
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
+                self.port(subnet=subnet,
+                          arg_list=(portbindings.HOST_ID,),
+                          **{portbindings.HOST_ID: helpers.HOST}), \
                 mock.patch.object(bagpipe,
                                   'get_router_bgpvpn_assocs',
                                   return_value=[{
