@@ -1,5 +1,6 @@
 NETWORKING_BGPVPN_DIR="$DEST/networking-bgpvpn"
 NETWORKING_BGPVPN_CONF="$NEUTRON_CONF_DIR/networking_bgpvpn.conf"
+BGPVPN_DASHBOARD_ENABLE_ADMIN="$NETWORKING_BGPVPN_DIR/bgpvpn_dashboard/enabled/_2115_admin_bgpvpn_panel.py"
 BGPVPN_PLUGIN_CLASS="networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
 
 NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default}

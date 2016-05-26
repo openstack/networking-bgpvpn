@@ -39,6 +39,7 @@ Contents
    installation
    usage
    heat
+   horizon
    contributing
    specs
    future/index

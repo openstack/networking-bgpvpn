@@ -23,7 +23,7 @@ Example commands to use by the tenant owning the BGPVPN to associate a Network t
 Use from Horizon
 ----------------
 
-(not supported yet)
+See :doc:`horizon`.
 
 Use from Heat
 ------------- 

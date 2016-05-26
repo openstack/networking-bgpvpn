@@ -1,0 +1,58 @@
+{% load i18n  %}
+
+<div class="detail">
+  <dl class="dl-horizontal">
+    <dt>{% trans "BGPVPN Name" %}</dt>
+    <dd>{{ bgpvpn.name }}</dd>
+    <dt>{% trans "BGPVPN ID" %}</dt>
+    <dd>{{ bgpvpn.id }}</dd>
+    <dt>{% trans "Type" %}</dt>
+    <dd>{{ bgpvpn.type }}</dd>
+    <dt>{% trans "Route Targets" %}</dt>
+      <dd>
+          {% for rt in bgpvpn.route_targets %}
+            {{ rt }}
+          {% endfor %}
+      </dd>
+    <dt>{% trans "Import Targets" %}</dt>
+      <dd>
+          {% for it in bgpvpn.import_targets %}
+            {{ it }}
+          {% endfor %}
+      </dd>
+    <dt>{% trans "Export Targets" %}</dt>
+      <dd>
+      {% for et in bgpvpn.export_targets %}
+        {{ et }}
+      {% endfor %}
+      </dd>
+    <dt>{% trans "Project ID" %}</dt>
+    <dd>{{ bgpvpn.tenant_id }}</dd>
+    <dt>
+      {% if bgpvpn.networks|length > 1 %}
+        {% trans "Associated Networks" %}
+      {% else %}
+        {% trans "Associated Network" %}
+      {% endif %}
+    </dt>
+      {% for network in bgpvpn.networks %}
+        <dd>
+          {% url 'horizon:admin:networks:detail' network as network_url %}
+           <a href="{{ network_url }}">{{ network }}</a>
+        </dd>
+      {% endfor %}
+    <dt>
+      {% if bgpvpn.routers|length > 1 %}
+        {% trans "Associated Routers" %}
+      {% else %}
+        {% trans "Associated Router" %}
+      {% endif %}
+    </dt>
+      {% for router in bgpvpn.routers %}
+        <dd>
+          {% url 'horizon:admin:routers:detail' router as router_url %}
+            <a href="{{ router_url }}">{{ router }}</a>
+        </dd>
+      {% endfor %}
+  </dl>
+</div>

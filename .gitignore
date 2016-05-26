@@ -27,6 +27,8 @@ pip-log.txt
 nosetests.xml
 .testrepository
 .venv
+bgpvpn_dashboard/test/.secret_key_store
+*.lock
 
 # Translations
 *.mo
@@ -54,3 +56,4 @@ releasenotes/build
 *~
 .*.swp
 .*sw?
+.idea/*
