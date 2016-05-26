@@ -659,17 +659,16 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self._build_expected_return_active(port),
             helpers.HOST)
 
-        # The test below currently fails, because there is
-        # no registry event for Port down (in Neutron stable/liberty)
-#             ml2_rpc_callbacks.update_device_down(self.ctxt,
-#                                                  host=helpers.HOST,
-#                                                  agent_id='fooagent',
-#                                                  device="de:ad:00:00:be:ef")
-#
-#             self.mock_detach_rpc.assert_called_once_with(
-#                 mock.ANY,
-#                 self._build_expected_return_down(port),
-#                 helpers.HOST)
+        ml2_rpc_callbacks.update_device_down(self.ctxt,
+                                             host=helpers.HOST,
+                                             agent_id='fooagent',
+                                             device="de:ad:00:00:be:ef")
+
+        self.mock_detach_rpc.assert_called_once_with(
+            mock.ANY,
+            self._build_expected_return_down(port),
+            helpers.HOST)
+        self.mock_detach_rpc.reset_mock()
 
         self.plugin.delete_port(self.ctxt, port['id'])
 
