@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# borrowed from neutron-lbaas/tools
-
 # Many of neutron's repos suffer from the problem of depending on neutron,
 # but it not existing on pypi.
 
@@ -16,29 +14,42 @@
 # pip install {opts} {packages}
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
+BRANCH_NAME=master
 neutron_installed=$(echo "import neutron" | python 2>/dev/null ; echo $?)
-openstack_branch=master
 
 set -e
+
+CONSTRAINTS_FILE=$1
+shift
+
+install_cmd="pip install"
+if [ $CONSTRAINTS_FILE != "unconstrained" ]; then
+    install_cmd="$install_cmd -c$CONSTRAINTS_FILE"
+fi
 
 if [ $neutron_installed -eq 0 ]; then
     echo "ALREADY INSTALLED" > /tmp/tox_install.txt
     echo "Neutron already installed; using existing package"
 elif [ -x "$ZUUL_CLONER" ]; then
+    export ZUUL_BRANCH=${ZUUL_BRANCH-$BRANCH}
     echo "ZUUL CLONER" > /tmp/tox_install.txt
     cwd=$(/bin/pwd)
     cd /tmp
-    $ZUUL_CLONER --branch $openstack_branch --cache-dir \
+    $ZUUL_CLONER --cache-dir \
         /opt/git \
+        --branch $BRANCH_NAME \
         git://git.openstack.org \
         openstack/neutron
     cd openstack/neutron
-    pip install -e .
+    $install_cmd -e .
     cd "$cwd"
 else
     echo "PIP HARDCODE" > /tmp/tox_install.txt
-    pip install -U -egit+https://git.openstack.org/openstack/neutron@${openstack_branch}#egg=neutron
+    if [ -z "$NEUTRON_PIP_LOCATION" ]; then
+        NEUTRON_PIP_LOCATION="git+https://git.openstack.org/openstack/neutron@$BRANCH_NAME#egg=neutron"
+    fi
+    $install_cmd -U -e ${NEUTRON_PIP_LOCATION}
 fi
 
-pip install -U $*
+$install_cmd -U $*
 exit $?
