@@ -32,6 +32,8 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.common \
     import constants as ovs_agt_constants
 from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
     import br_tun as ofctl_br_tun
+from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
+    import ovs_bridge
 from neutron.plugins.ml2.drivers.openvswitch.agent \
     import ovs_agent_extension_api as ovs_ext_agt
 from neutron.plugins.ml2 import rpc as ml2_rpc
@@ -731,3 +733,43 @@ class TestOVSBridgeIntercept(base.DietTestCase):
                   },
               "cookie": self.cookie_bridge._cookie}]
         )
+
+
+class TestOVSAgentExtension(base.BaseTestCase):
+
+    def setUp(self):
+        super(TestOVSAgentExtension, self).setUp()
+        self.agent_ext = bagpipe_agt_ext.BagpipeBgpvpnAgentExtension()
+        self.context = n_context.get_admin_context()
+        self.connection = mock.Mock()
+
+    @mock.patch('networking_bagpipe.agent.bagpipe_bgp_agent.BaGPipeBGPAgent')
+    def test_init(self, mocked_bagpipe_bgp_agent):
+        int_br = ovs_bridge.OVSAgentBridge("br-int")
+        tun_br = ovs_bridge.OVSAgentBridge("br-tun")
+        agent_extension_api = ovs_ext_agt.OVSAgentExtensionAPI(int_br,
+                                                               tun_br)
+
+        self.agent_ext.consume_api(agent_extension_api)
+        self.agent_ext.initialize(self.connection,
+                                  ovs_agt_constants.EXTENSION_DRIVER_TYPE,
+                                  )
+
+        mocked_bagpipe_bgp_agent.assert_called_once_with(
+            const.AGENT_TYPE_OVS,
+            self.connection,
+            int_br=mock.ANY,
+            tun_br=mock.ANY
+            )
+
+        call_kwargs = mocked_bagpipe_bgp_agent.call_args_list[0][1]
+
+        self.assertIsInstance(call_kwargs['int_br'],
+                              ovs_ext_agt.OVSCookieBridge)
+        self.assertIs(call_kwargs['int_br'].bridge,
+                      int_br)
+
+        self.assertIsInstance(call_kwargs['tun_br'],
+                              bagpipe_agt_ext.OVSBridgeIntercept)
+        self.assertIs(call_kwargs['tun_br'].bridge,
+                      tun_br)
