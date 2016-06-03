@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron.common import exceptions as n_exc
 from neutron.db import servicetype_db as st_db
 from neutron.i18n import _LI
 from neutron import manager
@@ -22,6 +21,7 @@ from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 
 from neutron_lib import constants as const
+from neutron_lib import exceptions as n_exc
 
 from oslo_log import log
 

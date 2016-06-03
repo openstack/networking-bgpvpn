@@ -18,8 +18,9 @@ import json
 from oslo_log import log
 from oslo_utils import uuidutils
 
-from neutron.common import exceptions as n_exc
 from neutron.i18n import _LI
+
+from neutron_lib import exceptions as n_exc
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import constants

@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron.common import exceptions as n_exc
-
+from neutron_lib import exceptions as n_exc
 
 # OpenContrail client API exceptions
+
 
 class OpenContrailAPIFailed(n_exc.NeutronException):
     message = _("Could not reach OpenContrail API server : %(url)s "
