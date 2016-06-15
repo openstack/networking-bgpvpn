@@ -2,44 +2,91 @@
 OpenContrail driver
 ===================
 
+Introduction
+------------
+
 The **OpenContrail** driver for the BGPVPN service plugin is designed to work
 jointly with the `OpenContrail SDN controller`_.
 
-OpenContrail proposes a `contrail installer`_ script which is similar to devstack,
-and can be used to deploy a dev/test environment.
+Limitations
+-----------
 
-* Clone that OpenContrail installer script::
+VPN Type
+~~~~~~~~
 
-        git clone git@github.com:Juniper/contrail-installer
+The OpenContrail driver for the BGPVPN service plugin can create only L3 VPN
+type. The L2 is not yet supported.
 
-* Compile and run OpenContrail::
 
-        cd ~/contrail-installer
-        cp samples/localrc-all localrc (edit localrc as needed)
-        ./contrail.sh build
-        ./contrail.sh install
-        ./contrail.sh configure
-        ./contrail.sh start
+Route Distinguishers
+~~~~~~~~~~~~~~~~~~~~
 
-* Then clone devstack::
+The OpenContrail driver for the BGPVPN service plugin does not permit
+specifying `route distinguisher`_.
 
-        git clone git@github.com:openstack-dev/devstack
+Router Association
+~~~~~~~~~~~~~~~~~~
 
-* A glue file is needed in the interim till it is upstreamed to devstack::
+The OpenContrail driver for the BGPVPN service plugin does not support
+`associations with routers`_. Only `network associations`_ are available for the
+moment.
 
-        cp ~/contrail-installer/devstack/lib/neutron_plugins/opencontrail lib/neutron_plugins/
+How to use ?
+------------
 
-* Use a sample ``localrc``::
+On an Openstack Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        cp ~/contrail-installer/devstack/samples/localrc-all localrc
+[TBC (package installation + config)]
 
-* add the following to enable the OpenContrail driver for the BGPVPN service plugin::
+In devstack
+~~~~~~~~~~~
 
-        NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver:default"
+A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 
-* Run stack.sh::
+* Clone devstack:
 
-        ./stack.sh
+   git clone git@github.com:openstack-dev/devstack
+
+* Here a proposed devstack ``local.conf`` file which permits to deploy
+  OpenStack keystone, glance, nova, neutron/networking-bgpvpn and
+  compile/install all OpenContrail services and dependences:
+
+.. code:: bash
+
+ [[local|localrc]]
+ LOG=True
+ LOGDAYS=1
+ PASSWORD="secret"
+ DATABASE_PASSWORD=$PASSWORD
+ RABBIT_PASSWORD=$PASSWORD
+ SERVICE_TOKEN=$PASSWORD
+ SERVICE_PASSWORD=$PASSWORD
+ ADMIN_PASSWORD=$PASSWORD
+
+ # disable some nova services
+ disable_service n-obj n-novnc n-cauth
+ # disable cinder
+ disable_service cinder c-api c-vol c-sch
+ # disable heat
+ disable_service h-eng h-api h-api-cfn h-api-cw
+ # diable horizon
+ disable_service horizon
+ # disable swift
+ disable_service swift s-proxy s-object s-container s-account
+ # disable some contrail services
+ #disable_service ui-webs ui-jobs named dns query-engine
+
+ DEST=/opt/stack/openstack
+ CONTRAIL_DEST=/opt/stack/contrail
+
+ enable_plugin contrail https://github.com/zioc/contrail-devstack-plugin.git
+
+ enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
+ NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver:default"
 
 .. _OpenContrail SDN controller : https://github.com/Juniper/contrail-controller
-.. _contrail installer : https://github.com/Juniper/contrail-installer
+.. _route distinguisher : http://docs.openstack.org/developer/networking-bgpvpn/api.html#route-distinguishers
+.. _associations with routers : http://docs.openstack.org/developer/networking-bgpvpn/api.html#router-association
+.. _network associations : http://docs.openstack.org/developer/networking-bgpvpn/api.html#network-association
+.. _devstack plugin : https://github.com/zioc/contrail-devstack-plugin
