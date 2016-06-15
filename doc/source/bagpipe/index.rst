@@ -89,16 +89,6 @@ In devstack
 
 * on compute nodes:
 
-  * install and configure bagpipe-bgp_, typically with a peering to a BGP Route-Reflector or BGP routers, can be done through devstack
-    like this::
-
-        BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver
-        # IP of your route-reflector or BGP router, or fakeRR
-        # BAGPIPE_BGP_PEERS defaults to $SERVICE_HOST, which will point to the controller in a
-        # multi-node setup
-        #BAGPIPE_BGP_PEERS=1.2.3.4,2.3.4.5
-        enable_service b-bgp
-
   * the compute node Neutron agent is the Neutron openvswitch agent, with the ``bagpipe_bgpvpn`` agent extension:
 
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there)::
@@ -109,7 +99,19 @@ In devstack
 
     * the ``bagpipe_bgpvpn`` agent extension is automatically added to the agent configuration by the devstack plugin
 
+  * bagpipe-bgp_ will be installed automatically as a git submodule of networking-bagpipe
+
+  * you need to enable and configure bagpipe-bgp_, typically with a peering to a BGP Route-Reflector or BGP router(s)::
+
+        enable_service b-bgp
+
+        BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver
+
+        # IP of your route-reflector or BGP router, or fakeRR
+        # BAGPIPE_BGP_PEERS defaults to $SERVICE_HOST, which will point to the controller in a
+        # multi-node devstack setup
+        #BAGPIPE_BGP_PEERS=1.2.3.4,2.3.4.5
+
 .. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
 .. _networking-bagpipe: https://github.com/openstack/networking-bagpipe
-
 
