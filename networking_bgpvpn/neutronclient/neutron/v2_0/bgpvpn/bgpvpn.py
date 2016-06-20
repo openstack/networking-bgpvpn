@@ -16,8 +16,9 @@
 from __future__ import print_function
 
 from neutronclient.common import extension
-from neutronclient.i18n import _
 from neutronclient.neutron import v2_0 as neutronv20
+
+from networking_bgpvpn._i18n import _
 
 # To understand how neutronclient extensions work
 # read neutronclient/v2.0/client.py (extend_* methods and _register_extension)

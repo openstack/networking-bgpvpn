@@ -25,7 +25,6 @@ from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.debug import debug_agent
 from neutron.extensions import portbindings
-from neutron.i18n import _LE
 from neutron import manager
 
 from neutron_lib import constants as const
@@ -35,6 +34,8 @@ from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
+
+from networking_bgpvpn._i18n import _LE
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext

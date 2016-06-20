@@ -17,9 +17,6 @@ from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
 
-from neutron.i18n import _LI
-from neutron.i18n import _LW
-
 from oslo_db import exception as db_exc
 from oslo_log import log
 from oslo_utils import uuidutils
@@ -27,6 +24,9 @@ from oslo_utils import uuidutils
 import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
+
+from networking_bgpvpn._i18n import _LI
+from networking_bgpvpn._i18n import _LW
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import utils
