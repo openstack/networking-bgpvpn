@@ -35,12 +35,6 @@ from networking_bgpvpn.neutron.services.common import constants
 LOG = log.getLogger(__name__)
 
 
-# Regular expression to validate Route Target list format
-# ["<asn1>:<nn1>","<asn2>:<nn2>", ...] with asn and nn in range 0-65535
-RT_REGEX = (r'^((?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]'
-            r'\d|6553[0-5]):(?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d'
-            r'{2}|655[0-2]\d|6553[0-5]))$')
-
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
 n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
 
@@ -108,7 +102,7 @@ def _validate_rt_list(data, valid_values=None):
         return msg
 
     for item in data:
-        msg = attr._validate_regex(item, RT_REGEX)
+        msg = attr._validate_regex(item, constants.RT_REGEX)
         if msg:
             LOG.debug(msg)
             return msg
