@@ -13,30 +13,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
-from horizon import exceptions
 from horizon import forms
-from horizon import tables
 from horizon.utils import memoized
-from horizon import views
-from horizon import workflows
 from openstack_dashboard import api
 
 import bgpvpn_dashboard.api.bgpvpn as bgpvpn_api
-from bgpvpn_dashboard.common import bgpvpn as bgpvpn_common
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import forms as bgpvpn_forms
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import tables as bgpvpn_tables
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import workflows \
     as bgpvpn_workflows
+from bgpvpn_dashboard.dashboards.project.bgpvpn import views as project_views
 
 
-class IndexView(tables.DataTableView):
+class IndexView(project_views.IndexView):
     table_class = bgpvpn_tables.BgpvpnTable
-    template_name = 'admin/bgpvpn/index.html'
-    page_title = _("BGP VPNs")
 
+    @memoized.memoized_method
     def get_data(self):
         bgpvpns = bgpvpn_api.bgpvpns_list(self.request)
         networks = api.neutron.network_list(self.request)
@@ -61,89 +55,18 @@ class CreateView(forms.ModalFormView):
     page_title = _("Create BGPVPN")
 
 
-class EditDataView(forms.ModalFormView):
+class EditDataView(project_views.EditDataView):
     form_class = bgpvpn_forms.EditDataBgpVpn
-    form_id = "edit_data_bgpvpn_form"
-    modal_header = _("Edit BGPVPN")
-    submit_label = _("Save Changes")
     submit_url = 'horizon:admin:bgpvpn:edit'
     success_url = reverse_lazy('horizon:admin:bgpvpn:index')
-    template_name = 'admin/bgpvpn/modify.html'
-    page_title = _("Edit BGPVPN")
-
-    @staticmethod
-    def _join_rts(route_targets_list):
-        return ','.join(route_targets_list)
-
-    def get_context_data(self, **kwargs):
-        context = super(EditDataView, self).get_context_data(**kwargs)
-        args = (self.kwargs['bgpvpn_id'],)
-        context["bgpvpn_id"] = self.kwargs['bgpvpn_id']
-        context["submit_url"] = reverse(self.submit_url, args=args)
-        return context
-
-    def get_initial(self):
-        bgpvpn_id = self.kwargs['bgpvpn_id']
-        try:
-            # Get initial bgpvpn information
-            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
-        except Exception:
-            exceptions.handle(
-                self.request,
-                _('Unable to retrieve BGPVPN details.'),
-                redirect=reverse_lazy("horizon:project:bgpvpn:index"))
-        data = bgpvpn.to_dict()
-        for attribute in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
-            data[attribute] = self._join_rts(bgpvpn[attribute])
-        data['bgpvpn_id'] = data.pop('id')
-        return data
 
 
-class UpdateAssociationsView(workflows.WorkflowView):
+class UpdateAssociationsView(project_views.UpdateAssociationsView):
     workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
-    template_name = 'admin/bgpvpn/update-associations.html'
     page_title = _("Edit BGPVPN associations")
-
-    def get_initial(self):
-        bgpvpn_id = self.kwargs['bgpvpn_id']
-
-        try:
-            # Get initial bgpvpn information
-            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
-        except Exception:
-            exceptions.handle(
-                self.request,
-                _('Unable to retrieve BGPVPN details.'),
-                redirect=reverse_lazy("horizon:admin:bgpvpn:index"))
-        data = bgpvpn.to_dict()
-        data['bgpvpn_id'] = data.pop('id')
-        return data
+    failure_url = reverse_lazy("horizon:admin:bgpvpn:index")
 
 
-class DetailProjectView(views.HorizonTemplateView):
+class DetailProjectView(project_views.DetailProjectView):
     template_name = 'admin/bgpvpn/detail.html'
-    page_title = "{{ bgpvpn.name }}"
-
-    def get_context_data(self, **kwargs):
-        context = super(DetailProjectView, self).get_context_data(**kwargs)
-        bgpvpn = self.get_data()
-        table = bgpvpn_tables.BgpvpnTable(self.request)
-        context["bgpvpn"] = bgpvpn
-        context["url"] = self.get_redirect_url()
-        context["actions"] = table.render_row_actions(bgpvpn)
-        return context
-
-    @memoized.memoized_method
-    def get_data(self):
-        try:
-            bgpvpn_id = self.kwargs['bgpvpn_id']
-            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
-        except Exception:
-            redirect = self.get_redirect_url()
-            exceptions.handle(self.request,
-                              _('Unable to retrieve BGPVPN details.'),
-                              redirect=redirect)
-        return bgpvpn
-
-    def get_redirect_url(self):
-        return reverse('horizon:admin:bgpvpn:index')
+    redirect_url = 'horizon:admin:bgpvpn:index'

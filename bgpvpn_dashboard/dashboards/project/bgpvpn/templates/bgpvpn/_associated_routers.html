@@ -1,0 +1,15 @@
+{% load i18n  %}
+
+<dt>
+    {% if bgpvpn.routers|length > 1 %}
+        {% trans "Associated Routers" %}
+    {% else %}
+        {% trans "Associated Router" %}
+    {% endif %}
+</dt>
+    {% for router in bgpvpn.routers %}
+        <dd>
+        {% url 'horizon:project:routers:detail' router as router_url %}
+        <a href="{{ router_url }}">{{ router }}</a>
+        </dd>
+    {% endfor %}

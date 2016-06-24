@@ -17,8 +17,6 @@ import logging
 
 from django.core.urlresolvers import reverse
 from django.utils import html
-from django.utils.http import urlencode
-from django.utils import safestring
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext_lazy
 from horizon import exceptions
@@ -26,6 +24,7 @@ from horizon import tables
 from openstack_dashboard import policy
 
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
+from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as project_tables
 
 LOG = logging.getLogger(__name__)
 
@@ -61,40 +60,16 @@ class CreateBgpVpn(tables.LinkAction):
     icon = "plus"
 
 
-class EditInfoBgpVpn(tables.LinkAction):
-    name = "update_info"
-    verbose_name = _("Edit BGPVPN")
+class EditInfoBgpVpn(project_tables.EditInfoBgpVpn):
     url = "horizon:admin:bgpvpn:edit"
-    classes = ("ajax-modal",)
-    icon = "pencil"
 
 
-class UpdateNetworkAssociations(tables.LinkAction):
-    name = "update_network_associations"
-    verbose_name = _("Update Network Associations")
+class UpdateNetworkAssociations(project_tables.UpdateNetworkAssociations):
     url = "horizon:admin:bgpvpn:update-associations"
-    classes = ("ajax-modal",)
-    icon = "pencil"
-
-    def get_link_url(self, bgpvpn):
-        step = 'update_bgpvpn_network'
-        base_url = reverse(self.url, args=[bgpvpn.id])
-        param = urlencode({"step": step})
-        return "?".join([base_url, param])
 
 
-class UpdateRouterAssociations(tables.LinkAction):
-    name = "update_router_associations"
-    verbose_name = _("Update Router Associations")
+class UpdateRouterAssociations(project_tables.UpdateRouterAssociations):
     url = "horizon:admin:bgpvpn:update-associations"
-    classes = ("ajax-modal",)
-    icon = "pencil"
-
-    def get_link_url(self, bgpvpn):
-        step = 'update_bgpvpn_router'
-        base_url = reverse(self.url, args=[bgpvpn.id])
-        param = urlencode({"step": step})
-        return "?".join([base_url, param])
 
 
 def get_route_targets(bgpvpn):
@@ -125,18 +100,6 @@ def get_tenant(bgpvpn):
     return bgpvpn.tenant.name
 
 
-class NetworksColumn(tables.Column):
-    def get_raw_data(self, bgpvpn):
-        networks = [get_network_url(network) for network in bgpvpn.networks]
-        return safestring.mark_safe(', '.join(networks))
-
-
-class RoutersColumn(tables.Column):
-    def get_raw_data(self, bgpvpn):
-        routers = [get_router_url(router) for router in bgpvpn.routers]
-        return safestring.mark_safe(', '.join(routers))
-
-
 class BgpvpnTable(tables.DataTable):
     tenant_id = tables.Column(get_tenant, verbose_name=_("Project"))
     name = tables.Column("name_or_id",
@@ -149,12 +112,12 @@ class BgpvpnTable(tables.DataTable):
                                    verbose_name=_("Import Targets"))
     export_targets = tables.Column(get_export_targets,
                                    verbose_name=_("Export Targets"))
-    networks = NetworksColumn("networks", verbose_name=_("Networks"))
-    routers = RoutersColumn("routers", verbose_name=_("Routers"))
+    networks = project_tables.NetworksColumn("networks",
+                                             verbose_name=_("Networks"))
+    routers = project_tables.RoutersColumn("routers",
+                                           verbose_name=_("Routers"))
 
     class Meta(object):
-        name = "bgpvpns"
-        verbose_name = _("BGPVPN")
         table_actions = (CreateBgpVpn, DeleteBgpvpn)
         row_actions = (EditInfoBgpVpn,
                        UpdateNetworkAssociations,

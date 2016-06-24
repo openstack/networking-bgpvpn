@@ -1,0 +1,17 @@
+---
+prelude: >
+    New Horizon panels for BGPVPN resources, allowing you to create a
+    bgpvpn and to associate related resources such as a network or a
+    router.
+features:
+  - |
+    Horizon:
+        * a view of all the existing BGPVPNs.
+        * ability to view details of a BGPVPN.
+        * ability to create, update and delete BGPVPN resources for an
+          admin user.
+        * ability to update BGPVPN resources for a tenant user.
+          (with restrictions, compared to what an admin user can change)
+        * abiity to associate/disassociate BGPVPN to/from networks and
+          routers (for both tenant and admin users)
+
