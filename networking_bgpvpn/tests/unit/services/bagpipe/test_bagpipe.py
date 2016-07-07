@@ -29,16 +29,14 @@ from neutron import manager
 from neutron.plugins.ml2 import config as ml2_config
 from neutron.plugins.ml2.drivers.openvswitch.agent.common \
     import constants as ovs_agt_constants
-from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
-    import br_tun as ofctl_br_tun
-from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
-    import ovs_bridge
 from neutron.plugins.ml2.drivers.openvswitch.agent \
     import ovs_agent_extension_api as ovs_ext_agt
 from neutron.plugins.ml2 import rpc as ml2_rpc
 
-from neutron.tests import base
 from neutron.tests.common import helpers
+
+from neutron.tests.unit.plugins.ml2.drivers.openvswitch.agent \
+    import ovs_test_base
 
 from neutron_lib import constants as const
 
@@ -692,18 +690,16 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertTrue(log_exc.called)
 
 
-class TestOVSBridgeIntercept(base.DietTestCase):
+class TestOVSBridgeIntercept(ovs_test_base.OVSOFCtlTestBase):
 
     def setUp(self):
         super(TestOVSBridgeIntercept, self).setUp()
-        with mock.patch('neutron.agent.ovsdb.native.connection.'
-                        'Connection.start'):
-            self.underlying_bridge = ofctl_br_tun.OVSTunnelBridge("br-foo")
-            self.underlying_bridge.do_action_flows = mock.Mock()
-            self.cookie_bridge = ovs_ext_agt.OVSCookieBridge(
-                self.underlying_bridge)
-            self.tested_bridge = bagpipe_agt_ext.OVSBridgeIntercept(
-                self.cookie_bridge)
+        self.underlying_bridge = self.br_tun_cls("br-tun")
+        self.underlying_bridge.do_action_flows = mock.Mock()
+        self.cookie_bridge = ovs_ext_agt.OVSCookieBridge(
+            self.underlying_bridge)
+        self.tested_bridge = bagpipe_agt_ext.OVSBridgeIntercept(
+            self.cookie_bridge)
 
     def test_add_flow_without_cookie(self):
         self.tested_bridge.add_flow(in_port=1, actions="output:2")
@@ -738,7 +734,7 @@ class TestOVSBridgeIntercept(base.DietTestCase):
         )
 
 
-class TestOVSAgentExtension(base.BaseTestCase):
+class TestOVSAgentExtension(ovs_test_base.OVSOFCtlTestBase):
 
     def setUp(self):
         super(TestOVSAgentExtension, self).setUp()
@@ -746,11 +742,10 @@ class TestOVSAgentExtension(base.BaseTestCase):
         self.context = n_context.get_admin_context()
         self.connection = mock.Mock()
 
-    @mock.patch('neutron.agent.ovsdb.native.connection.Connection.start')
     @mock.patch('networking_bagpipe.agent.bagpipe_bgp_agent.BaGPipeBGPAgent')
-    def test_init(self, mocked_bagpipe_bgp_agent, _):
-        int_br = ovs_bridge.OVSAgentBridge("br-int")
-        tun_br = ovs_bridge.OVSAgentBridge("br-tun")
+    def test_init(self, mocked_bagpipe_bgp_agent):
+        int_br = self.br_int_cls("br-int")
+        tun_br = self.br_tun_cls("br-tun")
         agent_extension_api = ovs_ext_agt.OVSAgentExtensionAPI(int_br,
                                                                tun_br)
 
