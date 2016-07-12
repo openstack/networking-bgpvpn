@@ -20,8 +20,6 @@ OpenVSwitch agent
 
 import types
 
-import logging
-
 from networking_bagpipe.agent import bagpipe_bgp_agent
 
 from neutron_lib import constants as n_const
@@ -36,8 +34,6 @@ from neutron.plugins.ml2.drivers.openvswitch.agent.openflow.ovs_ofctl \
     import br_tun as ofctl_br_tun
 from neutron.plugins.ml2.drivers.openvswitch.agent import \
     ovs_agent_extension_api
-
-LOG = logging.getLogger(__name__)
 
 
 class OVSBridgeIntercept(ofctl_br_tun.OVSTunnelBridge,
