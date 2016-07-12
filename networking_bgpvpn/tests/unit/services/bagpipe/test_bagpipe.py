@@ -650,9 +650,6 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
 
         port = self.plugin.create_port(self.ctxt, {'port': p_dict})
 
-        self.plugin.update_dvr_port_binding(self.ctxt,
-                                            port['id'], {'port': p_dict})
-
         ml2_rpc_callbacks.update_device_up(self.ctxt,
                                            host=helpers.HOST,
                                            agent_id='fooagent',
