@@ -32,7 +32,7 @@ branch_labels = (cli.EXPAND_BRANCH,)
 vpn_types = sa.Enum("l2", "l3", name="vpn_types")
 
 
-def upgrade(active_plugins=None, options=None):
+def upgrade():
     op.create_table(
         'bgpvpns',
         sa.Column('name', sa.String(255), nullable=True),

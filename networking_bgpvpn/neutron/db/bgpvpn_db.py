@@ -34,16 +34,21 @@ from networking_bgpvpn.neutron.services.common import utils
 LOG = log.getLogger(__name__)
 
 
+class HasTenantNotNullable(object):
+    """Non-nullable Tenant mixin."""
+    tenant_id = sa.Column(sa.String(255), index=True, nullable=False)
+
+
 class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId,
-                           models_v2.HasTenant):
+                           HasTenantNotNullable):
     """Represents the association between a bgpvpn and a network."""
     __tablename__ = 'bgpvpn_network_associations'
 
     bgpvpn_id = sa.Column(sa.String(36),
-                          sa.ForeignKey('bgpvpns.id'),
+                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
                           nullable=False)
     network_id = sa.Column(sa.String(36),
-                           sa.ForeignKey('networks.id'),
+                           sa.ForeignKey('networks.id', ondelete='CASCADE'),
                            nullable=False)
     sa.UniqueConstraint(bgpvpn_id, network_id)
     network = orm.relationship("Network",
@@ -53,15 +58,15 @@ class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId,
 
 
 class BGPVPNRouterAssociation(model_base.BASEV2, models_v2.HasId,
-                              models_v2.HasTenant):
+                              HasTenantNotNullable):
     """Represents the association between a bgpvpn and a router."""
     __tablename__ = 'bgpvpn_router_associations'
 
     bgpvpn_id = sa.Column(sa.String(36),
-                          sa.ForeignKey('bgpvpns.id'),
+                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
                           nullable=False)
     router_id = sa.Column(sa.String(36),
-                          sa.ForeignKey('routers.id'),
+                          sa.ForeignKey('routers.id', ondelete='CASCADE'),
                           nullable=False)
     sa.UniqueConstraint(bgpvpn_id, router_id)
     router = orm.relationship("Router",
@@ -77,9 +82,9 @@ class BGPVPN(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
                              name="bgpvpn_type"),
                      nullable=False)
     route_targets = sa.Column(sa.String(255), nullable=False)
-    import_targets = sa.Column(sa.String(255), nullable=False)
-    export_targets = sa.Column(sa.String(255), nullable=False)
-    route_distinguishers = sa.Column(sa.String(255), nullable=False)
+    import_targets = sa.Column(sa.String(255), nullable=True)
+    export_targets = sa.Column(sa.String(255), nullable=True)
+    route_distinguishers = sa.Column(sa.String(255), nullable=True)
     network_associations = orm.relationship("BGPVPNNetAssociation",
                                             backref="bgpvpn",
                                             lazy='joined',
