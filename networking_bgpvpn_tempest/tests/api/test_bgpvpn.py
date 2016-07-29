@@ -23,6 +23,8 @@ class BgpvpnTest(base):
 
         create bgpvpn
         delete bgpvpn
+        associate network to bgpvpn
+        disassociate network from bgpvpn
 
     v2.0 of the Neutron API is assumed. It is also assumed that the following
     options are defined in the [network] section of etc/tempest.conf:
@@ -44,3 +46,26 @@ class BgpvpnTest(base):
                                     tenant_id=self.bgpvpn_client.tenant_id)
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
+
+    def test_associate_disassociate_network(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        network = self.networks_client.create_network()
+        network_id = network['network']['id']
+
+        # Associate the network to the bgpvpn resource
+        association = self.bgpvpn_client.associate_network_to_bgpvpn(
+            bgpvpn['id'], network_id)
+        self.assertEqual(association['network_association']['network_id'],
+                         network_id)
+        updated_bgpvpn = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])
+        self.assertEqual(updated_bgpvpn['bgpvpn']['networks'], [network_id])
+
+        # Disassociate the network from the bgpvpn resource
+        self.bgpvpn_client.disassociate_network_from_bgpvpn(
+            bgpvpn['id'],
+            association['network_association']['id'])
+        updated_bgpvpn = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])
+        self.assertEqual(updated_bgpvpn['bgpvpn']['networks'], [])
+
+        self.networks_client.delete_network(network_id)
