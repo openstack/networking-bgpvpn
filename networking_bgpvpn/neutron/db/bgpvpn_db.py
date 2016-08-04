@@ -13,34 +13,61 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_db import exception as db_exc
+from oslo_log import log
+from oslo_utils import uuidutils
+import sqlalchemy as sa
+from sqlalchemy.ext import declarative
+from sqlalchemy import orm
+from sqlalchemy.orm import exc
+
+from neutron.api.v2 import attributes as attr
 from neutron.db import common_db_mixin
 from neutron.db import model_base
 from neutron.db import models_v2
 
-from oslo_db import exception as db_exc
-from oslo_log import log
-from oslo_utils import uuidutils
-
-import sqlalchemy as sa
-from sqlalchemy import orm
-from sqlalchemy.orm import exc
-
 from networking_bgpvpn._i18n import _LI
 from networking_bgpvpn._i18n import _LW
-
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import utils
 
 LOG = log.getLogger(__name__)
 
 
-class HasTenantNotNullable(object):
-    """Non-nullable Tenant mixin."""
-    tenant_id = sa.Column(sa.String(255), index=True, nullable=False)
+class HasProject(object):
+    # NOTE(dasm): Temporary solution!
+    # Remove when I87a8ef342ccea004731ba0192b23a8e79bc382dc is merged.
+
+    # NOTE(jkoelker) project_id is just a free form string ;(
+    project_id = sa.Column(sa.String(attr.TENANT_ID_MAX_LEN), index=True)
+
+    def __init__(self, *args, **kwargs):
+        # NOTE(dasm): debtcollector requires init in class
+        super(HasProject, self).__init__(*args, **kwargs)
+
+    def get_tenant_id(self):
+        return self.project_id
+
+    def set_tenant_id(self, value):
+        self.project_id = value
+
+    @declarative.declared_attr
+    def tenant_id(cls):
+        return orm.synonym(
+            'project_id',
+            descriptor=property(cls.get_tenant_id, cls.set_tenant_id))
+
+
+class HasProjectNotNullable(HasProject):
+    # NOTE(dasm): Temporary solution!
+    # Remove when I87a8ef342ccea004731ba0192b23a8e79bc382dc is merged.
+
+    project_id = sa.Column(sa.String(attr.TENANT_ID_MAX_LEN), index=True,
+                           nullable=False)
 
 
 class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId,
-                           HasTenantNotNullable):
+                           HasProjectNotNullable):
     """Represents the association between a bgpvpn and a network."""
     __tablename__ = 'bgpvpn_network_associations'
 
@@ -58,7 +85,7 @@ class BGPVPNNetAssociation(model_base.BASEV2, models_v2.HasId,
 
 
 class BGPVPNRouterAssociation(model_base.BASEV2, models_v2.HasId,
-                              HasTenantNotNullable):
+                              HasProjectNotNullable):
     """Represents the association between a bgpvpn and a router."""
     __tablename__ = 'bgpvpn_router_associations'
 
@@ -75,7 +102,7 @@ class BGPVPNRouterAssociation(model_base.BASEV2, models_v2.HasId,
                               lazy='joined',)
 
 
-class BGPVPN(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
+class BGPVPN(model_base.BASEV2, models_v2.HasId, HasProject):
     """Represents a BGPVPN Object."""
     name = sa.Column(sa.String(255))
     type = sa.Column(sa.Enum("l2", "l3",
