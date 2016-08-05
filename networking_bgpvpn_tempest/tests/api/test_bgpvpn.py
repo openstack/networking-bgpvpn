@@ -16,6 +16,7 @@
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
 from tempest.lib import exceptions
 from tempest import test
+from testtools import ExpectedException
 
 
 class BgpvpnTest(base):
@@ -69,3 +70,32 @@ class BgpvpnTest(base):
         self.assertEqual(updated_bgpvpn['bgpvpn']['networks'], [])
 
         self.networks_client.delete_network(network_id)
+
+    def test_update_route_target(self):
+        bgpvpn = self.create_bgpvpn(
+            self.bgpvpn_admin_client,
+            route_targets=['64512:1'],
+            import_targets=['64512:2'],
+            export_targets=['64512:3'])
+        bgpvpn = self.bgpvpn_admin_client.update_bgpvpn(
+            bgpvpn['id'],
+            route_targets=['64512:4'],
+            import_targets=['64512:5'],
+            export_targets=['64512:6']
+        )['bgpvpn']
+        self.assertEqual(['64512:4'], bgpvpn['route_targets'])
+        self.assertEqual(['64512:5'], bgpvpn['import_targets'])
+        self.assertEqual(['64512:6'], bgpvpn['export_targets'])
+
+    @test.attr(type=['negative'])
+    def test_update_route_target_non_admin_fail(self):
+        bgpvpn = self.create_bgpvpn(
+            self.bgpvpn_admin_client,
+            tenant_id=self.bgpvpn_client.tenant_id,
+            route_targets=['64512:1'])
+        with ExpectedException(exceptions.Forbidden):
+            self.bgpvpn_client.update_bgpvpn(
+                bgpvpn['id'],
+                route_targets=['64512:2'],
+                import_targets=['64512:3'],
+                export_targets=['64512:4'])
