@@ -17,6 +17,7 @@ from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
 from tempest.lib import exceptions
 from tempest import test
 from testtools import ExpectedException
+import uuid
 
 
 class BgpvpnTest(base):
@@ -99,3 +100,110 @@ class BgpvpnTest(base):
                 route_targets=['64512:2'],
                 import_targets=['64512:3'],
                 export_targets=['64512:4'])
+
+    @test.attr(type=['negative'])
+    def test_create_bgpvpn_with_invalid_routetargets(self):
+        """Create a bgpvpn with invalid route target
+
+        This test verifies that invalid route targets,import targets,
+        export targets are rejected by the Create API
+        """
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+            "route_targets": ["0"]
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.create_bgpvpn, **postdata)
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+            "import_targets": ["test", " "]
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.create_bgpvpn, **postdata)
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+            "export_targets": ["64512:1000000000000", "xyz"]
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.create_bgpvpn, **postdata)
+
+    @test.attr(type=['negative'])
+    def test_update_bgpvpn_invalid_routetargets(self):
+        """Update the bgpvpn with invalid route targets
+
+        This test  verifies that invalid  route targets,import targets
+        and export targets are rejected by the Update API
+        """
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+        }
+        bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
+        updatedata = {
+            "route_targets": ["0"]
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.update_bgpvpn,
+                          bgpvpn['bgpvpn']['id'], **updatedata)
+        updatedata = {
+            "import_targets": ["test", " "]
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.update_bgpvpn,
+                          bgpvpn['bgpvpn']['id'], **updatedata)
+        updatedata = {
+            "export_targets": ["64512:1000000000000", "xyz"],
+        }
+        self.assertRaises(exceptions.BadRequest,
+                          self.bgpvpn_admin_client.update_bgpvpn,
+                          bgpvpn['bgpvpn']['id'], **updatedata)
+
+    @test.attr(type=['negative'])
+    def test_associate_invalid_network(self):
+        """Associate the invalid network in bgpvpn
+
+        This test verifies that invalid network id,bgpvpn id
+        are rejected by the associate API
+        """
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+        }
+        bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
+        network = self.networks_client.create_network()
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_client.associate_network_to_bgpvpn,
+                          bgpvpn['bgpvpn']['id'], uuid.uuid4())
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_client.associate_network_to_bgpvpn,
+                          uuid.uuid4(),
+                          network['network']['id'])
+
+    @test.attr(type=['negative'])
+    def test_disassociate_invalid_network(self):
+        """Disassociate the invalid network in bgpvpn
+
+        This test verifies that invalid network id,
+        bgpvpn id are rejected by the disassociate API
+        """
+        postdata = {
+            "name": "testbgpvpn",
+            "tenant_id": self.bgpvpn_client.tenant_id,
+        }
+        bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
+        network = self.networks_client.create_network()
+        association = self.bgpvpn_client.associate_network_to_bgpvpn(
+            bgpvpn['bgpvpn']['id'], network['network']['id'])
+        self.assertEqual(association['network_association'][
+                         'network_id'], network['network']['id'])
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_client.disassociate_network_from_bgpvpn,
+                          bgpvpn['bgpvpn']['id'],
+                          uuid.uuid4())
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_client.disassociate_network_from_bgpvpn,
+                          uuid.uuid4(),
+                          association['network_association']['id'])
