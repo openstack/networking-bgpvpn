@@ -14,6 +14,7 @@
 #    under the License.
 
 import json
+import uuid
 
 from oslo_log import log
 from oslo_utils import uuidutils
@@ -137,6 +138,12 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
 
         return bgpvpn
 
+    # Check if tenant ID exists by reading it from the Contrail API;
+    # if not, it sends an exception
+    def _check_tenant_id(self, oc_client, tenant_id):
+        tenant_id = str(uuid.UUID(tenant_id))
+        oc_client.show('Project', tenant_id)
+
     def create_bgpvpn(self, context, bgpvpn):
         LOG.debug("create_bgpvpn_ called with %s" % bgpvpn)
 
@@ -152,9 +159,14 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
             raise bgpvpn_ext.BGPVPNRDNotSupported(
                 driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
 
+        oc_client = self._get_opencontrail_api_client(context)
+
+        # Check if tenant ID exists;
+        # if not, it sends an exception
+        self._check_tenant_id(oc_client, bgpvpn['tenant_id'])
+
         bgpvpn['id'] = uuidutils.generate_uuid()
 
-        oc_client = self._get_opencontrail_api_client(context)
         oc_client.kv_store('STORE', key=bgpvpn['id'], value={'bgpvpn': bgpvpn})
 
         return utils.make_bgpvpn_dict(bgpvpn)
@@ -219,6 +231,11 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
         LOG.debug("update_bgpvpn called with %s for %s" % (new_bgpvpn, id))
 
         oc_client = self._get_opencontrail_api_client(context)
+
+        # Check if tenant ID exists;
+        # if not, it sends an exception
+        if new_bgpvpn['tenant_id']:
+            self._check_tenant_id(oc_client, new_bgpvpn['tenant_id'])
 
         old_bgpvpn = self.get_bgpvpn(context, id)
         networks = old_bgpvpn.get('networks', [])

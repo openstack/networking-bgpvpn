@@ -226,6 +226,7 @@ class OpenContrailAPIBaseClient(RequestHandler):
         'Routing Instance': '/routing-instances/',
         'Route Target': '/route-targets/',
         'Key Value Store': '/useragent-kv/',
+        'Project': '/projects/'
     }
 
     def list(self, resource, **params):
