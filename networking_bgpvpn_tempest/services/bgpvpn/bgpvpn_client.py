@@ -53,7 +53,7 @@ class BgpvpnClient(base.BaseNetworkClient):
                      {"network_id": network_id}}
         return self.create_resource(uri, post_data)
 
-    def disassociate_network_from_bgpvpn(self, bgpvpn_id, network_id):
+    def disassociate_network_from_bgpvpn(self, bgpvpn_id, association_id):
         uri_pattern = BGPVPN_NETWORK_ASSOCIATION_PATH + "/%s"
-        uri = uri_pattern % (bgpvpn_id, network_id)
+        uri = uri_pattern % (bgpvpn_id, association_id)
         return self.delete_resource(uri)
