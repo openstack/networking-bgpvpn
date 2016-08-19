@@ -25,6 +25,7 @@ from neutron import manager
 from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
 
+from neutron_lib import api
 from neutron_lib import exceptions as n_exc
 
 from oslo_log import log
@@ -112,8 +113,7 @@ def _validate_rt_list(data, valid_values=None):
         LOG.debug(msg)
         return msg
 
-validators = {'type:route_target_list': _validate_rt_list}
-attr.validators.update(validators)
+api.validators.add_validator('type:route_target_list', _validate_rt_list)
 
 RESOURCE_ATTRIBUTE_MAP = {
     constants.BGPVPN_RES: {
@@ -139,25 +139,25 @@ RESOURCE_ATTRIBUTE_MAP = {
                  'enforce_policy': True},
         'route_targets': {'allow_post': True, 'allow_put': True,
                           'default': [],
-                          'convert_to': attr.convert_to_list,
+                          'convert_to': api.converters.convert_to_list,
                           'validate': {'type:route_target_list': None},
                           'is_visible': True,
                           'enforce_policy': True},
         'import_targets': {'allow_post': True, 'allow_put': True,
                            'default': [],
-                           'convert_to': attr.convert_to_list,
+                           'convert_to': api.converters.convert_to_list,
                            'validate': {'type:route_target_list': None},
                            'is_visible': True,
                            'enforce_policy': True},
         'export_targets': {'allow_post': True, 'allow_put': True,
                            'default': [],
-                           'convert_to': attr.convert_to_list,
+                           'convert_to': api.converters.convert_to_list,
                            'validate': {'type:route_target_list': None},
                            'is_visible': True,
                            'enforce_policy': True},
         'route_distinguishers': {'allow_post': True, 'allow_put': True,
                                  'default': [],
-                                 'convert_to': attr.convert_to_list,
+                                 'convert_to': api.converters.convert_to_list,
                                  'validate': {'type:route_target_list': None},
                                  'is_visible': True,
                                  'enforce_policy': True},
