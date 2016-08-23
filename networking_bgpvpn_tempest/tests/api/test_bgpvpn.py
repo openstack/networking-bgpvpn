@@ -25,8 +25,10 @@ class BgpvpnTest(base):
 
         create bgpvpn
         delete bgpvpn
+        list bgpvpn
         associate network to bgpvpn
         disassociate network from bgpvpn
+        update route targets
 
     v2.0 of the Neutron API is assumed. It is also assumed that the following
     options are defined in the [network] section of etc/tempest.conf:
@@ -48,6 +50,14 @@ class BgpvpnTest(base):
                                     tenant_id=self.bgpvpn_client.tenant_id)
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
+
+    @test.attr(type=['negative'])
+    def test_read_bgpvpn_as_non_owner_fail(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        bgpvpns_alt = self.bgpvpn_alt_client.list_bgpvpns()['bgpvpns']
+        self.assertNotIn(bgpvpn['id'],
+                         [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
 
     def test_associate_disassociate_network(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
