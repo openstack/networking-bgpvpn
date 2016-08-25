@@ -142,7 +142,10 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
     # Check if tenant ID exists by reading it from the Contrail API;
     # if not, it sends an exception
     def _check_tenant_id(self, oc_client, tenant_id):
-        tenant_id = str(uuid.UUID(tenant_id))
+        try:
+            tenant_id = str(uuid.UUID(tenant_id))
+        except ValueError:
+            raise oc_exc.OpenContrailMalformedUUID(uuid=tenant_id)
         oc_client.show('Project', tenant_id)
 
     def create_bgpvpn(self, context, bgpvpn):
