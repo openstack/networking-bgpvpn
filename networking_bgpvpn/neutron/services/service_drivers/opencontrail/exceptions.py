@@ -57,3 +57,7 @@ class OpenContrailAPIConflict(n_exc.Conflict):
 
 class OpenContrailAPIBadRequest(n_exc.BadRequest):
     message = _("OpenContrail API bad request: %(reason)s")
+
+
+class OpenContrailMalformedUUID(n_exc.BadRequest):
+    message = _("Malformed UUID: %(uuid)s")
