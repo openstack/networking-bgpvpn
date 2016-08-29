@@ -30,6 +30,8 @@ from neutron_lib import exceptions as n_exc
 
 from oslo_log import log
 
+from networking_bgpvpn._i18n import _
+
 from networking_bgpvpn.neutron import extensions as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import constants
 
