@@ -47,13 +47,22 @@ class BgpvpnClient(base.BaseNetworkClient):
         post_data = {'bgpvpn': kwargs}
         return self.update_resource(uri, post_data)
 
-    def associate_network_to_bgpvpn(self, bgpvpn_id, network_id):
+    def create_network_association(self, bgpvpn_id, network_id):
         uri = BGPVPN_NETWORK_ASSOCIATION_PATH % bgpvpn_id
         post_data = {"network_association":
                      {"network_id": network_id}}
         return self.create_resource(uri, post_data)
 
-    def disassociate_network_from_bgpvpn(self, bgpvpn_id, association_id):
+    def delete_network_association(self, bgpvpn_id, association_id):
         uri_pattern = BGPVPN_NETWORK_ASSOCIATION_PATH + "/%s"
         uri = uri_pattern % (bgpvpn_id, association_id)
         return self.delete_resource(uri)
+
+    def show_network_association(self, bgpvpn_id, association_id, **fields):
+        uri_pattern = BGPVPN_NETWORK_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        return self.show_resource(uri, **fields)
+
+    def list_network_associations(self, bgpvpn_id, **filters):
+        uri = BGPVPN_NETWORK_ASSOCIATION_PATH % bgpvpn_id
+        return self.list_resources(uri, **filters)

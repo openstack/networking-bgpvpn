@@ -25,9 +25,12 @@ class BgpvpnTest(base):
 
         create bgpvpn
         delete bgpvpn
-        list bgpvpn
+        show bgpvpn
+        list bgpvpns
         associate network to bgpvpn
         disassociate network from bgpvpn
+        show network association
+        list network associations
         update route targets
 
     v2.0 of the Neutron API is assumed. It is also assumed that the following
@@ -52,12 +55,44 @@ class BgpvpnTest(base):
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
 
     @test.attr(type=['negative'])
-    def test_read_bgpvpn_as_non_owner_fail(self):
+    def test_show_bgpvpn_as_non_owner_fail(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_alt_client.show_bgpvpn, bgpvpn['id'])
+
+    @test.attr(type=['negative'])
+    def test_list_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
         bgpvpns_alt = self.bgpvpn_alt_client.list_bgpvpns()['bgpvpns']
         self.assertNotIn(bgpvpn['id'],
                          [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
+
+    @test.attr(type=['negative'])
+    def test_show_netassoc_as_non_owner_fail(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        network = self.networks_client.create_network()['network']
+
+        net_assoc = self.bgpvpn_client.create_network_association(
+            bgpvpn['id'], network['id'])['network_association']
+
+        self.assertRaises(exceptions.NotFound,
+                          self.bgpvpn_alt_client.show_network_association,
+                          bgpvpn['id'], net_assoc['id'])
+
+    @test.attr(type=['negative'])
+    def test_list_netassoc_as_non_owner_fail(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        network = self.networks_client.create_network()['network']
+
+        self.bgpvpn_client.create_network_association(bgpvpn['id'],
+                                                      network['id'])
+        net_assocs_alt = self.bgpvpn_alt_client\
+            .list_network_associations(bgpvpn['id'])
+        self.assertFalse(net_assocs_alt['network_associations'])
 
     def test_associate_disassociate_network(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
@@ -66,7 +101,7 @@ class BgpvpnTest(base):
         network_id = network['network']['id']
 
         # Associate the network to the bgpvpn resource
-        association = self.bgpvpn_client.associate_network_to_bgpvpn(
+        association = self.bgpvpn_client.create_network_association(
             bgpvpn['id'], network_id)
         self.assertEqual(association['network_association']['network_id'],
                          network_id)
@@ -74,7 +109,7 @@ class BgpvpnTest(base):
         self.assertEqual(updated_bgpvpn['bgpvpn']['networks'], [network_id])
 
         # Disassociate the network from the bgpvpn resource
-        self.bgpvpn_client.disassociate_network_from_bgpvpn(
+        self.bgpvpn_client.delete_network_association(
             bgpvpn['id'],
             association['network_association']['id'])
         updated_bgpvpn = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])
@@ -185,10 +220,10 @@ class BgpvpnTest(base):
         bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
         network = self.networks_client.create_network()
         self.assertRaises(exceptions.NotFound,
-                          self.bgpvpn_client.associate_network_to_bgpvpn,
+                          self.bgpvpn_client.create_network_association,
                           bgpvpn['bgpvpn']['id'], uuid.uuid4())
         self.assertRaises(exceptions.NotFound,
-                          self.bgpvpn_client.associate_network_to_bgpvpn,
+                          self.bgpvpn_client.create_network_association,
                           uuid.uuid4(),
                           network['network']['id'])
 
@@ -205,15 +240,15 @@ class BgpvpnTest(base):
         }
         bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
         network = self.networks_client.create_network()
-        association = self.bgpvpn_client.associate_network_to_bgpvpn(
+        association = self.bgpvpn_client.create_network_association(
             bgpvpn['bgpvpn']['id'], network['network']['id'])
         self.assertEqual(association['network_association'][
                          'network_id'], network['network']['id'])
         self.assertRaises(exceptions.NotFound,
-                          self.bgpvpn_client.disassociate_network_from_bgpvpn,
+                          self.bgpvpn_client.delete_network_association,
                           bgpvpn['bgpvpn']['id'],
                           uuid.uuid4())
         self.assertRaises(exceptions.NotFound,
-                          self.bgpvpn_client.disassociate_network_from_bgpvpn,
+                          self.bgpvpn_client.delete_network_association,
                           uuid.uuid4(),
                           association['network_association']['id'])
