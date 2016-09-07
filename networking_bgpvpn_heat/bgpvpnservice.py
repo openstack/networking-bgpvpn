@@ -122,7 +122,7 @@ class BGPVPN(neutron.NeutronResource):
         self.resource_id_set(bgpvpn['bgpvpn']['id'])
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def handle_delete(self):
         try:
@@ -214,7 +214,7 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
         self.resource_id_set(net_assoc['network_association']['id'])
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def handle_delete(self):
         try:
@@ -302,7 +302,7 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
         self.resource_id_set(router_assoc['router_association']['id'])
 
     def handle_update(self, json_snippet, tmpl_diff, prop_diff):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def handle_delete(self):
         try:
