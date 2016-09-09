@@ -252,3 +252,26 @@ class BgpvpnTest(base):
                           self.bgpvpn_client.delete_network_association,
                           uuid.uuid4(),
                           association['network_association']['id'])
+
+    def test_associate_disassociate_router(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        router = self.routers_client.create_router()
+        router_id = router['router']['id']
+
+        # Associate the network to the bgpvpn resource
+        association = self.bgpvpn_client.create_router_association(
+            bgpvpn['id'], router_id)
+        self.assertEqual(association['router_association']['router_id'],
+                         router_id)
+        updated_bgpvpn = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])
+        self.assertEqual(updated_bgpvpn['bgpvpn']['routers'], [router_id])
+
+        # Disassociate the network from the bgpvpn resource
+        self.bgpvpn_client.delete_router_association(
+            bgpvpn['id'],
+            association['router_association']['id'])
+        updated_bgpvpn = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])
+        self.assertEqual(updated_bgpvpn['bgpvpn']['routers'], [])
+
+        self.routers_client.delete_router(router_id)
