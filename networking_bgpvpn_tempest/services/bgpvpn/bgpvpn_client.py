@@ -21,6 +21,7 @@ from tempest.lib.services.network import base
 BGPVPN_OBJECT_PATH = '/bgpvpn/bgpvpns'
 BGPVPN_RESOURCE_PATH = '/bgpvpn/bgpvpns/%s'
 BGPVPN_NETWORK_ASSOCIATION_PATH = '/bgpvpn/bgpvpns/%s/network_associations'
+BGPVPN_ROUTER_ASSOCIATION_PATH = '/bgpvpn/bgpvpns/%s/router_associations'
 
 
 class BgpvpnClient(base.BaseNetworkClient):
@@ -66,3 +67,14 @@ class BgpvpnClient(base.BaseNetworkClient):
     def list_network_associations(self, bgpvpn_id, **filters):
         uri = BGPVPN_NETWORK_ASSOCIATION_PATH % bgpvpn_id
         return self.list_resources(uri, **filters)
+
+    def create_router_association(self, bgpvpn_id, router_id):
+        uri = BGPVPN_ROUTER_ASSOCIATION_PATH % bgpvpn_id
+        post_data = {"router_association":
+                     {"router_id": router_id}}
+        return self.create_resource(uri, post_data)
+
+    def delete_router_association(self, bgpvpn_id, association_id):
+        uri_pattern = BGPVPN_ROUTER_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        return self.delete_resource(uri)
