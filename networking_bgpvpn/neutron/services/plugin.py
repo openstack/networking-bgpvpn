@@ -13,6 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.callbacks import events
+from neutron.callbacks import registry
+from neutron.callbacks import resources
 from neutron.db import servicetype_db as st_db
 from neutron import manager
 from neutron.plugins.common import constants as plugin_constants
@@ -26,13 +29,13 @@ from oslo_log import log
 
 from networking_bgpvpn._i18n import _LI
 
-from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNPluginBase
+from networking_bgpvpn.neutron.extensions import bgpvpn
 from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
 
-class BGPVPNPlugin(BGPVPNPluginBase):
+class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
     supported_extension_aliases = ["bgpvpn"]
     path_prefix = "/bgpvpn"
 
@@ -57,6 +60,28 @@ class BGPVPNPlugin(BGPVPNPluginBase):
             LOG.warning(_LI("Multiple drivers configured for BGPVPN, although"
                             "running multiple drivers in parallel is not yet"
                             "supported"))
+        registry.subscribe(self._notify_adding_interface_to_router,
+                           resources.ROUTER_INTERFACE,
+                           events.BEFORE_CREATE)
+
+    def _notify_adding_interface_to_router(self, resource, event, trigger,
+                                           **kwargs):
+        context = kwargs.get('context')
+        network_id = kwargs.get('network_id')
+        router_id = kwargs.get('router_id')
+        try:
+            routers_bgpvpns = self.driver.find_bgpvpns_for_router(context,
+                                                                  router_id)
+        except bgpvpn.BGPVPNRouterAssociationNotSupported:
+            return
+        nets_bgpvpns = self.driver.find_bgpvpns_for_network(
+            context, network_id, bgpvpn_type=constants.BGPVPN_L3)
+
+        if routers_bgpvpns and nets_bgpvpns:
+            msg = _('It is not allowed to add an interface to a router if '
+                    'both the router and the network are bound to an '
+                    'L3 BGPVPN.')
+            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def _validate_network(self, context, net_id):
         plugin = manager.NeutronManager.get_plugin()

@@ -14,6 +14,7 @@
 #    under the License.
 
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
+from tempest.common.utils import data_utils
 from tempest.lib import exceptions
 from tempest import test
 from testtools import ExpectedException
@@ -275,3 +276,32 @@ class BgpvpnTest(base):
         self.assertEqual(updated_bgpvpn['bgpvpn']['routers'], [])
 
         self.routers_client.delete_router(router_id)
+
+    @test.attr(type=['negative'])
+    def test_attach_associated_subnet_to_associated_router(self):
+        # Create a first bgpvpn and associate a network with a subnet to it
+        bgpvpn_net = self.create_bgpvpn(
+            self.bgpvpn_admin_client,
+            tenant_id=self.bgpvpn_client.tenant_id)
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_net['id'], network['id'])
+
+        # Create a second bgpvpn and associate a router to it
+        bgpvpn_router = self.create_bgpvpn(
+            self.bgpvpn_admin_client,
+            tenant_id=self.bgpvpn_client.tenant_id)
+
+        router = self.create_router(
+            router_name=data_utils.rand_name('test-bgpvpn-'))
+        self.bgpvpn_client.create_router_association(
+            bgpvpn_router['id'],
+            router['id'])
+
+        # Attach the subnet of the network to the router
+        subnet_data = {'subnet_id': subnet['id']}
+        self.assertRaises(exceptions.Conflict,
+                          self.routers_client.add_router_interface,
+                          router['id'],
+                          **subnet_data)
