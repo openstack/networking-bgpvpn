@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy.orm import exc
+from sqlalchemy import orm
 from sqlalchemy import sql
 
 from neutron.callbacks import events
@@ -52,10 +52,9 @@ class BGPVPNExternalNetAssociation(n_exc.NeutronException):
                 "network to a BGPVPN")
 
 
-def get_network_info_for_port(context, port_id):
+@log_helpers.log_method_call
+def get_network_info_for_port(context, port_id, network_id):
     """Get MAC, IP and Gateway IP addresses informations for a specific port"""
-
-    LOG.debug("get_network_info_for_port() called for port %s" % port_id)
     try:
         with context.session.begin(subtransactions=True):
             net_info = (context.session.
@@ -71,74 +70,90 @@ def get_network_info_for_port(context, port_id):
                         filter(models_v2.Port.id == port_id).one())
 
             (mac_address, ip_address, cidr, gateway_ip) = net_info
-
-            return {'mac_address': mac_address,
-                    'ip_address': ip_address + cidr[cidr.index('/'):],
-                    'gateway_ip': gateway_ip}
-    except exc.NoResultFound:
+    except orm.exc.NoResultFound:
         return
+
+    gateway_mac = (
+        context.session.
+        query(models_v2.Port.mac_address).
+        filter(
+            models_v2.Port.network_id == network_id,
+            (models_v2.Port.device_owner ==
+             const.DEVICE_OWNER_ROUTER_INTF)
+        ).
+        one_or_none()
+    )
+
+    return {'mac_address': mac_address,
+            'ip_address': ip_address + cidr[cidr.index('/'):],
+            'gateway_ip': gateway_ip,
+            'gateway_mac': gateway_mac[0] if gateway_mac else None}
+
+
+def get_gateway_mac(context, network_id):
+    with context.session.begin(subtransactions=True):
+        gateway_mac = (
+            context.session.
+            query(models_v2.Port.mac_address).
+            filter(
+                models_v2.Port.network_id == network_id,
+                (models_v2.Port.device_owner ==
+                 const.DEVICE_OWNER_ROUTER_INTF)
+            ).
+            one_or_none()
+        )
+
+        return gateway_mac[0] if gateway_mac else None
 
 
 def get_network_ports(context, network_id):
-    try:
-        return (context.session.query(models_v2.Port).
-                filter(models_v2.Port.network_id == network_id,
-                       models_v2.Port.admin_state_up == sql.true()).all())
-    except exc.NoResultFound:
-        return
+    # NOTE(tmorin): currents callers don't look at detailed results
+    # but only test if at least one result exist => can be optimized
+    # by returning a count, rather than all port information
+    return (context.session.query(models_v2.Port).
+            filter(models_v2.Port.network_id == network_id,
+                   models_v2.Port.admin_state_up == sql.true()).all())
 
 
 def get_router_ports(context, router_id):
-    try:
-        return (
-            context.session.query(models_v2.Port).
-            filter(
-                models_v2.Port.device_id == router_id,
-                models_v2.Port.device_owner == const.DEVICE_OWNER_ROUTER_INTF
-            ).all()
-        )
-    except exc.NoResultFound:
-        return
+    return (
+        context.session.query(models_v2.Port).
+        filter(
+            models_v2.Port.device_id == router_id,
+            models_v2.Port.device_owner == const.DEVICE_OWNER_ROUTER_INTF
+        ).all()
+    )
 
 
 def get_router_bgpvpn_assocs(context, router_id):
-    try:
-        return (
-            context.session.query(bgpvpn_db.BGPVPNRouterAssociation).
-            filter(
-                bgpvpn_db.BGPVPNRouterAssociation.router_id == router_id
-            ).all()
-        )
-    except exc.NoResultFound:
-        return []
+    return (
+        context.session.query(bgpvpn_db.BGPVPNRouterAssociation).
+        filter(
+            bgpvpn_db.BGPVPNRouterAssociation.router_id == router_id
+        ).all()
+    )
 
 
 def get_network_bgpvpn_assocs(context, net_id):
-    try:
-        return (
-            context.session.query(bgpvpn_db.BGPVPNNetAssociation).
-            filter(
-                bgpvpn_db.BGPVPNNetAssociation.network_id == net_id
-            ).all()
-        )
-    except exc.NoResultFound:
-        return
+    return (
+        context.session.query(bgpvpn_db.BGPVPNNetAssociation).
+        filter(
+            bgpvpn_db.BGPVPNNetAssociation.network_id == net_id
+        ).all()
+    )
 
 
 def get_bgpvpns_of_router_assocs_by_network(context, net_id):
-    try:
-        return (
-            context.session.query(bgpvpn_db.BGPVPN).
-            join(bgpvpn_db.BGPVPN.router_associations).
-            join(bgpvpn_db.BGPVPNRouterAssociation.router).
-            join(l3_db.Router.attached_ports).
-            join(l3_db.RouterPort.port).
-            filter(
-                models_v2.Port.network_id == net_id
-            ).all()
-        )
-    except exc.NoResultFound:
-        return
+    return (
+        context.session.query(bgpvpn_db.BGPVPN).
+        join(bgpvpn_db.BGPVPN.router_associations).
+        join(bgpvpn_db.BGPVPNRouterAssociation.router).
+        join(l3_db.Router.attached_ports).
+        join(l3_db.RouterPort.port).
+        filter(
+            models_v2.Port.network_id == net_id
+        ).all()
+    )
 
 
 def network_is_external(context, net_id):
@@ -146,7 +161,7 @@ def network_is_external(context, net_id):
         context.session.query(external_net_db.ExternalNetwork).filter_by(
             network_id=net_id).one()
         return True
-    except exc.NoResultFound:
+    except orm.exc.NoResultFound:
         return False
 
 
@@ -168,13 +183,15 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         registry.subscribe(self.registry_port_created, resources.PORT,
                            events.AFTER_CREATE)
 
-    def _format_bgpvpn(self, bgpvpn, network_id):
+    def _format_bgpvpn(self, context, bgpvpn, network_id):
         """JSON-format BGPVPN
 
         BGPVPN, network identifiers, and route targets.
         """
         formatted_bgpvpn = {'id': bgpvpn['id'],
-                            'network_id': network_id}
+                            'network_id': network_id,
+                            'gateway_mac': get_gateway_mac(context,
+                                                           network_id)}
         formatted_bgpvpn.update(
             self._format_bgpvpn_network_route_targets([bgpvpn]))
 
@@ -234,6 +251,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         return bgpvpn_rts
 
+    def _bgpvpns_for_network(self, context, network_id):
+        return (
+            self.bgpvpn_db.find_bgpvpns_for_network(context, network_id)
+            or self.retrieve_bgpvpns_of_router_assocs_by_network(context,
+                                                                 network_id)
+        )
+
     def _retrieve_bgpvpn_network_info_for_port(self, context, port):
         """Retrieve BGP VPN network informations for a specific port
 
@@ -242,6 +266,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             'mac_address': '00:00:de:ad:be:ef',
             'ip_address': '10.0.0.2',
             'gateway_ip': '10.0.0.1',
+            'gateway_mac': 'aa:bb:cc:dd:ee:ff', # if a router interface exists
             'l3vpn' : {
                 'import_rt': ['12345:1', '12345:2', '12345:3'],
                 'export_rt': ['12345:1', '12345:2', '12345:4']
@@ -253,12 +278,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         bgpvpn_network_info = {}
 
-        # Check if port is connected on a BGP VPN network
-        bgpvpns = (
-            self.bgpvpn_db.find_bgpvpns_for_network(context, network_id)
-            or self.retrieve_bgpvpns_of_router_assocs_by_network(context,
-                                                                 network_id)
-        )
+        bgpvpns = self._bgpvpns_for_network(context, network_id)
 
         # NOTE(tmorin): We currently need to send 'network_id', 'mac_address',
         #   'ip_address', 'gateway_ip' to the agent, even in the absence of
@@ -275,7 +295,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         bgpvpn_network_info.update(bgpvpn_rts)
 
         LOG.debug("Getting port %s network details" % port_id)
-        network_info = get_network_info_for_port(context, port_id)
+        network_info = get_network_info_for_port(context, port_id, network_id)
 
         if not network_info:
             LOG.warning("No network information for net %s", network_id)
@@ -309,7 +329,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 # Format BGPVPN before sending notification
                 self.agent_rpc.delete_bgpvpn(
                     context,
-                    self._format_bgpvpn(bgpvpn, net_id))
+                    self._format_bgpvpn(context, bgpvpn, net_id))
 
     def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
         self._common_precommit_checks(bgpvpn)
@@ -328,10 +348,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                     (key in changed_keys for key in ('route_targets',
                                                      'import_targets',
                                                      'export_targets'))):
-                    self.agent_rpc.update_bgpvpn(
-                        context,
-                        self._format_bgpvpn(bgpvpn, net_id)
-                    )
+                    self._update_bgpvpn_for_network(context, net_id, bgpvpn)
 
     def create_net_assoc_precommit(self, context, net_assoc):
         if network_is_external(context, net_assoc['network_id']):
@@ -340,16 +357,18 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     def create_net_assoc_postcommit(self, context, net_assoc):
         if get_network_ports(context, net_assoc['network_id']):
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
-            formated_bgpvpn = self._format_bgpvpn(bgpvpn,
-                                                  net_assoc['network_id'])
-            self.agent_rpc.update_bgpvpn(
-                context,
-                formated_bgpvpn)
+            self._update_bgpvpn_for_network(context,
+                                            net_assoc['network_id'], bgpvpn)
+
+    def _update_bgpvpn_for_network(self, context, net_id, bgpvpn):
+        formated_bgpvpn = self._format_bgpvpn(context, bgpvpn, net_id)
+        self.agent_rpc.update_bgpvpn(context,
+                                     formated_bgpvpn)
 
     def delete_net_assoc_postcommit(self, context, net_assoc):
         if get_network_ports(context, net_assoc['network_id']):
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
-            formated_bgpvpn = self._format_bgpvpn(bgpvpn,
+            formated_bgpvpn = self._format_bgpvpn(context, bgpvpn,
                                                   net_assoc['network_id'])
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
@@ -443,14 +462,19 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def router_interface_added(self, context, port):
-        net_assocs = get_network_bgpvpn_assocs(context, port['network_id'])
-        router_assocs = get_router_bgpvpn_assocs(context, port['device_id'])
-        if net_assocs and router_assocs:
-            msg = 'Can not add router interface because both router %(rtr)s ' \
-                  'and network %(net)s have bgpvpn association(s)'
-            LOG.error(msg % {'rtr': port['device_id'],
-                             'net': port['network_id']})
-            return
+        net_id = port['network_id']
+        router_id = port['device_id']
+
+        net_assocs = get_network_bgpvpn_assocs(context, net_id)
+        router_assocs = get_router_bgpvpn_assocs(context, router_id)
+
+        # if this router_interface is on a network bound to a BGPVPN,
+        # or if this router is bound to a BGPVPN,
+        # then we need to send and update for this network, including
+        # the gateway_mac
+        if net_assocs or router_assocs:
+            for bgpvpn in self._bgpvpns_for_network(context, net_id):
+                self._update_bgpvpn_for_network(context, net_id, bgpvpn)
 
         for router_assoc in router_assocs:
             net_assoc = {'network_id': port['network_id'],
@@ -459,9 +483,18 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def router_interface_removed(self, context, port):
-        for router_assoc in get_router_bgpvpn_assocs(context,
-                                                     port['device_id']):
-            net_assoc = {'network_id': port['network_id'],
+        net_id = port['network_id']
+        router_id = port['device_id']
+
+        net_assocs = get_network_bgpvpn_assocs(context, net_id)
+        router_assocs = get_router_bgpvpn_assocs(context, router_id)
+
+        if net_assocs or router_assocs:
+            for bgpvpn in self._bgpvpns_for_network(context, net_id):
+                self._update_bgpvpn_for_network(context, net_id, bgpvpn)
+
+        for router_assoc in router_assocs:
+            net_assoc = {'network_id': net_id,
                          'bgpvpn_id': router_assoc['bgpvpn_id']}
             self.delete_net_assoc_postcommit(context, net_assoc)
 
