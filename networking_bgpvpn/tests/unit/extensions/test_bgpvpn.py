@@ -78,14 +78,14 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         res = self.api.post(_get_path(BGPVPN_URI, fmt=self.fmt),
                             self.serialize(data),
                             content_type='application/%s' % self.fmt)
-        self.instance.create_bgpvpn.assert_called_with(
-            mock.ANY,
-            bgpvpn={'bgpvpn': expected_call_args}
-        )
+        self.assertTrue(self.instance.create_bgpvpn.called)
+        self.assertDictSupersetOf(
+            expected_call_args,
+            self.instance.create_bgpvpn.call_args[1]['bgpvpn']['bgpvpn'])
         self.assertEqual(res.status_int, exc.HTTPCreated.code)
         res = self.deserialize(res)
         self.assertIn('bgpvpn', res)
-        self.assertEqual(res['bgpvpn'], expected_ret_val)
+        self.assertDictSupersetOf(expected_ret_val, res['bgpvpn'])
 
     def test_bgpvpn_create_with_malformatted_route_target(self):
         data = {
@@ -261,11 +261,32 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
                             content_type='application/%s' % self.fmt,
                             expect_errors=True)
 
-        self.instance.create_bgpvpn_network_association.assert_called_with(
-            mock.ANY, bgpvpn_id=self.bgpvpn_id, network_association=data)
+        self.assertTrue(self.instance.create_bgpvpn_network_association.called)
+        self.assertEqual(self.bgpvpn_id,
+                         self.instance.create_bgpvpn_network_association.
+                         call_args[1]['bgpvpn_id'])
+        self.assertDictSupersetOf(
+            data['network_association'],
+            self.instance.create_bgpvpn_network_association.
+            call_args[1]['network_association']['network_association'])
+
         self.assertIn('network_association', res)
         res = self.deserialize(res)
-        self.assertEqual(return_value, res['network_association'])
+        self.assertDictSupersetOf(return_value,
+                                  res['network_association'])
+
+    def _invalid_datas_for_creation(self, target):
+        return [None, {}, {target: None}, {target: {}}]
+
+    def test_bgpvpn_net_create_with_invalid_datas(self):
+        for data in self._invalid_datas_for_creation('network_association'):
+            res = self.api.post(_get_path(self.NET_ASSOC_URI, fmt=self.fmt),
+                                self.serialize(data),
+                                content_type='application/%s' % self.fmt,
+                                expect_errors=True)
+            self.assertFalse(
+                self.instance.create_bgpvpn_network_association.called)
+            self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
 
     def test_bgpvpn_net_get(self):
         return_value = {'id': self.net_assoc_id,
@@ -313,11 +334,29 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
                             content_type='application/%s' % self.fmt,
                             expect_errors=True)
 
-        self.instance.create_bgpvpn_router_association.assert_called_with(
-            mock.ANY, bgpvpn_id=self.bgpvpn_id, router_association=data)
+        self.assertTrue(self.instance.create_bgpvpn_router_association.called)
+        self.assertEqual(self.bgpvpn_id,
+                         self.instance.create_bgpvpn_router_association.
+                         call_args[1]['bgpvpn_id'])
+        self.assertDictSupersetOf(
+            data['router_association'],
+            self.instance.create_bgpvpn_router_association.
+            call_args[1]['router_association']['router_association'])
+
         self.assertIn('router_association', res)
         res = self.deserialize(res)
-        self.assertEqual(return_value, res['router_association'])
+        self.assertDictSupersetOf(return_value,
+                                  res['router_association'])
+
+    def test_bgpvpn_router_create_with_invalid_datas(self):
+        for data in self._invalid_datas_for_creation('router_association'):
+            res = self.api.post(_get_path(self.ROUTER_ASSOC_URI, fmt=self.fmt),
+                                self.serialize(data),
+                                content_type='application/%s' % self.fmt,
+                                expect_errors=True)
+            self.assertFalse(
+                self.instance.create_bgpvpn_router_association.called)
+            self.assertEqual(res.status_int, exc.HTTPBadRequest.code)
 
     def test_bgpvpn_router_get(self):
         return_value = {'id': self.router_assoc_id,

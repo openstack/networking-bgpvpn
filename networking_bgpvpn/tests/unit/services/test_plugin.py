@@ -181,16 +181,16 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
     @mock.patch.object(plugin.BGPVPNPlugin, '_validate_network')
     def test_bgpvpn_net_assoc_create(self, mock_validate):
-        with self.network() as net:
-            net_id = net['network']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                mock_validate.return_value = net['network']
-                with self.assoc_net(id, net_id):
-                    net_body = {'network_id': net['network']['id'],
-                                'tenant_id': self._tenant_id}
-                    mock_validate.assert_called_once_with(mock.ANY,
-                                                          net_body)
+        with self.network() as net, \
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(
+                    self.bgpvpn_plugin,
+                    '_validate_network',
+                    return_value=net['network']) as mock_validate, \
+                self.assoc_net(bgpvpn['bgpvpn']['id'],
+                               net['network']['id']):
+                    mock_validate.assert_called_once_with(
+                        mock.ANY, net['network']['id'])
 
     def test_associate_empty_network(self):
         with self.bgpvpn() as bgpvpn:
@@ -252,18 +252,17 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 res = bgpvpn_net_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
-    @mock.patch.object(plugin.BGPVPNPlugin, '_validate_router')
-    def test_bgpvpn_router_assoc_create(self, mock_validate):
-        with self.router(tenant_id=self._tenant_id) as router:
-            router_id = router['router']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                mock_validate.return_value = router['router']
-                with self.assoc_router(id, router_id):
-                    router_body = {'router_id': router['router']['id'],
-                                   'tenant_id': self._tenant_id}
-                    mock_validate.assert_called_once_with(mock.ANY,
-                                                          router_body)
+    def test_bgpvpn_router_assoc_create(self):
+        with self.router(tenant_id=self._tenant_id) as router,\
+            self.bgpvpn() as bgpvpn, \
+            mock.patch.object(
+                self.bgpvpn_plugin,
+                '_validate_router',
+                return_value=router['router']) as mock_validate, \
+            self.assoc_router(bgpvpn['bgpvpn']['id'],
+                              router['router']['id']):
+                mock_validate.assert_called_once_with(
+                    mock.ANY, router['router']['id'])
 
     def test_associate_empty_router(self):
         with self.bgpvpn() as bgpvpn:
@@ -457,8 +456,10 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                            mock_create_postcommit):
         mock_create_db.return_value = self.converted_data['bgpvpn']
         with self.bgpvpn(do_delete=False):
-            mock_create_db.assert_called_once_with(
-                mock.ANY, self.converted_data['bgpvpn'])
+            self.assertTrue(mock_create_db.called)
+            self.assertDictSupersetOf(
+                self.converted_data['bgpvpn'],
+                mock_create_db.call_args[0][1])
             mock_create_precommit.assert_called_once_with(
                 mock.ANY, self.converted_data['bgpvpn'])
             mock_create_postcommit.assert_called_once_with(
@@ -539,18 +540,19 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             old_bgpvpn['id'] = bgpvpn['bgpvpn']['id']
             old_bgpvpn['networks'] = []
             old_bgpvpn['routers'] = []
+            old_bgpvpn['project_id'] = old_bgpvpn['tenant_id']
             new_bgpvpn = copy.copy(old_bgpvpn)
             new_bgpvpn['name'] = 'foo'
 
             mock_update_db.return_value = new_bgpvpn
 
-            new_data = {"bgpvpn": {"name": "foo"}}
+            data = {"bgpvpn": {"name": new_bgpvpn['name']}}
             self._update('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'],
-                         new_data)
+                         data)
 
             mock_update_db.assert_called_once_with(
-                mock.ANY, bgpvpn['bgpvpn']['id'], new_data['bgpvpn'])
+                mock.ANY, bgpvpn['bgpvpn']['id'], data['bgpvpn'])
             mock_update_precommit.assert_called_once_with(
                 mock.ANY, old_bgpvpn, new_bgpvpn)
             mock_update_postcommit.assert_called_once_with(
@@ -592,8 +594,12 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                 mock_db_create_assoc.return_value = net_assoc_dict
                 with self.assoc_net(bgpvpn_id, net_id=net_id,
                                     do_disassociate=False):
-                    mock_db_create_assoc.assert_called_once_with(
-                        mock.ANY, bgpvpn_id, data)
+                    self.assertTrue(mock_db_create_assoc.called)
+                    self.assertEqual(
+                        bgpvpn_id, mock_db_create_assoc.call_args[0][1])
+                    self.assertDictSupersetOf(
+                        data,
+                        mock_db_create_assoc.call_args[0][2])
                     mock_pre_commit.assert_called_once_with(mock.ANY,
                                                             net_assoc_dict)
                     mock_post_commit.assert_called_once_with(mock.ANY,
@@ -694,8 +700,12 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             mock_db_create_assoc.return_value = router_assoc_dict
             with self.assoc_router(bgpvpn_id, router_id=router_id,
                                    do_disassociate=False):
-                mock_db_create_assoc.assert_called_once_with(
-                    mock.ANY, bgpvpn_id, data)
+                self.assertTrue(mock_db_create_assoc.called)
+                self.assertEqual(
+                    bgpvpn_id, mock_db_create_assoc.call_args[0][1])
+                self.assertDictSupersetOf(
+                    data,
+                    mock_db_create_assoc.call_args[0][2])
                 mock_pre_commit.assert_called_once_with(mock.ANY,
                                                         router_assoc_dict)
                 mock_post_commit.assert_called_once_with(mock.ANY,

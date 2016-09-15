@@ -166,7 +166,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._make_bgpvpn_dict(bgpvpn_db, fields)
 
     def update_bgpvpn(self, context, id, bgpvpn):
-        fields = None
         with context.session.begin(subtransactions=True):
             bgpvpn_db = self._get_bgpvpn(context, id)
             if bgpvpn:
@@ -183,9 +182,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 if 'route_distinguishers' in bgpvpn:
                     rd = utils.rtrd_list2str(bgpvpn['route_distinguishers'])
                     bgpvpn['route_distinguishers'] = rd
-
                 bgpvpn_db.update(bgpvpn)
-        return self._make_bgpvpn_dict(bgpvpn_db, fields)
+        return self._make_bgpvpn_dict(bgpvpn_db)
 
     def delete_bgpvpn(self, context, id):
         with context.session.begin(subtransactions=True):

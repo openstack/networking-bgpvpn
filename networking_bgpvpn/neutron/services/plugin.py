@@ -58,13 +58,9 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                             "running multiple drivers in parallel is not yet"
                             "supported"))
 
-    def _validate_network(self, context, net_assoc):
-        if not net_assoc or 'network_id' not in net_assoc:
-            msg = 'no network specified'
-            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
-
+    def _validate_network(self, context, net_id):
         plugin = manager.NeutronManager.get_plugin()
-        network = plugin.get_network(context, net_assoc['network_id'])
+        network = plugin.get_network(context, net_id)
         self._validate_network_has_router_assoc(context, network, plugin)
         return network
 
@@ -86,14 +82,10 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                        )
                 raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
-    def _validate_router(self, context, router_assoc):
-        if not router_assoc or 'router_id' not in router_assoc:
-            msg = 'no router specified'
-            raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
-
+    def _validate_router(self, context, router_id):
         l3_plugin = manager.NeutronManager.get_service_plugins().get(
             plugin_constants.L3_ROUTER_NAT)
-        router = l3_plugin.get_router(context, router_assoc['router_id'])
+        router = l3_plugin.get_router(context, router_id)
         plugin = manager.NeutronManager.get_plugin()
         self._validate_router_has_net_assocs(context, router, plugin)
         return router
@@ -144,7 +136,7 @@ class BGPVPNPlugin(BGPVPNPluginBase):
                                           network_association):
         net_assoc = network_association['network_association']
         # check net exists
-        net = self._validate_network(context, net_assoc)
+        net = self._validate_network(context, net_assoc['network_id'])
         # check every resource belong to the same tenant
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
         if net['tenant_id'] != bgpvpn['tenant_id']:
@@ -175,7 +167,7 @@ class BGPVPNPlugin(BGPVPNPluginBase):
     def create_bgpvpn_router_association(self, context, bgpvpn_id,
                                          router_association):
         router_assoc = router_association['router_association']
-        router = self._validate_router(context, router_assoc)
+        router = self._validate_router(context, router_assoc['router_id'])
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
         if not bgpvpn['type'] == constants.BGPVPN_L3:
             msg = ("Router associations require the bgpvpn to be of type %s"
