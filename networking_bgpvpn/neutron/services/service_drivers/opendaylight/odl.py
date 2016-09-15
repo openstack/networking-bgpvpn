@@ -23,7 +23,6 @@ from oslo_utils import excutils
 from networking_odl.common import client as odl_client
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
-from networking_bgpvpn.neutron.services.common import constants
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -53,10 +52,7 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
             bgpvpn['route_distinguishers'] = bgpvpn['route_distinguishers'][0]
 
     def create_bgpvpn_precommit(self, context, bgpvpn):
-        if bgpvpn['type'] != constants.BGPVPN_L3:
-            raise bgpvpn_ext.BGPVPNTypeNotSupported(
-                driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME,
-                type=bgpvpn['type'])
+        pass
 
     def create_bgpvpn_postcommit(self, context, bgpvpn):
         url = BGPVPNS
