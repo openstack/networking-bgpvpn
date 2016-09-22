@@ -13,7 +13,7 @@ Configuration
 =============
 
 The service plugin is enabled in Neutron, by adding ``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin`` to the list
-of enabled service plugins in ``/etc/neutron.conf``. For instance::
+of enabled service plugins in ``/etc/neutron/neutron.conf``. For instance::
 
     service_plugins = networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin,neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
 
@@ -42,4 +42,19 @@ The DB tables for networking-bgpvpn are created and upgraded with::
 
     neutron-db-manage --config-file /etc/neutron/neutron.conf --subproject networking-bgpvpn upgrade
 
+==============
+Devstack
+==============
 
+You can easily test the bgpvpn service plugin with devstack, by adding the following line to your local.conf::
+
+    enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
+
+Or the following if you want a specific branch or version (example for Mitaka)::
+
+    enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git stable/mitaka
+
+By default, the service driver will use a dummy driver, that only responds to API calls, and stores datas in the database.
+If you want to test a fully functional driver with devstack, you can configure the bagpipe driver with its devstack plugin (see :doc:`bagpipe/index`).
+
+Detailed information on how to use other drivers is provided in the documentation for each of these drivers.
