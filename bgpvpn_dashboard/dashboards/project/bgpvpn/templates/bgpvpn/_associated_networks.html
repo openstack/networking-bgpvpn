@@ -1,0 +1,15 @@
+{% load i18n  %}
+
+<dt>
+    {% if bgpvpn.networks|length > 1 %}
+        {% trans "Associated Networks" %}
+    {% else %}
+        {% trans "Associated Network" %}
+    {% endif %}
+</dt>
+    {% for network in bgpvpn.networks %}
+        <dd>
+            {% url 'horizon:project:networks:detail' network as network_url %}
+            <a href="{{ network_url }}">{{ network }}</a>
+        </dd>
+    {% endfor %}

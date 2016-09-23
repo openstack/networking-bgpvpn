@@ -17,6 +17,14 @@ The operations possible for admin users are:
 * associating or disassociating a BGPVPN to router(s)
 * deleting a BGPVPN
 
+For non admin users the plugin adds a BGPVPN Interconnections panel in the Project
+section under the Network subsection.
+The operations possible for non admin users are:
+
+* listing BGPVPN (display only name, type, networks and routers associations)
+* editing a BGPVPN (only the name)
+* associating or disassociating a BGPVPN to network(s)
+* associating or disassociating a BGPVPN to router(s)
 
 Installation and Configuration
 ==============================
@@ -36,4 +44,4 @@ Copy configuration file:
 
 Restart the web server hosting Horizon.
 
-The BGPVPN Interconnections panel will now be in your Horizon dashboard.
+The BGPVPN Interconnections panels will now be in your Horizon dashboard.

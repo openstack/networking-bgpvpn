@@ -39,8 +39,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         iniset $HEAT_CONF DEFAULT plugin_dirs $NETWORKING_BGPVPN_DIR/networking_bgpvpn_heat
     fi
     if is_service_enabled horizon; then
-        cp $BGPVPN_DASHBOARD_ENABLE_ADMIN \
-        $HORIZON_DIR/openstack_dashboard/local/enabled/
+        cp $BGPVPN_DASHBOARD_ENABLE $HORIZON_DIR/openstack_dashboard/local/enabled/
     fi
 fi
 if [[ "$1" == "unstack" ]]; then
@@ -49,7 +48,7 @@ if [[ "$1" == "unstack" ]]; then
 fi
 if [[ "$1" == "clean" ]]; then
     # Remove bgpvpn-dashboard enabled files and pyc
-    rm -f ${BGPVPN_DASHBOARD_ENABLE_ADMIN}*
+    rm -f $HORIZON_DIR/openstack_dashboard/local/enabled/*_bgpvpn_panel*
 fi
 
 # Restore XTRACE
