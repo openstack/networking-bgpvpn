@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from django.core.urlresolvers import reverse_lazy
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
@@ -26,8 +24,6 @@ from networking_bgpvpn.neutron.services.common import constants
 
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms \
     as project_forms
-
-LOG = logging.getLogger(__name__)
 
 
 RT_REGEX = constants.RT_REGEX[1:-1]

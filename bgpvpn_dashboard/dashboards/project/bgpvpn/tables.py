@@ -13,17 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from django.core.urlresolvers import reverse
 from django.utils import html
 from django.utils.http import urlencode
 from django.utils import safestring
 from django.utils.translation import ugettext_lazy as _
 from horizon import tables
-
-
-LOG = logging.getLogger(__name__)
 
 
 class EditInfoBgpVpn(tables.LinkAction):
