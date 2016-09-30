@@ -527,8 +527,6 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
     def test_bagpipe_callback_to_rpc_update_port_router_itf_added(self):
         with self.port() as port, \
                 self.router(tenant_id=self._tenant_id) as router, \
-                mock.patch.object(self.bagpipe_driver, '_get_port_host',
-                                  return_value=helpers.HOST), \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
                                   return_value=bgpvpn['bgpvpn']),\
@@ -554,8 +552,6 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
     def test_bagpipe_callback_to_rpc_update_port_router_itf_removed(self):
         with self.port() as port, \
                 self.router(tenant_id=self._tenant_id) as router, \
-                mock.patch.object(self.bagpipe_driver, '_get_port_host',
-                                  return_value=helpers.HOST), \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
                                   return_value=bgpvpn['bgpvpn']),\

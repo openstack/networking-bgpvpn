@@ -364,21 +364,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
     def _get_port(self, context, port_id):
-        # we need to look in the db for two reasons:
-        # - the port dict, as provided by the registry callback has no
-        #   port binding information
-        # - for some notifications, the current port is not included
-
         _core_plugin = manager.NeutronManager.get_plugin()
         # TODO(tmorin): should not need an admin context
         return _core_plugin.get_port(n_context.get_admin_context(), port_id)
-
-    def _get_port_host(self, context, port):
-        if portbindings.HOST_ID not in port:
-            raise Exception("cannot determine host_id for port %s, "
-                            "aborting BGPVPN update", port['id'])
-
-        return port.get(portbindings.HOST_ID)
 
     def _ignore_port(self, context, port):
         if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
@@ -396,26 +384,21 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         return False
 
-    def notify_port_updated(self, context, port_id, original_port):
-        LOG.info("notify_port_updated on port %s", port_id)
-
-        port = self._get_port(context, port_id)
-
-        port_bgpvpn_info = {'id': port['id'],
-                            'network_id': port['network_id']}
+    @log_helpers.log_method_call
+    def notify_port_updated(self, context, port, original_port):
 
         if self._ignore_port(context, port):
             return
 
-        agent_host = self._get_port_host(context, port)
+        agent_host = port[portbindings.HOST_ID]
 
-        original_port_status = "not present in notification"
-        if original_port:
-            original_port_status = original_port['status']
+        port_bgpvpn_info = {'id': port['id'],
+                            'network_id': port['network_id']}
 
         if (port['status'] == const.PORT_STATUS_ACTIVE and
-                original_port_status != const.PORT_STATUS_ACTIVE):
-            LOG.info("notify_port_updated, port became ACTIVE")
+                original_port['status'] != const.PORT_STATUS_ACTIVE):
+            LOG.debug("notify_port_updated, port became ACTIVE")
+
             bgpvpn_network_info = (
                 self._retrieve_bgpvpn_network_info_for_port(context, port)
             )
@@ -434,31 +417,26 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 pass
 
         elif (port['status'] == const.PORT_STATUS_DOWN and
-                original_port_status != const.PORT_STATUS_DOWN):
-            LOG.info("notify_port_updated, port became DOWN")
+                original_port['status'] != const.PORT_STATUS_DOWN):
+            LOG.debug("notify_port_updated, port became DOWN")
             self.agent_rpc.detach_port_from_bgpvpn(context,
                                                    port_bgpvpn_info,
                                                    agent_host)
         else:
             LOG.debug("new port status is %s, origin status was %s,"
-                      " => no action", port['status'], original_port_status)
+                      " => no action", port['status'], original_port['status'])
 
-    def notify_port_deleted(self, context, port_id):
-        LOG.info("notify_port_deleted on port %s ", port_id)
-
-        port = self._get_port(context, port_id)
-
+    @log_helpers.log_method_call
+    def notify_port_deleted(self, context, port):
         port_bgpvpn_info = {'id': port['id'],
                             'network_id': port['network_id']}
 
         if self._ignore_port(context, port):
             return
 
-        agent_host = self._get_port_host(context, port)
-
         self.agent_rpc.detach_port_from_bgpvpn(context,
                                                port_bgpvpn_info,
-                                               agent_host)
+                                               port[portbindings.HOST_ID])
 
     def create_router_assoc_postcommit(self, context, router_assoc):
         ports = get_router_ports(context, router_assoc['router_id'])
@@ -478,6 +456,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                              'bgpvpn_id': router_assoc['bgpvpn_id']}
                 self.delete_net_assoc_postcommit(context, net_assoc)
 
+    @log_helpers.log_method_call
     def router_interface_added(self, context, port):
         net_assocs = get_network_bgpvpn_assocs(context, port['network_id'])
         router_assocs = get_router_bgpvpn_assocs(context, port['device_id'])
@@ -487,11 +466,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             LOG.error(msg % {'rtr': port['device_id'],
                              'net': port['network_id']})
             return
+
         for router_assoc in router_assocs:
             net_assoc = {'network_id': port['network_id'],
                          'bgpvpn_id': router_assoc['bgpvpn_id']}
             self.create_net_assoc_postcommit(context, net_assoc)
 
+    @log_helpers.log_method_call
     def router_interface_removed(self, context, port):
         for router_assoc in get_router_bgpvpn_assocs(context,
                                                      port['device_id']):
@@ -503,13 +484,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs.get('context')
-            port = kwargs.get('port')
-            original_port = kwargs.get('original_port')
-            # In notifications coming from ml2/plugin.py update_port
-            # it is possible that 'port' may be None, in this
-            # case we will use original_port
-            if port is None:
-                port = original_port
+            port = kwargs['port']
+            original_port = kwargs['original_port']
 
             rtr_itf_added = self._is_router_intf_added(original_port, port)
             rtr_itf_removed = self._is_router_intf_added(port, original_port)
@@ -519,7 +495,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             elif rtr_itf_removed:
                 self.router_interface_removed(context, original_port)
             else:
-                self.notify_port_updated(context, port['id'], original_port)
+                self.notify_port_updated(context, port, original_port)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
@@ -544,14 +520,17 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     @log_helpers.log_method_call
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
         try:
-            context = kwargs.get('context')
-            port_id = kwargs.get('port_id')
+            context = kwargs['context']
+            port_id = kwargs['port_id']
+            # required because PORT BEFORE_DELETE event does
+            # not have detailed port information, in particular
+            # portbinding.HOST_ID
             port = self._get_port(context, port_id)
 
             if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
                 self.router_interface_removed(context, port)
             else:
-                self.notify_port_deleted(context, port_id)
+                self.notify_port_deleted(context, port)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
                               "%(resource)s %(event)s, %(trigger)s, "
@@ -565,9 +544,9 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     @log_helpers.log_method_call
     def registry_port_created(self, resource, event, trigger, **kwargs):
         try:
-            context = kwargs.get('context')
-            port = kwargs.get('port')
-            if port and port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
+            context = kwargs['context']
+            port = kwargs['port']
+            if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
                 self.router_interface_added(context, port)
         except Exception as e:
             LOG.exception(_LE("Error during notification processing "
