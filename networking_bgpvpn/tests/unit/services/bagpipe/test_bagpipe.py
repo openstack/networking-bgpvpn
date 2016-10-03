@@ -541,7 +541,9 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                 helpers.HOST)
 
     def test_bagpipe_callback_to_rpc_update_port_router_itf_added(self):
-        with self.port() as port, \
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.port(subnet=subnet) as port, \
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
@@ -551,14 +553,11 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                                   return_value=[{
                                       'bgpvpn_id': bgpvpn['bgpvpn']['id']
                                   }]).start():
-            original_port = copy.deepcopy(port['port'])
-            port['port']['device_owner'] = const.DEVICE_OWNER_ROUTER_INTF
-            port['port']['device_id'] = router['router']['id']
-            self.bagpipe_driver.registry_port_updated(
+            self.bagpipe_driver.registry_router_interface_created(
                 None, None, None,
                 context=self.ctxt,
-                port=port['port'],
-                original_port=original_port
+                port={'network_id': net['network']['id']},
+                router_id=router['router']['id'],
             )
             self.mock_update_rpc.assert_called_once_with(
                 mock.ANY,
@@ -567,7 +566,9 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                                                    port['port']['network_id']))
 
     def test_bagpipe_callback_to_rpc_update_port_router_itf_removed(self):
-        with self.port() as port, \
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.port(subnet=subnet) as port, \
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
@@ -577,14 +578,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                                   return_value=[{
                                       'bgpvpn_id': bgpvpn['bgpvpn']['id']
                                   }]).start():
-            original_port = copy.deepcopy(port['port'])
-            original_port['device_owner'] = const.DEVICE_OWNER_ROUTER_INTF
-            original_port['device_id'] = router['router']['id']
-            self.bagpipe_driver.registry_port_updated(
+            self.bagpipe_driver.registry_router_interface_deleted(
                 None, None, None,
                 context=self.ctxt,
-                port=port['port'],
-                original_port=original_port
+                network_id=port['port']['network_id'],
+                port={'device_id': router['router']['id'],
+                      'network_id': net['network']['id']}
             )
             self.mock_delete_rpc.assert_called_once_with(
                 mock.ANY,

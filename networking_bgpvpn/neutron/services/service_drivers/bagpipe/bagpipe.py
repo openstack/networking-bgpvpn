@@ -165,6 +165,17 @@ def network_is_external(context, net_id):
         return False
 
 
+def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
+    LOG.exception(_LE("Error during notification processing "
+                      "%(resource)s %(event)s, %(trigger)s, "
+                      "%(kwargs)s: %(exc)s"),
+                  {'trigger': trigger,
+                   'resource': resource,
+                   'event': event,
+                   'kwargs': kwargs,
+                   'exc': e})
+
+
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     """BGPVPN Service Driver class for BaGPipe"""
@@ -174,14 +185,21 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
         self.agent_rpc = rpc_client.BGPVPNAgentNotifyApi()
 
-        registry.subscribe(self.registry_port_updated, resources.PORT,
+        registry.subscribe(self.registry_port_updated,
+                           resources.PORT,
                            events.AFTER_UPDATE)
 
-        registry.subscribe(self.registry_port_deleted, resources.PORT,
+        registry.subscribe(self.registry_port_deleted,
+                           resources.PORT,
                            events.AFTER_DELETE)
 
-        registry.subscribe(self.registry_port_created, resources.PORT,
+        registry.subscribe(self.registry_router_interface_created,
+                           resources.ROUTER_INTERFACE,
                            events.AFTER_CREATE)
+
+        registry.subscribe(self.registry_router_interface_deleted,
+                           resources.ROUTER_INTERFACE,
+                           events.AFTER_DELETE)
 
     def _format_bgpvpn(self, context, bgpvpn, network_id):
         """JSON-format BGPVPN
@@ -461,10 +479,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 self.delete_net_assoc_postcommit(context, net_assoc)
 
     @log_helpers.log_method_call
-    def router_interface_added(self, context, port):
-        net_id = port['network_id']
-        router_id = port['device_id']
-
+    def notify_router_interface_created(self, context, router_id, net_id):
         net_assocs = get_network_bgpvpn_assocs(context, net_id)
         router_assocs = get_router_bgpvpn_assocs(context, router_id)
 
@@ -477,15 +492,12 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 self._update_bgpvpn_for_network(context, net_id, bgpvpn)
 
         for router_assoc in router_assocs:
-            net_assoc = {'network_id': port['network_id'],
+            net_assoc = {'network_id': net_id,
                          'bgpvpn_id': router_assoc['bgpvpn_id']}
             self.create_net_assoc_postcommit(context, net_assoc)
 
     @log_helpers.log_method_call
-    def router_interface_removed(self, context, port):
-        net_id = port['network_id']
-        router_id = port['device_id']
-
+    def notify_router_interface_deleted(self, context, router_id, net_id):
         net_assocs = get_network_bgpvpn_assocs(context, net_id)
         router_assocs = get_router_bgpvpn_assocs(context, router_id)
 
@@ -505,35 +517,10 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             port = kwargs['port']
             original_port = kwargs['original_port']
 
-            rtr_itf_added = self._is_router_intf_added(original_port, port)
-            rtr_itf_removed = self._is_router_intf_added(port, original_port)
-
-            if rtr_itf_added:
-                self.router_interface_added(context, port)
-            elif rtr_itf_removed:
-                self.router_interface_removed(context, original_port)
-            else:
-                self.notify_port_updated(context, port, original_port)
+            self.notify_port_updated(context, port, original_port)
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
-                          {'trigger': trigger,
-                           'resource': resource,
-                           'event': event,
-                           'kwargs': kwargs,
-                           'exc': e})
-
-    def _is_router_intf_added(self, original_port, port):
-        if not (original_port and port):
-            # This happens when the ml2 rpc.py sends a port update
-            # notification. original port will be None. However, this rpc
-            # notification will never be from a port device_id/device_owner
-            # update, so return False
-            return False
-        return (original_port['device_owner']
-                != const.DEVICE_OWNER_ROUTER_INTF
-                == port['device_owner'])
+            _log_callback_processing_exception(resource, event, trigger,
+                                               kwargs, e)
 
     @log_helpers.log_method_call
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
@@ -541,33 +528,34 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             context = kwargs['context']
             port = kwargs['port']
 
-            if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
-                self.router_interface_removed(context, port)
-            else:
-                self.notify_port_deleted(context, port)
+            self.notify_port_deleted(context, port)
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
-                          {'trigger': trigger,
-                           'resource': resource,
-                           'event': event,
-                           'kwargs': kwargs,
-                           'exc': e})
+            _log_callback_processing_exception(resource, event, trigger,
+                                               kwargs, e)
 
     @log_helpers.log_method_call
-    def registry_port_created(self, resource, event, trigger, **kwargs):
+    def registry_router_interface_created(self, resource, event, trigger,
+                                          **kwargs):
         try:
             context = kwargs['context']
-            port = kwargs['port']
-            if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
-                self.router_interface_added(context, port)
+            router_id = kwargs['router_id']
+            net_id = kwargs['port']['network_id']
+            self.notify_router_interface_created(context, router_id, net_id)
         except Exception as e:
-            LOG.exception(_LE("Error during notification processing "
-                              "%(resource)s %(event)s, %(trigger)s, "
-                              "%(kwargs)s: %(exc)s"),
-                          {'trigger': trigger,
-                           'resource': resource,
-                           'event': event,
-                           'kwargs': kwargs,
-                           'exc': e})
+            _log_callback_processing_exception(resource, event, trigger,
+                                               kwargs, e)
+
+    @log_helpers.log_method_call
+    def registry_router_interface_deleted(self, resource, event, trigger,
+                                          **kwargs):
+        try:
+            context = kwargs['context']
+            # for router_interface after_delete, in stable/newton, the
+            # callback does not include the router_id directly, but we find
+            # it in the port device_id
+            router_id = kwargs['port']['device_id']
+            net_id = kwargs['port']['network_id']
+            self.notify_router_interface_deleted(context, router_id, net_id)
+        except Exception as e:
+            _log_callback_processing_exception(resource, event, trigger,
+                                               kwargs, e)
