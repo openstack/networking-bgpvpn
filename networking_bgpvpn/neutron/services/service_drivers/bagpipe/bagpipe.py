@@ -19,13 +19,11 @@ from sqlalchemy import sql
 from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
-from neutron import context as n_context
 from neutron.db import external_net_db
 from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.debug import debug_agent
 from neutron.extensions import portbindings
-from neutron import manager
 
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
@@ -164,16 +162,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         registry.subscribe(self.registry_port_updated, resources.PORT,
                            events.AFTER_UPDATE)
 
-        # we need to subscribe to before_delete events, because
-        # on after_delete events the port is already removed from the db
-        # and we can't retrieve the binding:host_id information (which
-        # is not passed in the event either)
         registry.subscribe(self.registry_port_deleted, resources.PORT,
-                           events.BEFORE_DELETE)
-
-        # REVISIT(tmorin): if/when port ABORT_DELETE events are implemented
-        #  we will have to revisit the issue, so that the action done after
-        #  BEFORE_DELETE is reverted if needed (or a different solution)
+                           events.AFTER_DELETE)
 
         registry.subscribe(self.registry_port_created, resources.PORT,
                            events.AFTER_CREATE)
@@ -363,11 +353,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                   net_assoc['network_id'])
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
-    def _get_port(self, context, port_id):
-        _core_plugin = manager.NeutronManager.get_plugin()
-        # TODO(tmorin): should not need an admin context
-        return _core_plugin.get_port(n_context.get_admin_context(), port_id)
-
     def _ignore_port(self, context, port):
         if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
                 and not port['device_owner'] in
@@ -483,7 +468,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     @log_helpers.log_method_call
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         try:
-            context = kwargs.get('context')
+            context = kwargs['context']
             port = kwargs['port']
             original_port = kwargs['original_port']
 
@@ -521,11 +506,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
         try:
             context = kwargs['context']
-            port_id = kwargs['port_id']
-            # required because PORT BEFORE_DELETE event does
-            # not have detailed port information, in particular
-            # portbinding.HOST_ID
-            port = self._get_port(context, port_id)
+            port = kwargs['port']
 
             if port['device_owner'] == const.DEVICE_OWNER_ROUTER_INTF:
                 self.router_interface_removed(context, port)
