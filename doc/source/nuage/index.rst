@@ -15,7 +15,7 @@ installation and configuration steps have been applied; in particular the
 installation of the ``nuage_neutron`` package. Please refer to Nuage Networks
 documentation.
 
-The driver will be enabled, by specifying in in ``/etc/neutron/networking_bgpvpn.conf``::
+The driver will be enabled, by specifying in ``/etc/neutron/networking_bgpvpn.conf``::
 
     [service_providers]
     service_provider = BGPVPN:Nuage:nuage_neutron.bgpvpn.services.service_drivers.driver.NuageBGPVPNDriver:default
