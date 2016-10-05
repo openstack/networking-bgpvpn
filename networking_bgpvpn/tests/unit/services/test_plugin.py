@@ -102,14 +102,15 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
     @contextlib.contextmanager
     def bgpvpn(self, do_delete=True, **kwargs):
+        req_data = copy.deepcopy(self.bgpvpn_data)
+
         fmt = 'json'
         if kwargs.get('data'):
-            bgpvpn_data = kwargs.get('data')
+            req_data = kwargs.get('data')
         else:
-            bgpvpn_data = copy.copy(self.bgpvpn_data)
-            bgpvpn_data['bgpvpn'].update(kwargs)
+            req_data['bgpvpn'].update(kwargs)
         bgpvpn_req = self.new_create_request(
-            'bgpvpn/bgpvpns', bgpvpn_data, fmt=fmt)
+            'bgpvpn/bgpvpns', req_data, fmt=fmt)
         res = bgpvpn_req.get_response(self.ext_api)
         if res.status_int >= 400:
             raise webob.exc.HTTPClientError(code=res.status_int)
@@ -435,6 +436,45 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 subresource='router_associations')
             res = bgpvpn_router_req.get_response(self.ext_api)
             self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
+
+    def test_attach_subnet_to_router_both_attached_to_bgpvpn(self):
+        with self.network() as net,\
+                self.bgpvpn() as bgpvpn,\
+                self.router(tenant_id=self._tenant_id) as router,\
+                self.subnet(network={'network': net['network']}) as subnet,\
+                self.assoc_net(bgpvpn['bgpvpn']['id'], net['network']['id']),\
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id']):
+            # Attach subnet to router
+            data = {"subnet_id": subnet['subnet']['id']}
+            bgpvpn_rtr_intf_req = self.new_update_request(
+                'routers',
+                data=data,
+                fmt=self.fmt,
+                id=router['router']['id'],
+                subresource='add_router_interface')
+            res = bgpvpn_rtr_intf_req.get_response(self.ext_api)
+            self.assertEqual(res.status_int, webob.exc.HTTPConflict.code)
+
+    def test_attach_port_to_router_both_attached_to_bgpvpn(self):
+        with self.network() as net,\
+                self.bgpvpn() as bgpvpn,\
+                self.router(tenant_id=self._tenant_id) as router,\
+                self.subnet(network={'network': net['network']}) as subnet,\
+                self.port(subnet={'subnet': subnet['subnet']}) as port,\
+                self.assoc_net(bgpvpn['bgpvpn']['id'], net['network']['id']),\
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id']):
+            # Attach subnet to router
+            data = {"port_id": port['port']['id']}
+            bgpvpn_rtr_intf_req = self.new_update_request(
+                'routers',
+                data=data,
+                fmt=self.fmt,
+                id=router['router']['id'],
+                subresource='add_router_interface')
+            res = bgpvpn_rtr_intf_req.get_response(self.ext_api)
+            self.assertEqual(res.status_int, webob.exc.HTTPConflict.code)
 
 
 class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):

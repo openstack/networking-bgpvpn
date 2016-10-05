@@ -65,6 +65,11 @@ class BGPVPNRDNotSupported(n_exc.BadRequest):
                 "route distinguisher")
 
 
+class BGPVPNFindFromNetNotSupported(n_exc.BadRequest):
+    message = _("BGPVPN %(driver)s driver does not support to fetch BGPVPNs "
+                "associated to network id %(net_id)")
+
+
 class BGPVPNNetAssocAlreadyExists(n_exc.BadRequest):
     message = _("network %(net_id)s is already associated to "
                 "BGPVPN %(bgpvpn_id)s")

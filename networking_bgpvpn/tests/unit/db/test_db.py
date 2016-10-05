@@ -19,6 +19,7 @@ from networking_bgpvpn.neutron.extensions.bgpvpn \
     import BGPVPNNetAssocAlreadyExists
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNetAssocNotFound
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNotFound
+from networking_bgpvpn.neutron.services.common import constants
 from networking_bgpvpn.tests.unit.services import test_plugin
 
 
@@ -201,14 +202,36 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                                        'network_id': net_id})
 
     def test_db_find_bgpvpn_for_net(self):
-        with self.network() as net:
+        with self.network() as net, \
+                self.bgpvpn(type=constants.BGPVPN_L2) as bgpvpn_l2, \
+                self.bgpvpn() as bgpvpn_l3, \
+                self.assoc_net(bgpvpn_l2['bgpvpn']['id'],
+                               net['network']['id']), \
+                self.assoc_net(bgpvpn_l3['bgpvpn']['id'],
+                               net['network']['id']):
             net_id = net['network']['id']
-            with self.bgpvpn() as bgpvpn:
-                id = bgpvpn['bgpvpn']['id']
-                with self.assoc_net(id, net_id=net_id):
-                    bgpvpn_list = self.plugin_db.\
-                        find_bgpvpns_for_network(self.ctx, net_id)
-                    self.assertEqual(id, bgpvpn_list[0]['id'])
+
+            def _id_list(list):
+                return [bgpvpn['id'] for bgpvpn in list]
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.find_bgpvpns_for_network(self.ctx, net_id))
+            self.assertIn(bgpvpn_l2['bgpvpn']['id'],
+                          bgpvpn_id_list)
+            self.assertIn(bgpvpn_l3['bgpvpn']['id'],
+                          bgpvpn_id_list)
+            bgpvpn_l2_id_list = _id_list(
+                self.plugin_db.find_bgpvpns_for_network(
+                    self.ctx, net_id, bgpvpn_type=constants.BGPVPN_L2))
+
+            self.assertIn(bgpvpn_l2['bgpvpn']['id'], bgpvpn_l2_id_list)
+            self.assertNotIn(bgpvpn_l3['bgpvpn']['id'], bgpvpn_l2_id_list)
+
+            bgpvpn_l3_id_list = _id_list(
+                self.plugin_db.find_bgpvpns_for_network(
+                    self.ctx, net_id, bgpvpn_type=constants.BGPVPN_L3))
+            self.assertNotIn(bgpvpn_l2['bgpvpn']['id'], bgpvpn_l3_id_list[0])
+            self.assertIn(bgpvpn_l3['bgpvpn']['id'], bgpvpn_l3_id_list[0])
 
     def test_db_delete_net(self):
         with self.bgpvpn() as bgpvpn:
