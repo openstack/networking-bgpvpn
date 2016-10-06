@@ -32,7 +32,9 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     fi
     if is_service_enabled q-agt && is_service_enabled b-bgp && [[ "$Q_AGENT" == "openvswitch" ]]; then
         echo_summary "Configuring OVS agent for bagpipe"
+        source $NEUTRON_DIR/devstack/lib/l2_agent
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
+        configure_l2_agent
     fi
     if is_service_enabled h-eng;then
         echo_summary "Enabling bgpvpn in $HEAT_CONF"
