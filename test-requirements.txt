@@ -18,5 +18,5 @@ testtools>=1.4.0
 reno>=0.1.1  # Apache2
 pylint===1.4.5
 
--e git+https://git.openstack.org/openstack/networking-bagpipe#egg=networking-bagpipe
--e git+https://git.openstack.org/openstack/networking-odl#egg=networking-odl
+-e git+https://git.openstack.org/openstack/networking-bagpipe@stable/mitaka#egg=networking-bagpipe
+-e git+https://git.openstack.org/openstack/networking-odl@stable/mitaka#egg=networking-odl
