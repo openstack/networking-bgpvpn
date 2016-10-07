@@ -18,7 +18,6 @@ import abc
 import six
 
 from neutron.api import extensions
-from neutron.api.v2 import attributes as attr
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
 from neutron import manager
@@ -110,7 +109,7 @@ def _validate_rt_list(data, valid_values=None):
         return msg
 
     for item in data:
-        msg = attr._validate_regex(item, constants.RT_REGEX)
+        msg = api.validators.validate_regex(item, constants.RT_REGEX)
         if msg:
             LOG.debug(msg)
             return msg
@@ -241,13 +240,6 @@ class Bgpvpn(extensions.ExtensionDescriptor):
     def get_resources(cls):
         plural_mappings = resource_helper.build_plural_mappings(
             {}, RESOURCE_ATTRIBUTE_MAP)
-        plural_mappings['route_targets'] = 'route_target'
-        plural_mappings['import_targets'] = 'import_target'
-        plural_mappings['export_targets'] = 'export_target'
-        plural_mappings['route_distinguishers'] = 'route_distinguishers'
-        plural_mappings['network_associations'] = 'network_association'
-        plural_mappings['router_associations'] = 'router_association'
-        attr.PLURALS.update(plural_mappings)
         resources = resource_helper.build_resource_info(plural_mappings,
                                                         RESOURCE_ATTRIBUTE_MAP,
                                                         constants.BGPVPN,
