@@ -22,7 +22,8 @@ from sqlalchemy.orm import exc
 
 from neutron.api.v2 import attributes as attr
 from neutron.db import common_db_mixin
-from neutron.db import model_base
+
+from neutron_lib.db import model_base
 
 from networking_bgpvpn._i18n import _LI
 from networking_bgpvpn._i18n import _LW
