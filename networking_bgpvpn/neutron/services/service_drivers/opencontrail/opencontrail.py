@@ -236,11 +236,6 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
 
         oc_client = self._get_opencontrail_api_client(context)
 
-        # Check if tenant ID exists;
-        # if not, it sends an exception
-        if new_bgpvpn['tenant_id']:
-            self._check_tenant_id(oc_client, new_bgpvpn['tenant_id'])
-
         old_bgpvpn = self.get_bgpvpn(context, id)
         networks = old_bgpvpn.get('networks', [])
         bgpvpn = old_bgpvpn.copy()
