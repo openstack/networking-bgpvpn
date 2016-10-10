@@ -15,7 +15,6 @@
 
 import os
 
-from tempest import config
 from tempest.test_discover import plugins
 
 from networking_bgpvpn_tempest import config as project_config
@@ -30,12 +29,11 @@ class NetworkingBgpvpnTempestPlugin(plugins.TempestPlugin):
         return full_test_dir, base_path
 
     def register_opts(self, conf):
-        config.register_opt_group(
-            conf, project_config.service_available_group,
-            project_config.ServiceAvailableGroup)
-        config.register_opt_group(
-            conf, project_config.bgpvpn_group,
-            project_config.BgpvpnGroup)
+        conf.register_opt(project_config.service_option,
+                          group="service_available")
+        conf.register_group(project_config.bgpvpn_group)
+        conf.register_opts(project_config.BgpvpnGroup, group="bgpvpn")
 
     def get_opt_lists(self):
-        return [(project_config.bgpvpn_group.name, project_config.BgpvpnGroup)]
+        return [(project_config.bgpvpn_group.name, project_config.BgpvpnGroup),
+                ('service_available', [project_config.service_option])]
