@@ -1,0 +1,13 @@
+---
+prelude: >
+    The ovs/bagpipe driver now let you use both a Neutron
+    router and a BGPVPN association simultaneously on a
+    given Port.
+features:
+  - The bagpipe driver now let happily coexist a BGPVPN
+    association and a Neutron router. Traffic that does
+    not match any VPN route will be handled by the Neutron
+    router. This evolution depends on corresponding evolutions
+    in networking-bagpipe and bagpipe-bgp.
+    (`see bug 1627645 <https://bugs.launchpad.net/networking-bgpvpn/+bug/1627645>`_)
+
