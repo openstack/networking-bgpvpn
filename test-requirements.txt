@@ -22,4 +22,4 @@ reno>=0.1.1  # Apache2
 pylint===1.4.5
 
 -e git+https://git.openstack.org/openstack/networking-bagpipe#egg=networking-bagpipe
--e git+https://git.openstack.org/openstack/networking-odl#egg=networking-odl
+-e git+https://git.openstack.org/openstack/networking-odl@c62edca4437a0fb82403463bd839e2f27a0fd5be#egg=networking-odl
