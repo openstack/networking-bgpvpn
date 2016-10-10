@@ -22,4 +22,4 @@ testtools>=1.4.0 # MIT
 reno>=1.8.0 # Apache-2.0
 pylint==1.4.5 # GPLv2
 
--e git+https://git.openstack.org/openstack/networking-odl@c62edca4437a0fb82403463bd839e2f27a0fd5be#egg=networking-odl
+-e git+https://git.openstack.org/openstack/networking-odl#egg=networking-odl
