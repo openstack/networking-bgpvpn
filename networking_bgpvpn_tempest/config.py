@@ -15,14 +15,11 @@
 
 from oslo_config import cfg
 
-ServiceAvailableGroup = [
-    cfg.BoolOpt('bgpvpn',
-                default=False,
-                help="Whether or not bgpvpn is expected to be available"),
-]
+service_option = cfg.BoolOpt("bgpvpn",
+                             default=False,
+                             help="Whether or not bgpvpn is expected to be "
+                                  "available")
 
-service_available_group = cfg.OptGroup(name="service_available",
-                                       title="Available OpenStack Services")
 BgpvpnGroup = [
     cfg.IntOpt('min_asn',
                default=100,
