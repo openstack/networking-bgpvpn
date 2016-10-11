@@ -14,7 +14,7 @@
 # pip install {opts} {packages}
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
-BRANCH_NAME=stable/newton
+BRANCH_NAME=master
 
 install_project() {
     local project=$1
