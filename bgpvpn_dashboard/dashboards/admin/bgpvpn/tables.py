@@ -96,12 +96,8 @@ def get_router_url(router):
     return instance
 
 
-def get_tenant(bgpvpn):
-    return bgpvpn.tenant.name
-
-
 class BgpvpnTable(tables.DataTable):
-    tenant_id = tables.Column(get_tenant, verbose_name=_("Project"))
+    tenant_id = tables.Column("tenant_name", verbose_name=_("Project"))
     name = tables.Column("name_or_id",
                          verbose_name=_("Name"),
                          link=("horizon:admin:bgpvpn:detail"))

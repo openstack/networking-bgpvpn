@@ -12,11 +12,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+
+from horizon import exceptions
 from horizon import forms
 from horizon.utils import memoized
+
 from openstack_dashboard import api
 
 import bgpvpn_dashboard.api.bgpvpn as bgpvpn_api
@@ -31,20 +33,31 @@ class IndexView(project_views.IndexView):
     table_class = bgpvpn_tables.BgpvpnTable
 
     @memoized.memoized_method
+    def _get_tenant_name(self):
+        try:
+            tenants, has_more = api.keystone.tenant_list(self.request)
+        except Exception:
+            tenants = []
+            msg = _("Unable to retrieve information about the "
+                    "bgpvpns projects.")
+            exceptions.handle(self.request, msg)
+
+        return {t.id: t.name for t in tenants}
+
+    @memoized.memoized_method
     def get_data(self):
         bgpvpns = bgpvpn_api.bgpvpns_list(self.request)
         networks = api.neutron.network_list(self.request)
         routers = api.neutron.router_list(self.request)
+        tenant_dict = self._get_tenant_name()
         for bgpvpn in bgpvpns:
             networks_list = [network for network in networks
                              if network.id in bgpvpn.networks]
             routers_list = [router for router in routers
                             if router.id in bgpvpn.routers]
-            bgpvpn.tenant = api.keystone.tenant_get(self.request,
-                                                    bgpvpn.tenant_id)
             bgpvpn.networks = networks_list
             bgpvpn.routers = routers_list
-
+            bgpvpn.tenant_name = tenant_dict.get(bgpvpn.tenant_id, None)
         return bgpvpns
 
 
