@@ -87,11 +87,11 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
     route_distinguishers = sa.Column(sa.String(255), nullable=True)
     network_associations = orm.relationship("BGPVPNNetAssociation",
                                             backref="bgpvpn",
-                                            lazy='joined',
+                                            lazy='select',
                                             cascade='all, delete-orphan')
     router_associations = orm.relationship("BGPVPNRouterAssociation",
                                            backref="bgpvpn",
-                                           lazy='joined',
+                                           lazy='select',
                                            cascade='all, delete-orphan')
 
 
