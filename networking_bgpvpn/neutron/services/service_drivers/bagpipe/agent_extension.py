@@ -87,7 +87,8 @@ class OVSBridgeIntercept(ofctl_br_tun.OVSTunnelBridge,
         attr = getattr(cookie_bridge.bridge.__class__, name, None)
         # flake8: noqa
         # pylint: disable=unidiomatic-typecheck
-        if type(attr) is types.MethodType:
+        if (type(attr) is types.MethodType or
+            type(attr) is types.FunctionType):
             # The code below will result in calling the <method_name> on the
             # right parent class of the underlying bridge, but with our
             # instance passed as 'self'; this ensure that when the said method
