@@ -18,5 +18,7 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 
 # compiling a fresh OVS is done in gate_hook.sh
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"OVS_BRANCH=branch-2.5"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_BUILD_OVS_FROM_GIT=True"
+
 
