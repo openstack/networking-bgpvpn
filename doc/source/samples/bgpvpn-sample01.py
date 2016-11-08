@@ -33,8 +33,8 @@ def get_keystone_creds():
         d['auth_url'] = os.environ['OS_AUTH_URL']
         d['tenant_name'] = os.environ['OS_TENANT_NAME']
     except KeyError:
-        print ("ERROR: Stack environment variables type "
-               "OS_* are not properly set")
+        print("ERROR: Stack environment variables type "
+              "OS_* are not properly set")
         sys.exit(1)
     return d
 
@@ -55,8 +55,8 @@ def main():
         # Creation of the Network
         net_obj = neutron.create_network({'network': {'name': "dummyNet"}})
         # Verify creation
-        print ('Network created\t[network-id:%s]...' %
-               net_obj['network']['id'])
+        print('Network created\t[network-id:%s]...' %
+              net_obj['network']['id'])
 
         # Creation of the subnet, is attached to the created network
         subnet_obj = neutron.create_subnet(
@@ -66,55 +66,55 @@ def main():
                  'network_id': net_obj['network']['id'],
                  'ip_version': 4}})
         # Verify
-        print ("Subnet created\t[subnet-id:%s]..." %
-               subnet_obj['subnet']['id'])
+        print("Subnet created\t[subnet-id:%s]..." %
+              subnet_obj['subnet']['id'])
 
         # Creation of a BGPVPN object. This object is created with the
         # required parameter 'routes_targets'.
         # This object can be created with others parameters or be updated with
         # them by calling the update function on the object.
 
-        print ("\nBGPVPN object handling.")
+        print("\nBGPVPN object handling.")
         # Creation of the BGPVPN object
         bgpvpn_obj = neutron.create_bgpvpn(
             {'bgpvpn': {'route_targets': [BGPVPN_RT]}})
-        print ("BGPVPN object created\t[bgpvpn-id:%s]..." %
-               bgpvpn_obj['bgpvpn']['id'])
+        print("BGPVPN object created\t[bgpvpn-id:%s]..." %
+              bgpvpn_obj['bgpvpn']['id'])
         # Update the BGPVPN object
         bgpvpn_obj = neutron.update_bgpvpn(
             bgpvpn_obj['bgpvpn']['id'], {'bgpvpn': {'name': "dummyBGPVPN"}})
         # List all BGPVPN objects
         list_bgpvpn_obj = neutron.list_bgpvpns()
-        print ("List of all BGPVPN object\t[%s]" % list_bgpvpn_obj)
+        print("List of all BGPVPN object\t[%s]" % list_bgpvpn_obj)
         # List of all BGPVPN objects filtered on the type parameter set to l3
         # value
         list_bgpvpn_obj = neutron.list_bgpvpns(type='l3')
-        print ("List of all BGPVPN object with type=l3\t[%s]" %
-               list_bgpvpn_obj)
+        print("List of all BGPVPN object with type=l3\t[%s]" %
+              list_bgpvpn_obj)
 
         # Creation of a BGPVPN Network association.
-        print ("\nBGPVPN Network Association object handling.")
+        print("\nBGPVPN Network Association object handling.")
         # Creation of a Network Association bound on the created BGPVPN object
         bgpvpn_net_assoc_obj = neutron.create_network_association(
             bgpvpn_obj['bgpvpn']['id'],
             {'network_association':
                 {'network_id':
                     net_obj['network']['id']}})
-        print ("BGPVPN Network Association created\t"
-               "[network_association:%s]..." %
-               bgpvpn_net_assoc_obj['network_association']['id'])
+        print("BGPVPN Network Association created\t"
+              "[network_association:%s]..." %
+              bgpvpn_net_assoc_obj['network_association']['id'])
         # List all NETWORK ASSOCIATION object filtered on the network created
         # above
         list_bgpvpn_net_assoc_obj = neutron.list_network_associations(
             bgpvpn_obj['bgpvpn']['id'],
             network_id=net_obj['network']['id'])
-        print ("List of NETWORK ASSOCIATION objects using network_id"
-               "[%s]\t[%s]" %
-               (net_obj['network']['id'], list_bgpvpn_net_assoc_obj))
+        print("List of NETWORK ASSOCIATION objects using network_id"
+              "[%s]\t[%s]" %
+              (net_obj['network']['id'], list_bgpvpn_net_assoc_obj))
 
         # Deletion of all objects created in this example
 
-        print ("\nDeletion of all created objects")
+        print("\nDeletion of all created objects")
         # First declared associations related of the created BGPVPN object in
         # this example
         neutron.delete_network_association(
@@ -127,10 +127,10 @@ def main():
         # And finally the Network
         neutron.delete_network(net_obj['network']['id'])
     except Exception as e:
-        print ("[ERROR][%s]" % str(e))
+        print("[ERROR][%s]" % str(e))
         sys.exit(1)
 
-    print ("[Done]")
+    print("[Done]")
 
 if __name__ == '__main__':
         main()
