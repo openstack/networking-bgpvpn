@@ -220,10 +220,10 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
         try:
             bgpvpn = json.loads(oc_client.kv_store('RETRIEVE', key=id))
         except (oc_exc.OpenContrailAPINotFound, ValueError):
-            raise bgpvpn.BGPVPNNotFound(id=id)
+            raise bgpvpn_ext.BGPVPNNotFound(id=id)
 
         if (not isinstance(bgpvpn, dict) or 'bgpvpn' not in bgpvpn):
-            raise bgpvpn.BGPVPNNotFound(id=id)
+            raise bgpvpn_ext.BGPVPNNotFound(id=id)
 
         bgpvpn = bgpvpn['bgpvpn']
         if not fields or 'networks' in fields:
@@ -330,7 +330,7 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
                           'export_targets']
             bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'],
                                      fields=get_fields)
-        except bgpvpn.BGPVPNNotFound:
+        except bgpvpn_ext.BGPVPNNotFound:
             raise bgpvpn_ext.BGPVPNNetAssocNotFound(id=assoc_id,
                                                     bgpvpn_id=bgpvpn_id)
 
