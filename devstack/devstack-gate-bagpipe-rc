@@ -20,4 +20,6 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 # helpers from neutron devstack plugin
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
 
+# attempt at unbreaking runs on osic-cloud1
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"SUBNETPOOL_PREFIX_V4=11.0.0.0/16"
 
