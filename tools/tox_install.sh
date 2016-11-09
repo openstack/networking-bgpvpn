@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Many of neutron's repos suffer from the problem of depending on neutron,
 # but it not existing on pypi.
@@ -27,10 +27,13 @@ install_project() {
         echo "ALREADY INSTALLED" > /tmp/tox_install.txt
         echo "$project already installed; using existing package"
     elif [ -x "$ZUUL_CLONER" ]; then
-        export ZUUL_BRANCH=${ZUUL_BRANCH-$BRANCH}
         echo "ZUUL CLONER" > /tmp/tox_install.txt
-        cwd=$(/bin/pwd)
-        cd /tmp
+        # Make this relative to current working directory so that
+        # git clean can remove it. We cannot remove the directory directly
+        # since it is referenced after $install_cmd -e
+        mkdir -p .tmp
+        PROJECT_DIR=$(/bin/mktemp -d -p $(pwd)/.tmp)
+        pushd $PROJECT_DIR
         $ZUUL_CLONER --cache-dir \
             /opt/git \
             --branch $BRANCH_NAME \
@@ -38,7 +41,7 @@ install_project() {
             openstack/$project
         cd openstack/$project
         $install_cmd -e .
-        cd "$cwd"
+        popd
     else
         echo "PIP HARDCODE" > /tmp/tox_install.txt
         if [ -z "$PIP_LOCATION" ]; then
