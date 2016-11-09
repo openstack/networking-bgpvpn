@@ -55,6 +55,7 @@ shift
 
 install_project neutron
 install_project horizon
+install_project networking-bagpipe
 
 $install_cmd -U $*
 exit $?
