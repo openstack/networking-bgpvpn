@@ -20,6 +20,7 @@ from neutron.db import servicetype_db as st_db
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
@@ -46,11 +47,11 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
         # service_provider definitions:
         service_type_manager = st_db.ServiceTypeManager.get_instance()
         service_type_manager.add_provider_configuration(
-            constants.BGPVPN,
+            bgpvpn_def.LABEL,
             pconf.ProviderConfiguration('networking_bgpvpn'))
 
         # Load the default driver
-        drivers, default_provider = service_base.load_drivers(constants.BGPVPN,
+        drivers, default_provider = service_base.load_drivers(bgpvpn_def.LABEL,
                                                               self)
         LOG.info(_LI("BGP VPN Service Plugin using Service Driver: %s"),
                  default_provider)
@@ -143,7 +144,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
                     raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def get_plugin_type(self):
-        return constants.BGPVPN
+        return bgpvpn_def.LABEL
 
     def get_plugin_description(self):
         return "Neutron BGPVPN Service Plugin"

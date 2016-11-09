@@ -22,7 +22,7 @@ from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
 from neutron.plugins.common import constants as n_const
 
-from neutron_lib import api
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api import extensions as api_extensions
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
@@ -33,13 +33,12 @@ from oslo_log import log
 from networking_bgpvpn._i18n import _
 
 from networking_bgpvpn.neutron import extensions as bgpvpn_ext
-from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
-n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = constants.BGPVPN
+n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = bgpvpn_def.LABEL
 
 
 class BGPVPNNotFound(n_exc.NotFound):
@@ -100,125 +99,6 @@ class BGPVPNDriverError(n_exc.NeutronException):
     message = _("%(method)s failed.")
 
 
-def _validate_rt_list(data, valid_values=None):
-    if data is None or data is "":
-        return
-
-    if not isinstance(data, list):
-        msg = _("'%s' is not a list") % data
-        LOG.debug(msg)
-        return msg
-
-    for item in data:
-        msg = api.validators.validate_regex(item, constants.RT_REGEX)
-        if msg:
-            LOG.debug(msg)
-            return msg
-
-    if len(set(data)) != len(data):
-        msg = _("Duplicate items in the list: '%s'") % ', '.join(data)
-        LOG.debug(msg)
-        return msg
-
-api.validators.add_validator('type:route_target_list', _validate_rt_list)
-
-RESOURCE_ATTRIBUTE_MAP = {
-    constants.BGPVPN_RES: {
-        'id': {'allow_post': False, 'allow_put': False,
-               'validate': {'type:uuid': None},
-               'is_visible': True,
-               'primary_key': True,
-               'enforce_policy': True},
-        'tenant_id': {'allow_post': True, 'allow_put': False,
-                      'validate': {'type:string': None},
-                      'required_by_policy': True,
-                      'is_visible': True,
-                      'enforce_policy': True},
-        'name': {'allow_post': True, 'allow_put': True,
-                 'default': '',
-                 'validate': {'type:string': None},
-                 'is_visible': True,
-                 'enforce_policy': True},
-        'type': {'allow_post': True, 'allow_put': False,
-                 'default': constants.BGPVPN_L3,
-                 'validate': {'type:values': constants.BGPVPN_TYPES},
-                 'is_visible': True,
-                 'enforce_policy': True},
-        'route_targets': {'allow_post': True, 'allow_put': True,
-                          'default': [],
-                          'convert_to': api.converters.convert_to_list,
-                          'validate': {'type:route_target_list': None},
-                          'is_visible': True,
-                          'enforce_policy': True},
-        'import_targets': {'allow_post': True, 'allow_put': True,
-                           'default': [],
-                           'convert_to': api.converters.convert_to_list,
-                           'validate': {'type:route_target_list': None},
-                           'is_visible': True,
-                           'enforce_policy': True},
-        'export_targets': {'allow_post': True, 'allow_put': True,
-                           'default': [],
-                           'convert_to': api.converters.convert_to_list,
-                           'validate': {'type:route_target_list': None},
-                           'is_visible': True,
-                           'enforce_policy': True},
-        'route_distinguishers': {'allow_post': True, 'allow_put': True,
-                                 'default': [],
-                                 'convert_to': api.converters.convert_to_list,
-                                 'validate': {'type:route_target_list': None},
-                                 'is_visible': True,
-                                 'enforce_policy': True},
-        'networks': {'allow_post': False, 'allow_put': False,
-                     'is_visible': True,
-                     'enforce_policy': True},
-        'routers': {'allow_post': False, 'allow_put': False,
-                    'is_visible': True,
-                    'enforce_policy': True}
-    },
-}
-
-SUB_RESOURCE_ATTRIBUTE_MAP = {
-    'network_associations': {
-        'parent': {'collection_name': 'bgpvpns',
-                   'member_name': 'bgpvpn'},
-        'parameters': {
-            'id': {'allow_post': False, 'allow_put': False,
-                   'validate': {'type:uuid': None},
-                   'is_visible': True,
-                   'primary_key': True},
-            'tenant_id': {'allow_post': True, 'allow_put': False,
-                          'validate': {'type:string': None},
-                          'required_by_policy': True,
-                          'is_visible': True,
-                          'enforce_policy': True},
-            'network_id': {'allow_post': True, 'allow_put': False,
-                           'validate': {'type:uuid': None},
-                           'is_visible': True,
-                           'enforce_policy': True}
-        }
-    },
-    'router_associations': {
-        'parent': {'collection_name': 'bgpvpns',
-                   'member_name': 'bgpvpn'},
-        'parameters': {
-            'id': {'allow_post': False, 'allow_put': False,
-                   'validate': {'type:uuid': None},
-                   'is_visible': True,
-                   'primary_key': True},
-            'tenant_id': {'allow_post': True, 'allow_put': False,
-                          'validate': {'type:string': None},
-                          'required_by_policy': True,
-                          'is_visible': True,
-                          'enforce_policy': True},
-            'router_id': {'allow_post': True, 'allow_put': False,
-                          'validate': {'type:uuid': None},
-                          'is_visible': True,
-                          'enforce_policy': True}
-        }
-    }
-}
-
-
 class Bgpvpn(api_extensions.ExtensionDescriptor):
 
     @classmethod
@@ -240,20 +120,22 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
     @classmethod
     def get_resources(cls):
         plural_mappings = resource_helper.build_plural_mappings(
-            {}, RESOURCE_ATTRIBUTE_MAP)
-        resources = resource_helper.build_resource_info(plural_mappings,
-                                                        RESOURCE_ATTRIBUTE_MAP,
-                                                        constants.BGPVPN,
-                                                        register_quota=True,
-                                                        translate_name=True)
-        plugin = directory.get_plugin(constants.BGPVPN)
-        for collection_name in SUB_RESOURCE_ATTRIBUTE_MAP:
+            {}, bgpvpn_def.RESOURCE_ATTRIBUTE_MAP)
+        resources = resource_helper.build_resource_info(
+            plural_mappings,
+            bgpvpn_def.RESOURCE_ATTRIBUTE_MAP,
+            bgpvpn_def.LABEL,
+            register_quota=True,
+            translate_name=True)
+        plugin = directory.get_plugin(bgpvpn_def.LABEL)
+        for collection_name in bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP:
             # Special handling needed for sub-resources with 'y' ending
             # (e.g. proxies -> proxy)
             resource_name = collection_name[:-1]
-            parent = SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].get('parent')
-            params = SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].get(
-                'parameters')
+            parent = bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].\
+                get('parent')
+            params = bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].\
+                get('parameters')
 
             controller = base.create_resource(collection_name, resource_name,
                                               plugin, params,
@@ -276,11 +158,11 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
 
     def update_attributes_map(self, attributes):
         super(Bgpvpn, self).update_attributes_map(
-            attributes, extension_attrs_map=RESOURCE_ATTRIBUTE_MAP)
+            attributes, extension_attrs_map=bgpvpn_def.RESOURCE_ATTRIBUTE_MAP)
 
     def get_extended_resources(self, version):
         if version == "2.0":
-            return RESOURCE_ATTRIBUTE_MAP
+            return bgpvpn_def.RESOURCE_ATTRIBUTE_MAP
         else:
             return {}
 
@@ -289,10 +171,10 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
 class BGPVPNPluginBase(libbase.ServicePluginBase):
 
     def get_plugin_name(self):
-        return constants.BGPVPN
+        return bgpvpn_def.LABEL
 
     def get_plugin_type(self):
-        return constants.BGPVPN
+        return bgpvpn_def.LABEL
 
     def get_plugin_description(self):
         return 'BGP VPN service plugin'
