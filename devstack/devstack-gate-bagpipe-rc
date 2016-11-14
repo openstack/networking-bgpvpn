@@ -1,6 +1,6 @@
 # This file is hooked from https://github.com/openstack-infra/project-config/blob/master/jenkins/jobs/networking-bgpvpn.yaml
 
-export OVERRIDE_ENABLED_SERVICES=q-svc,q-agt,q-dhcp,q-l3,key,mysql,rabbit,b-bgp
+export OVERRIDE_ENABLED_SERVICES=n-api,n-crt,n-cpu,n-cond,n-sch,q-svc,q-agt,g-api,g-reg,q-dhcp,q-l3,q-meta,key,mysql,rabbit,b-bgp
 
 if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
     export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
@@ -11,6 +11,8 @@ fi
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver"
+# until we do multinode, there is no BGP peer to connect to
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_BGP_PEERS="
 
 # https://bugs.launchpad.net/devstack/+bug/1567052
 # so we need VERBOSE=False until bagpipe-bgp uses rootwrap and is not run with sudo (same for bagpipe-fakerr)
@@ -21,5 +23,5 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
 
 # attempt at unbreaking runs on osic-cloud1
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"SUBNETPOOL_PREFIX_V4=11.0.0.0/16"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"SUBNETPOOL_PREFIX_V4=10.100.0.0/16"
 
