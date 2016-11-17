@@ -18,9 +18,8 @@ import copy
 import mock
 import webob.exc
 
+from neutron_lib.plugins import directory
 from oslo_utils import uuidutils
-
-from neutron import manager
 
 from neutron.api import extensions as api_extensions
 from neutron.db import servicetype_db as sdb
@@ -88,8 +87,7 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         # find the BGPVPN plugin that was instantiated by the
         # extension manager:
-        self.bgpvpn_plugin = (manager.NeutronManager.get_service_plugins()
-                              [constants.BGPVPN])
+        self.bgpvpn_plugin = directory.get_plugin(constants.BGPVPN)
 
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
