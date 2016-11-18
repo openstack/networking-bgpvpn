@@ -14,11 +14,11 @@
 #    under the License.
 
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
+from oslo_utils import uuidutils
 from tempest.common.utils import data_utils
 from tempest.lib import exceptions
 from tempest import test
 from testtools import ExpectedException
-import uuid
 
 
 class BgpvpnTest(base):
@@ -222,10 +222,10 @@ class BgpvpnTest(base):
         network = self.networks_client.create_network()
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.create_network_association,
-                          bgpvpn['bgpvpn']['id'], uuid.uuid4())
+                          bgpvpn['bgpvpn']['id'], uuidutils.generate_uuid())
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.create_network_association,
-                          uuid.uuid4(),
+                          uuidutils.generate_uuid(),
                           network['network']['id'])
 
     @test.attr(type=['negative'])
@@ -248,10 +248,10 @@ class BgpvpnTest(base):
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.delete_network_association,
                           bgpvpn['bgpvpn']['id'],
-                          uuid.uuid4())
+                          uuidutils.generate_uuid())
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_client.delete_network_association,
-                          uuid.uuid4(),
+                          uuidutils.generate_uuid(),
                           association['network_association']['id'])
 
     def test_associate_disassociate_router(self):
