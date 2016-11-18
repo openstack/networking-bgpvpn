@@ -204,7 +204,7 @@ class DeleteBgpvpn(command.Command):
             try:
                 id = client.find_resource(resource, id_or_name)['id']
                 client.delete_ext(resource_path, id)
-                LOG.warn(_LW("BGP VPN %(id)s deleted"), {'id': id})
+                LOG.warning(_LW("BGP VPN %(id)s deleted"), {'id': id})
             except Exception as e:
                 fails += 1
                 LOG.error(_LE("Failed to delete BGP VPN with name or ID "

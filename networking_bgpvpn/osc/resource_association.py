@@ -145,9 +145,10 @@ class DeleteBgpvpnResAssoc(command.Command):
         for id in parsed_args.resource_associations:
             try:
                 client.delete_ext(self._resource_path % bgpvpn['id'], id)
-                LOG.warn(_LW("%(assoc_res_name)s association %(id)s deleted"),
-                         {'assoc_res_name': self._assoc_res_name.capitalize(),
-                          'id': id})
+                LOG.warning(
+                    _LW("%(assoc_res_name)s association %(id)s deleted"),
+                    {'assoc_res_name': self._assoc_res_name.capitalize(),
+                     'id': id})
             except Exception as e:
                 fails += 1
                 LOG.error(_LE("Failed to delete %(assoc_res_name)s "
