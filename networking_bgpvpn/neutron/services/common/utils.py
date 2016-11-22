@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-
 
 def rtrd_list2str(list):
     """Format Route Target list to string"""
@@ -41,7 +39,7 @@ def rtrd_str2list(str):
 def filter_resource(resource, filters=None):
     if not filters:
         filters = {}
-    for key, value in six.iteritems(filters):
+    for key, value in filters.items():
         if key in resource.keys():
             if isinstance(value, list):
                 if resource[key] not in value:

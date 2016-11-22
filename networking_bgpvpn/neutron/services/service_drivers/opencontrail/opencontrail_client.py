@@ -20,7 +20,6 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 import requests
-import six
 from six.moves import http_client as httplib
 from six.moves.urllib import parse as urlparse
 
@@ -190,7 +189,7 @@ class RequestHandler(object):
 
         curl_command.append('"%s" ' % url)
 
-        for name, value in six.iteritems(req_params['headers']):
+        for name, value in req_params['headers'].items():
             curl_command.append('-H "%s: %s" ' % (name, value))
 
         if ('data' in req_params.keys()
@@ -207,7 +206,7 @@ class RequestHandler(object):
                                                       resp.status_code,
                                                       resp.reason)]
             dump.extend('%s: %s\n' % (k, v)
-                        for k, v in six.iteritems(resp.headers))
+                        for k, v in (resp.headers).items())
             dump.append('\n')
             if resp.content:
                 dump.extend([resp.content, '\n'])
