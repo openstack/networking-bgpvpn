@@ -17,13 +17,12 @@ from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
 from neutron.db import servicetype_db as st_db
-from neutron import manager
-from neutron.plugins.common import constants as plugin_constants
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
+from neutron_lib.plugins import directory
 
 from oslo_log import log
 
@@ -84,7 +83,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
             raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def _validate_network(self, context, net_id):
-        plugin = manager.NeutronManager.get_plugin()
+        plugin = directory.get_plugin()
         network = plugin.get_network(context, net_id)
         self._validate_network_has_router_assoc(context, network, plugin)
         return network
@@ -108,10 +107,9 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
                 raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def _validate_router(self, context, router_id):
-        l3_plugin = manager.NeutronManager.get_service_plugins().get(
-            plugin_constants.L3_ROUTER_NAT)
+        l3_plugin = directory.get_plugin(const.L3)
         router = l3_plugin.get_router(context, router_id)
-        plugin = manager.NeutronManager.get_plugin()
+        plugin = directory.get_plugin()
         self._validate_router_has_net_assocs(context, router, plugin)
         return router
 

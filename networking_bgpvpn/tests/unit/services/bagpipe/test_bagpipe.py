@@ -25,7 +25,6 @@ from neutron.debug import debug_agent
 
 from neutron.extensions import portbindings
 
-from neutron import manager
 from neutron.plugins.ml2 import config as ml2_config
 from neutron.plugins.ml2.drivers.openvswitch.agent.common \
     import constants as ovs_agt_constants
@@ -39,6 +38,7 @@ from neutron.tests.unit.plugins.ml2.drivers.openvswitch.agent \
     import ovs_test_base
 
 from neutron_lib import constants as const
+from neutron_lib.plugins import directory
 
 from networking_bgpvpn.neutron.services.service_drivers.bagpipe import \
     agent_extension as bagpipe_agt_ext
@@ -306,7 +306,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
         super(TestBagpipeServiceDriverCallbacks, self).setUp(self._plugin_name)
 
         self.port_create_status = 'DOWN'
-        self.plugin = manager.NeutronManager.get_plugin()
+        self.plugin = directory.get_plugin()
         self.plugin.start_rpc_listeners()
 
         self.bagpipe_driver = self.bgpvpn_plugin.driver
