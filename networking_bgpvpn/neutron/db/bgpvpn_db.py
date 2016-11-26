@@ -20,9 +20,9 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
-from neutron.api.v2 import attributes as attr
 from neutron.db import common_db_mixin
 
+from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
 
 from networking_bgpvpn._i18n import _LI
@@ -35,7 +35,8 @@ LOG = log.getLogger(__name__)
 
 class HasProjectNotNullable(model_base.HasProject):
 
-    project_id = sa.Column(sa.String(attr.TENANT_ID_MAX_LEN), index=True,
+    project_id = sa.Column(sa.String(db_const.PROJECT_ID_FIELD_SIZE),
+                           index=True,
                            nullable=False)
 
 
