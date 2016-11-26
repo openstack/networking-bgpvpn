@@ -24,6 +24,7 @@ from neutron.plugins.common import constants as n_const
 from neutron.services.service_base import ServicePluginBase
 
 from neutron_lib import api
+from neutron_lib.api import extensions as api_extensions
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
 
@@ -218,7 +219,7 @@ SUB_RESOURCE_ATTRIBUTE_MAP = {
 }
 
 
-class Bgpvpn(extensions.ExtensionDescriptor):
+class Bgpvpn(api_extensions.ExtensionDescriptor):
 
     @classmethod
     def get_name(cls):
