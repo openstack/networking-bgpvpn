@@ -17,7 +17,7 @@ elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
         echo "networking-bagpipe: you don't need to set Q_AGENT=bagpipe-openvswitch anymore"
         Q_AGENT=openvswitch``
     fi
-elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
+elif [[ "$1" == "stack" && "$2" == "test-config" ]]; then
     if is_service_enabled tempest; then
         echo_summary "Enabling bgpvpn in $TEMPEST_CONFIG"
         iniset $TEMPEST_CONFIG service_available bgpvpn "True"
