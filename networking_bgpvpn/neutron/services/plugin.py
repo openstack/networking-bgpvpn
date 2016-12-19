@@ -27,6 +27,7 @@ from neutron_lib.plugins import directory
 from oslo_log import log
 
 from networking_bgpvpn._i18n import _LI
+from networking_bgpvpn._i18n import _LW
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
 from networking_bgpvpn.neutron.services.common import constants
@@ -56,7 +57,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
         self.driver = drivers[default_provider]
 
         if len(drivers) > 1:
-            LOG.warning(_LI("Multiple drivers configured for BGPVPN, although"
+            LOG.warning(_LW("Multiple drivers configured for BGPVPN, although"
                             "running multiple drivers in parallel is not yet"
                             "supported"))
         registry.subscribe(self._notify_adding_interface_to_router,
