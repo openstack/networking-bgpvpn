@@ -14,6 +14,7 @@ dsvm-bagpipe-functional*|dsvm-functional*)
     IS_GATE=True
     source "$GATE_DEST"/neutron/tools/configure_for_func_testing.sh
     configure_host_for_func_testing
+    sudo chown -R stack:stack /opt/stack
     ;;
 *)
     $GATE_DEST/devstack-gate/devstack-vm-gate.sh
