@@ -80,6 +80,14 @@ def make_net_assoc_dict(id, tenant_id, bgpvpn_id, network_id, fields=None):
     return filter_fields(res, fields)
 
 
+def make_router_assoc_dict(id, tenant_id, bgpvpn_id, router_id, fields=None):
+    res = {'id': id,
+           'tenant_id': tenant_id,
+           'bgpvpn_id': bgpvpn_id,
+           'router_id': router_id}
+    return filter_fields(res, fields)
+
+
 def get_bgpvpn_differences(current_dict, old_dict):
     """Compare 2 BGP VPN
 
