@@ -12,7 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from neutron import context
+
+from neutron_lib import context
 
 from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
 from networking_bgpvpn.neutron.extensions.bgpvpn \
