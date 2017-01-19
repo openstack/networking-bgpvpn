@@ -23,8 +23,6 @@ from neutron import context as n_context
 
 from neutron.debug import debug_agent
 
-from neutron.extensions import portbindings
-
 from neutron.plugins.ml2 import config as ml2_config
 from neutron.plugins.ml2.drivers.openvswitch.agent.common \
     import constants as ovs_agt_constants
@@ -37,6 +35,7 @@ from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2.drivers.openvswitch.agent \
     import ovs_test_base
 
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as const
 from neutron_lib.plugins import directory
 

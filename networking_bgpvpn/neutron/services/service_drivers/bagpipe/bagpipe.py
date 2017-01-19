@@ -23,8 +23,8 @@ from neutron.db import external_net_db
 from neutron.db import l3_db
 from neutron.db import models_v2
 from neutron.debug import debug_agent
-from neutron.extensions import portbindings
 
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
 
