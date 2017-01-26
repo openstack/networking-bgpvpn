@@ -47,7 +47,8 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             bgpvpn.Bgpvpn,
             BGPVPN_PREFIX,
             plural_mappings=plural_mappings,
-            translate_resource_name=True)
+            translate_resource_name=True,
+            use_quota=True)
         self.instance = self.plugin.return_value
         self.bgpvpn_id = _uuid()
         self.net_id = _uuid()
