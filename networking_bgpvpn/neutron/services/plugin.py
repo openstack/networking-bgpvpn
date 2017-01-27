@@ -70,12 +70,21 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
         network_id = kwargs.get('network_id')
         router_id = kwargs.get('router_id')
         try:
-            routers_bgpvpns = self.driver.find_bgpvpns_for_router(context,
-                                                                  router_id)
+            routers_bgpvpns = self.driver.get_bgpvpns(
+                context,
+                filters={
+                    'routers': [router_id],
+                },
+            )
         except bgpvpn.BGPVPNRouterAssociationNotSupported:
             return
-        nets_bgpvpns = self.driver.find_bgpvpns_for_network(
-            context, network_id, bgpvpn_type=constants.BGPVPN_L3)
+        nets_bgpvpns = self.driver.get_bgpvpns(
+            context,
+            filters={
+                'networks': [network_id],
+                'type': [constants.BGPVPN_L3],
+            },
+        )
 
         if routers_bgpvpns and nets_bgpvpns:
             msg = _('It is not allowed to add an interface to a router if '

@@ -41,10 +41,13 @@ def filter_resource(resource, filters=None):
         filters = {}
     for key, value in filters.items():
         if key in resource.keys():
-            if isinstance(value, list):
-                if resource[key] not in value:
-                    return False
-            elif resource[key] != value:
+            if not isinstance(value, list):
+                value = [value]
+            if isinstance(resource[key], list):
+                resource_value = resource[key]
+            else:
+                resource_value = [resource[key]]
+            if not set(value).issubset(set(resource_value)):
                 return False
     return True
 
