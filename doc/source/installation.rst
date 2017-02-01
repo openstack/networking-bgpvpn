@@ -2,11 +2,27 @@
 Installation
 ============
 
-The details related to how a package should be installed may depend on your environment.
+The details related to how a package should be installed may depend on your
+environment.
 
-If you use pip, the following will install the networking-bgpvpn package:::
+If possible, you should rely on packages provided by your Linux and/or
+Openstack distribution.
 
-    $ pip install networking-bgpvpn
+If you use ``pip``, follow these steps to install networking-bgpvpn:
+
+    * identify the version of the networking-bgpvpn package that matches
+      your Openstack version:
+
+      * Newton: most recent of 5.0.x
+      * Mitaka: most recent of 4.0.x
+      * Liberty: most recent of 3.0.x
+      * (see `<http://git.openstack.org/cgit/openstack/releases/tree/deliverables/_independent/networking-bgpvpn.yaml>`_)
+
+    * indicate pip to (a) install precisely this version and (b) take into
+      account Openstack upper constraints on package versions for dependencies
+      (example for newton)::
+
+          $ pip install -c  https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=stable/newton networking-bgpvpn=5.0.0
 
 =============
 Configuration
