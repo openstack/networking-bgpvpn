@@ -71,10 +71,6 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def find_bgpvpns_for_network(self, context, network_id, bgpvpn_type=None):
-        pass
-
-    @abc.abstractmethod
     def create_router_assoc(self, context, bgpvpn_id, router_association):
         pass
 
@@ -88,10 +84,6 @@ class BGPVPNDriverBase(object):
 
     @abc.abstractmethod
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        pass
-
-    @abc.abstractmethod
-    def find_bgpvpns_for_router(self, context, router_id):
         pass
 
 
@@ -158,10 +150,6 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                     bgpvpn_id)
         self.delete_net_assoc_postcommit(context, net_assoc)
 
-    def find_bgpvpns_for_network(self, context, network_id, bgpvpn_type=None):
-        return self.bgpvpn_db.find_bgpvpns_for_network(
-            context, network_id, bgpvpn_type)
-
     def create_router_assoc(self, context, bgpvpn_id, router_association):
         with context.session.begin(subtransactions=True):
             assoc = self.bgpvpn_db.create_router_assoc(context, bgpvpn_id,
@@ -183,9 +171,6 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                           assoc_id,
                                                           bgpvpn_id)
         self.delete_router_assoc_postcommit(context, router_assoc)
-
-    def find_bgpvpns_for_router(self, context, router_id):
-        return self.bgpvpn_db.find_bgpvpns_for_router(context, router_id)
 
     @abc.abstractmethod
     def create_bgpvpn_postcommit(self, context, bgpvpn):

@@ -1,0 +1,4 @@
+---
+features:
+  - The API now supports filtering BGPVPN resources based
+    on the networks or routers they are associated with.

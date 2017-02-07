@@ -74,8 +74,12 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
 
     def create_net_assoc_precommit(self, context, net_assoc):
-        bgpvpns = self.bgpvpn_db.find_bgpvpns_for_network(
-            context, net_assoc['network_id'])
+        bgpvpns = self.bgpvpn_db.get_bgpvpns(
+            context,
+            filters={
+                'networks': [net_assoc['network_id']],
+            },
+        )
         if len(bgpvpns) > 1:
             raise bgpvpn_ext.BGPVPNNetworkAssocExistsAnotherBgpvpn(
                 driver=OPENDAYLIGHT_BGPVPN_DRIVER_NAME,

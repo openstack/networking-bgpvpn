@@ -23,6 +23,10 @@ from networking_bgpvpn.neutron.services.common import constants
 from networking_bgpvpn.tests.unit.services import test_plugin
 
 
+def _id_list(list):
+    return [bgpvpn['id'] for bgpvpn in list]
+
+
 class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
     def setUp(self):
@@ -113,10 +117,12 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual([], bgpvpn2['route_distinguishers'])
 
             # find bgpvpn by network_id
-            bgpvpn3 = self.plugin_db.find_bgpvpns_for_network(
+            bgpvpn3 = self.plugin_db.get_bgpvpns(
                 self.ctx,
-                net['network']['id']
-                )
+                filters={
+                    'networks': [net['network']['id']],
+                },
+            )
             self.assertEqual(1, len(bgpvpn3))
             self.assertEqual(bgpvpn2['id'], bgpvpn3[0]['id'])
 
@@ -201,7 +207,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                                   id, {'tenant_id': self._tenant_id,
                                        'network_id': net_id})
 
-    def test_db_find_bgpvpn_for_net(self):
+    def test_db_find_bgpvpn_for_associated_network(self):
         with self.network() as net, \
                 self.bgpvpn(type=constants.BGPVPN_L2) as bgpvpn_l2, \
                 self.bgpvpn() as bgpvpn_l3, \
@@ -211,25 +217,36 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                                net['network']['id']):
             net_id = net['network']['id']
 
-            def _id_list(list):
-                return [bgpvpn['id'] for bgpvpn in list]
-
             bgpvpn_id_list = _id_list(
-                self.plugin_db.find_bgpvpns_for_network(self.ctx, net_id))
-            self.assertIn(bgpvpn_l2['bgpvpn']['id'],
-                          bgpvpn_id_list)
-            self.assertIn(bgpvpn_l3['bgpvpn']['id'],
-                          bgpvpn_id_list)
-            bgpvpn_l2_id_list = _id_list(
-                self.plugin_db.find_bgpvpns_for_network(
-                    self.ctx, net_id, bgpvpn_type=constants.BGPVPN_L2))
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={'networks': [net_id]},
+                )
+            )
+            self.assertIn(bgpvpn_l2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn_l3['bgpvpn']['id'], bgpvpn_id_list)
 
+            bgpvpn_l2_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [net_id],
+                        'type': [constants.BGPVPN_L2],
+                    },
+                )
+            )
             self.assertIn(bgpvpn_l2['bgpvpn']['id'], bgpvpn_l2_id_list)
             self.assertNotIn(bgpvpn_l3['bgpvpn']['id'], bgpvpn_l2_id_list)
 
             bgpvpn_l3_id_list = _id_list(
-                self.plugin_db.find_bgpvpns_for_network(
-                    self.ctx, net_id, bgpvpn_type=constants.BGPVPN_L3))
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [net_id],
+                        'type': [constants.BGPVPN_L3],
+                    },
+                )
+            )
             self.assertNotIn(bgpvpn_l2['bgpvpn']['id'], bgpvpn_l3_id_list[0])
             self.assertIn(bgpvpn_l3['bgpvpn']['id'], bgpvpn_l3_id_list[0])
 
@@ -253,14 +270,16 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, id)
                 self.assertEqual([], bgpvpn['routers'])
 
-    def test_db_find_bgpvpn_for_router(self):
+    def test_db_find_bgpvpn_for_associated_router(self):
         with self.router(tenant_id=self._tenant_id) as router:
             router_id = router['router']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 with self.assoc_router(id, router_id=router_id):
-                    bgpvpn_list = self.plugin_db.\
-                        find_bgpvpns_for_router(self.ctx, router_id)
+                    bgpvpn_list = self.plugin_db.get_bgpvpns(
+                        self.ctx,
+                        filters={'routers': [router_id]},
+                    )
                     self.assertEqual(id, bgpvpn_list[0]['id'])
 
     def test_db_delete_router(self):
@@ -272,3 +291,98 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                                   do_disassociate=False)
             bgpvpn_db = self.plugin_db.get_bgpvpn(self.ctx, id)
             self.assertEqual([], bgpvpn_db['routers'])
+
+    def test_db_list_bgpvpn_filtering_associated_resources(self):
+        with self.network() as network1, \
+                self.network() as network2, \
+                self.router(tenant_id=self._tenant_id) as router1, \
+                self.router(tenant_id=self._tenant_id) as router2, \
+                self.bgpvpn() as bgpvpn1, \
+                self.bgpvpn() as bgpvpn2, \
+                self.bgpvpn() as bgpvpn3, \
+                self.assoc_net(bgpvpn1['bgpvpn']['id'],
+                               network1['network']['id']), \
+                self.assoc_router(bgpvpn3['bgpvpn']['id'],
+                                  router1['router']['id']), \
+                self.assoc_net(bgpvpn2['bgpvpn']['id'],
+                               network2['network']['id']), \
+                self.assoc_router(bgpvpn2['bgpvpn']['id'],
+                                  router2['router']['id']):
+            network1_id = network1['network']['id']
+            network2_id = network2['network']['id']
+            router1_id = router1['router']['id']
+            router2_id = router2['router']['id']
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [network1_id],
+                    },
+                )
+            )
+            self.assertIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [network1_id, network2_id],
+                    },
+                )
+            )
+            self.assertIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'routers': [router1_id],
+                    },
+                )
+            )
+            self.assertNotIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'routers': [router1_id, router2_id],
+                    },
+                )
+            )
+            self.assertNotIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [network1_id],
+                        'routers': [router1_id],
+                    },
+                )
+            )
+            self.assertNotIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+            bgpvpn_id_list = _id_list(
+                self.plugin_db.get_bgpvpns(
+                    self.ctx,
+                    filters={
+                        'networks': [network2_id],
+                        'routers': [router2_id],
+                    },
+                )
+            )
+            self.assertNotIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
+            self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)

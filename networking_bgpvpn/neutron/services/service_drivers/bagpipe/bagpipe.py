@@ -271,9 +271,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
 
     def _bgpvpns_for_network(self, context, network_id):
         return (
-            self.bgpvpn_db.find_bgpvpns_for_network(context, network_id)
-            or self.retrieve_bgpvpns_of_router_assocs_by_network(context,
-                                                                 network_id)
+            self.bgpvpn_db.get_bgpvpns(
+                context,
+                filters={
+                    'networks': [network_id],
+                },
+            ) or self.retrieve_bgpvpns_of_router_assocs_by_network(context,
+                                                                   network_id)
         )
 
     def _retrieve_bgpvpn_network_info_for_port(self, context, port):

@@ -132,6 +132,26 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         }
         return self._fields(res, fields)
 
+    def _list_bgpvpns_result_filter_hook(self, query, filters):
+        values = filters and filters.get('networks', [])
+        if values:
+            query = query.join(BGPVPNNetAssociation)
+            query = query.filter(BGPVPNNetAssociation.network_id.in_(values))
+
+        values = filters and filters.get('routers', [])
+        if values:
+            query = query.join(BGPVPNRouterAssociation)
+            query = query.filter(BGPVPNRouterAssociation.router_id.in_(values))
+
+        return query
+
+    common_db_mixin.CommonDbMixin.register_model_query_hook(
+        BGPVPN,
+        "bgpvpn_filter_by_resource_association",
+        None,
+        None,
+        '_list_bgpvpns_result_filter_hook')
+
     def create_bgpvpn(self, context, bgpvpn):
         rt = utils.rtrd_list2str(bgpvpn['route_targets'])
         i_rt = utils.rtrd_list2str(bgpvpn['import_targets'])
@@ -194,15 +214,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             context.session.delete(bgpvpn_db)
         return bgpvpn
 
-    def find_bgpvpns_for_network(self, context, network_id, bgpvpn_type=None):
-        # Note : we could use added backref in the network table
-        query = (context.session.query(BGPVPN).
-                 join(BGPVPNNetAssociation).
-                 filter(BGPVPNNetAssociation.network_id == network_id))
-        if bgpvpn_type is not None:
-            query = query.filter(BGPVPN.type == bgpvpn_type)
-        return [self._make_bgpvpn_dict(bgpvpn) for bgpvpn in query.all()]
-
     def _make_net_assoc_dict(self, net_assoc_db, fields=None):
         res = {'id': net_assoc_db['id'],
                'tenant_id': net_assoc_db['tenant_id'],
@@ -258,13 +269,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             net_assoc = self._make_net_assoc_dict(net_assoc_db)
             context.session.delete(net_assoc_db)
         return net_assoc
-
-    def find_bgpvpns_for_router(self, context, router_id):
-        query = (context.session.query(BGPVPN).
-                 join(BGPVPNRouterAssociation).
-                 filter(BGPVPNRouterAssociation.router_id == router_id))
-
-        return [self._make_bgpvpn_dict(bgpvpn) for bgpvpn in query.all()]
 
     def _make_router_assoc_dict(self, router_assoc_db, fields=None):
         res = {'id': router_assoc_db['id'],

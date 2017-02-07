@@ -406,12 +406,6 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
 
         return net_assoc
 
-    def find_bgpvpns_for_network(self, context, network_id, bgpvpn_type=None):
-        # TODO(matrohon) : get bgpvpns from the kv store
-        raise bgpvpn_ext.BGPVPNFindFromNetNotSupported(
-            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME,
-            net_id=network_id)
-
     def create_router_assoc(self, context, bgpvpn_id, router_association):
         raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
             driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
@@ -425,9 +419,5 @@ class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
             driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
-            driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
-
-    def find_bgpvpns_for_router(self, context, router_id):
         raise bgpvpn_ext.BGPVPNRouterAssociationNotSupported(
             driver=OPENCONTRAIL_BGPVPN_DRIVER_NAME)
