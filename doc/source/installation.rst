@@ -28,18 +28,24 @@ If you use ``pip``, follow these steps to install networking-bgpvpn:
 Configuration
 =============
 
-The service plugin is enabled in Neutron, by adding ``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin`` to the list
-of enabled service plugins in ``/etc/neutron/neutron.conf``. For instance::
+The service plugin is enabled in Neutron, by
+adding ``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin`` to the list
+of enabled service plugins in ``neutron.conf`` (typically in ``/etc/neutron/``
+but the location used may depend on your setup or packaging). For instance::
 
     service_plugins = networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin,neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
 
-The BGPVPN driver to use is then specified in ``/etc/neutron/networking_bgpvpn.conf``, for instance::
+The BGPVPN driver to use is then specified in the ``networking_bgpvpn.conf``
+file (located by default under ``/etc/neutron/``, but in any case in one of the
+directories specified with ``--config-dir`` at neutron startup, which may
+differ from ``/etc/neutron`` in your setup)::
 
     [service_providers]
     service_provider = BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
     #service_provider= BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default
 
-A given driver may require additional package to work; the driver section provides detailed installation information for each
+A given driver may require additional packages to work; the driver section
+provides detailed installation information for each
 specific driver.
 
 ==============
