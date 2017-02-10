@@ -47,17 +47,12 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
         self.client = odl_client.OpenDaylightRestClient.create_client()
 
-    def _scrub_rd_list(self, bgpvpn):
-        if len(bgpvpn['route_distinguishers']) > 1:
-            bgpvpn['route_distinguishers'] = bgpvpn['route_distinguishers'][0]
-
     def create_bgpvpn_precommit(self, context, bgpvpn):
         pass
 
     def create_bgpvpn_postcommit(self, context, bgpvpn):
         url = BGPVPNS
         try:
-            self._scrub_rd_list(bgpvpn)
             self.client.sendjson('post', url, {BGPVPNS[:-1]: bgpvpn})
         except requests.exceptions.RequestException:
             with excutils.save_and_reraise_exception():
@@ -89,7 +84,6 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     def create_net_assoc_postcommit(self, context, net_assoc):
         bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
         url = BGPVPNS + '/' + bgpvpn['id']
-        self._scrub_rd_list(bgpvpn)
         try:
             self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
         except requests.exceptions.RequestException:
@@ -115,7 +109,6 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     def create_router_assoc_postcommit(self, context, router_assoc):
         bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
         url = BGPVPNS + '/' + bgpvpn['id']
-        self._scrub_rd_list(bgpvpn)
         try:
             self.client.sendjson('put', url, {BGPVPNS[:-1]: bgpvpn})
         except requests.exceptions.RequestException:
