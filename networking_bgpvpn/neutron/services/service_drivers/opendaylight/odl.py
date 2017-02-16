@@ -22,6 +22,8 @@ from oslo_utils import excutils
 
 from networking_odl.common import client as odl_client
 
+from networking_bgpvpn._i18n import _LW
+
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
@@ -41,7 +43,10 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     """
 
     def __init__(self, service_plugin):
-        LOG.debug("Initializing OpenDaylight BGPVPN driver")
+        LOG.warning(_LW("This OpenDaylight BGPVPN driver has been deprecated"
+                        "and will be removed. Switch to new v2 Driver: "
+                        "BGPVPN:OpenDaylight:networking_odl.bgpvpn.odl_v2."
+                        "OpenDaylightBgpvpnDriver:default"))
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
         self.service_plugin = service_plugin
 
