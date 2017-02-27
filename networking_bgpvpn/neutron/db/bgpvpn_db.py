@@ -264,7 +264,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         LOG.info(_LI("deleting network association %(id)s for "
                      "BGPVPN %(bgpvpn)s"), {'id': assoc_id,
                                             'bgpvpn': bgpvpn_id})
-        with context.session.begin():
+        with context.session.begin(subtransactions=True):
             net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
             net_assoc = self._make_net_assoc_dict(net_assoc_db)
             context.session.delete(net_assoc_db)
@@ -321,7 +321,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         LOG.info(_LI("deleting router association %(id)s for "
                      "BGPVPN %(bgpvpn)s"),
                  {'id': assoc_id, 'bgpvpn': bgpvpn_id})
-        with context.session.begin():
+        with context.session.begin(subtransactions=True):
             router_assoc_db = self._get_router_assoc(context, assoc_id,
                                                      bgpvpn_id)
             router_assoc = self._make_router_assoc_dict(router_assoc_db)

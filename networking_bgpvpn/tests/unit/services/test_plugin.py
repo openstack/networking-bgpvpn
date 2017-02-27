@@ -518,6 +518,23 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             list = self._list('bgpvpn/bgpvpns', fmt='json')
             self.assertEqual([], list['bgpvpns'])
 
+    def test_delete_bgpvpn_precommit_fails(self):
+        with self.bgpvpn(do_delete=False) as bgpvpn, \
+            mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
+                              'delete_bgpvpn',
+                              return_value=self.converted_data), \
+            mock.patch.object(driver_api.BGPVPNDriver,
+                              'delete_bgpvpn_precommit',
+                              new=self._raise_bgpvpn_driver_precommit_exc):
+                bgpvpn_req = self.new_delete_request('bgpvpn/bgpvpns',
+                                                     bgpvpn['bgpvpn']['id'])
+                res = bgpvpn_req.get_response(self.ext_api)
+                self.assertEqual(webob.exc.HTTPError.code,
+                                 res.status_int)
+                # Assert that existing bgpvpn remains
+                list = self._list('bgpvpn/bgpvpns', fmt='json')
+                self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
     def test_delete_bgpvpn(self, mock_delete_postcommit):
@@ -698,6 +715,28 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                                         mock.ANY, mock.ANY)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
+                       'delete_net_assoc_precommit')
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'delete_net_assoc')
+    def test_delete_bgpvpn_net_assoc_precommit_fails(self, mock_db_del,
+                                                     mock_precommit):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.network() as net:
+                net_id = net['network']['id']
+                with self.assoc_net(bgpvpn_id, net_id=net_id) as assoc:
+                    assoc_id = assoc['network_association']['id']
+                    net_assoc = {'id': assoc_id,
+                                 'network_id': net_id,
+                                 'bgpvpn_id': bgpvpn_id}
+                    mock_db_del.return_value = net_assoc
+                    mock_precommit.return_value = \
+                        self._raise_bgpvpn_driver_precommit_exc
+                    # Assert that existing bgpvpn and net-assoc remains
+                    list = self._list('bgpvpn/bgpvpns', fmt='json')
+                    bgpvpn['bgpvpn']['networks'] = [net_assoc['network_id']]
+                    self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+
+    @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_net_assoc_postcommit')
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'delete_net_assoc')
     def test_delete_bgpvpn_net_assoc(self, mock_db_del, mock_postcommit):
@@ -802,6 +841,28 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     mock_get_db.assert_called_once_with(mock.ANY,
                                                         bgpvpn_id,
                                                         mock.ANY, mock.ANY)
+
+    @mock.patch.object(driver_api.BGPVPNDriver,
+                       'delete_router_assoc_precommit')
+    @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'delete_router_assoc')
+    def test_delete_bgpvpn_router_assoc_precommit_fails(self, mock_db_del,
+                                                        mock_precommit):
+        with self.bgpvpn() as bgpvpn:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.router(tenant_id=self._tenant_id) as router:
+                router_id = router['router']['id']
+                with self.assoc_router(bgpvpn_id, router_id) as assoc:
+                    assoc_id = assoc['router_association']['id']
+                    router_assoc = {'id': assoc_id,
+                                    'router_id': router_id,
+                                    'bgpvpn_id': bgpvpn_id}
+                    mock_db_del.return_value = router_assoc
+                    mock_precommit.return_value = \
+                        self._raise_bgpvpn_driver_precommit_exc
+                    # Assert that existing bgpvpn and router-assoc remains
+                    list = self._list('bgpvpn/bgpvpns', fmt='json')
+                    bgpvpn['bgpvpn']['routers'] = [router_assoc['router_id']]
+                    self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_router_assoc_postcommit')

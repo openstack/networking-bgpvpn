@@ -124,7 +124,9 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         return bgpvpn
 
     def delete_bgpvpn(self, context, id):
-        bgpvpn = self.bgpvpn_db.delete_bgpvpn(context, id)
+        with context.session.begin(subtransactions=True):
+            bgpvpn = self.bgpvpn_db.delete_bgpvpn(context, id)
+            self.delete_bgpvpn_precommit(context, bgpvpn)
         self.delete_bgpvpn_postcommit(context, bgpvpn)
 
     def create_net_assoc(self, context, bgpvpn_id, network_association):
@@ -145,9 +147,11 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                              filters, fields)
 
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
-        net_assoc = self.bgpvpn_db.delete_net_assoc(context,
-                                                    assoc_id,
-                                                    bgpvpn_id)
+        with context.session.begin(subtransactions=True):
+            net_assoc = self.bgpvpn_db.delete_net_assoc(context,
+                                                        assoc_id,
+                                                        bgpvpn_id)
+            self.delete_net_assoc_precommit(context, net_assoc)
         self.delete_net_assoc_postcommit(context, net_assoc)
 
     def create_router_assoc(self, context, bgpvpn_id, router_association):
@@ -167,9 +171,11 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                 filters, fields)
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        router_assoc = self.bgpvpn_db.delete_router_assoc(context,
-                                                          assoc_id,
-                                                          bgpvpn_id)
+        with context.session.begin(subtransactions=True):
+            router_assoc = self.bgpvpn_db.delete_router_assoc(context,
+                                                              assoc_id,
+                                                              bgpvpn_id)
+            self.delete_router_assoc_precommit(context, router_assoc)
         self.delete_router_assoc_postcommit(context, router_assoc)
 
     @abc.abstractmethod
@@ -241,6 +247,9 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         pass
 
+    def delete_bgpvpn_precommit(self, context, bgpvpn):
+        pass
+
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
         pass
 
@@ -250,6 +259,9 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
     def create_net_assoc_postcommit(self, context, net_assoc):
         pass
 
+    def delete_net_assoc_precommit(self, context, net_assoc):
+        pass
+
     def delete_net_assoc_postcommit(self, context, net_assoc):
         pass
 
@@ -257,6 +269,9 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
         pass
 
     def create_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+    def delete_router_assoc_precommit(self, context, router_assoc):
         pass
 
     def delete_router_assoc_postcommit(self, context, router_assoc):
