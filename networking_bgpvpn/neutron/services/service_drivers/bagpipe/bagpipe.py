@@ -19,8 +19,8 @@ from sqlalchemy import sql
 from neutron.callbacks import events
 from neutron.callbacks import registry
 from neutron.callbacks import resources
-from neutron.db import external_net_db
-from neutron.db import l3_db
+from neutron.db.models import external_net
+from neutron.db.models import l3
 from neutron.db import models_v2
 from neutron.debug import debug_agent
 
@@ -148,8 +148,8 @@ def get_bgpvpns_of_router_assocs_by_network(context, net_id):
         context.session.query(bgpvpn_db.BGPVPN).
         join(bgpvpn_db.BGPVPN.router_associations).
         join(bgpvpn_db.BGPVPNRouterAssociation.router).
-        join(l3_db.Router.attached_ports).
-        join(l3_db.RouterPort.port).
+        join(l3.Router.attached_ports).
+        join(l3.RouterPort.port).
         filter(
             models_v2.Port.network_id == net_id
         ).all()
@@ -158,7 +158,7 @@ def get_bgpvpns_of_router_assocs_by_network(context, net_id):
 
 def network_is_external(context, net_id):
     try:
-        context.session.query(external_net_db.ExternalNetwork).filter_by(
+        context.session.query(external_net.ExternalNetwork).filter_by(
             network_id=net_id).one()
         return True
     except orm.exc.NoResultFound:
