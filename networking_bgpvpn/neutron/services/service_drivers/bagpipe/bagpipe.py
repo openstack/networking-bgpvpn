@@ -16,15 +16,15 @@
 from sqlalchemy import orm
 from sqlalchemy import sql
 
-from neutron.callbacks import events
-from neutron.callbacks import registry
-from neutron.callbacks import resources
 from neutron.db.models import external_net
 from neutron.db.models import l3
 from neutron.db import models_v2
 from neutron.debug import debug_agent
 
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
+from neutron_lib.callbacks import resources
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
 

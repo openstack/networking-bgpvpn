@@ -13,14 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron.callbacks import events
-from neutron.callbacks import registry
-from neutron.callbacks import resources
 from neutron.db import servicetype_db as st_db
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
+from neutron_lib.callbacks import resources
 from neutron_lib import constants as const
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
