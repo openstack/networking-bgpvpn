@@ -21,12 +21,12 @@ from neutron.api import extensions
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
 from neutron.plugins.common import constants as n_const
-from neutron.services.service_base import ServicePluginBase
 
 from neutron_lib import api
 from neutron_lib.api import extensions as api_extensions
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
+from neutron_lib.services import base as libbase
 
 from oslo_log import log
 
@@ -286,7 +286,7 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class BGPVPNPluginBase(ServicePluginBase):
+class BGPVPNPluginBase(libbase.ServicePluginBase):
 
     def get_plugin_name(self):
         return constants.BGPVPN
