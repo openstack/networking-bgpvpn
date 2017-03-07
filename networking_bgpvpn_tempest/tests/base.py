@@ -15,8 +15,8 @@
 
 from networking_bgpvpn_tempest.services.bgpvpn import bgpvpn_client
 import tempest.api.network.base as test
-from tempest.common.utils import data_utils
 from tempest import config
+from tempest.lib.common.utils import data_utils
 
 CONF = config.CONF
 

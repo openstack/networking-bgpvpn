@@ -15,7 +15,7 @@
 
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
 from oslo_utils import uuidutils
-from tempest.common.utils import data_utils
+from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions
 from tempest import test
 from testtools import ExpectedException
