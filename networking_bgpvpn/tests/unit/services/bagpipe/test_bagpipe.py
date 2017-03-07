@@ -18,8 +18,7 @@ import mock
 import webob.exc
 
 import netaddr
-
-from neutron import context as n_context
+from neutron_lib import context as n_context
 
 from neutron.debug import debug_agent
 
