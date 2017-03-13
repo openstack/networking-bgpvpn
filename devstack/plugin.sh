@@ -14,7 +14,7 @@ elif [[ "$1" == "stack" && "$2" == "install" ]]; then
     setup_develop $NETWORKING_BGPVPN_DIR
 elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
     echo_summary "Enabling networking-bgpvpn service plugin"
-    _neutron_service_plugin_class_add $BGPVPN_PLUGIN_CLASS
+    _neutron_service_plugin_class_add bgpvpn
     if [[ "$Q_AGENT" == "bagpipe-openvswitch" ]]; then
         echo "networking-bagpipe: you don't need to set Q_AGENT=bagpipe-openvswitch anymore"
         Q_AGENT=openvswitch``

@@ -1,7 +1,6 @@
 NETWORKING_BGPVPN_DIR="$DEST/networking-bgpvpn"
 NETWORKING_BGPVPN_CONF="$NEUTRON_CONF_DIR/networking_bgpvpn.conf"
 BGPVPN_DASHBOARD_ENABLE="$NETWORKING_BGPVPN_DIR/bgpvpn_dashboard/enabled/*"
-BGPVPN_PLUGIN_CLASS="networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin"
 
 NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default}
 
@@ -9,3 +8,4 @@ if is_service_enabled q-svc; then
     # l2pop is currently required for bagpipe driver
     Q_ML2_PLUGIN_MECHANISM_DRIVERS="openvswitch,l2population"
 fi
+

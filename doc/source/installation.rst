@@ -29,11 +29,11 @@ Configuration
 =============
 
 The service plugin is enabled in Neutron, by
-adding ``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin`` to the list
+adding ``bgpvpn`` to the list
 of enabled service plugins in ``neutron.conf`` (typically in ``/etc/neutron/``
 but the location used may depend on your setup or packaging). For instance::
 
-    service_plugins = networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin,neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
+    service_plugins = router,bgpvpn
 
 The BGPVPN driver to use is then specified in the ``networking_bgpvpn.conf``
 file (located by default under ``/etc/neutron/``, but in any case in one of the
