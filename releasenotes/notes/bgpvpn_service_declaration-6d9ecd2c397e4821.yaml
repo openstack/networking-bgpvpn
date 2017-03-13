@@ -1,0 +1,6 @@
+features:
+  - |
+    The BGPVPN Interconnection API can now be enabled by adding ``bgpvpn`` to
+    ``service_plugins`` in ``neutron.conf``, instead of the verbose
+    ``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin``.
+
