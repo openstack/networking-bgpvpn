@@ -10,9 +10,10 @@ fi
 
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe"
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs"
+
 # until we do multinode, there is no BGP peer to connect to
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_BGP_PEERS="
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_BGP_PEERS=-"
 
 # https://bugs.launchpad.net/devstack/+bug/1567052
 # so we need VERBOSE=False until bagpipe-bgp uses rootwrap and is not run with sudo (same for bagpipe-fakerr)
