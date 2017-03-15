@@ -155,7 +155,7 @@ The BGPVPN service plugin supports the following drivers:
 References
 ==========
 
-.. _Bagpipe-BGP: https://github.com/Orange-OpenSource/bagpipe-bgp
+.. _Bagpipe-BGP: https://docs.openstack.org/developer/networking-bagpipe
 .. [OpenContrail] http://www.opencontrail.org
 .. [OpenDaylight] http://www.opendaylight.org
 .. [Nuage-Networks] http://www.nuagenetworks.net

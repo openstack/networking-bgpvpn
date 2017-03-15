@@ -14,7 +14,7 @@ Introduction
 The **BaGPipe** driver for the BGPVPN service plugin is designed to work jointly with the openvswitch
 ML2 mechanism driver.
 
-It relies on the use of the bagpipe-bgp_ BGP VPN implementation on compute node
+It relies on the use of the bagpipe-bgp BGP VPN implementation on compute node
 and the MPLS implementation in OpenVSwitch.
 
 Architecture overview
@@ -63,6 +63,7 @@ In devstack
   * enable networking-bagpipe_, which contains code for agent extensions::
 
      enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
+     # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
 
   * enable the ``openvswitch`` and ``l2population`` ML2 mechanism drivers::
 
@@ -77,7 +78,7 @@ In devstack
      l2_population=True
      arp_responder=True
 
-* on a control node, if you want to run the Fake Route-Reflector there::
+* on a control node, if you want to run the Fake Route-Reflector there (relevant only for a multinode setup)::
 
      enable_service b-fakerr
 
@@ -88,24 +89,25 @@ In devstack
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
         enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
+        # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
 
     * define ``Q_AGENT=openvswitch`` in ``local.conf``  (optional, this is actually the default now)
 
     * the ``bagpipe_bgpvpn`` agent extension is automatically added to the agent configuration by the devstack plugin
 
-  * bagpipe-bgp_ will be installed automatically as a git submodule of networking-bagpipe
+  * bagpipe-bgp will be installed automatically (part of networking-bagpipe since Pike, or as a submodule before)
 
-  * you need to enable and configure bagpipe-bgp_, typically with a peering to a BGP Route-Reflector or BGP router(s)::
+  * you need to enable and configure bagpipe-bgp, typically with a peering to a BGP Route-Reflector or BGP router(s)::
 
         enable_service b-bgp
 
         BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver
+        # BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs # simpler config available > after Ocata
 
         # IP of your route-reflector or BGP router, or fakeRR
         # BAGPIPE_BGP_PEERS defaults to $SERVICE_HOST, which will point to the controller in a
         # multi-node devstack setup
         #BAGPIPE_BGP_PEERS=1.2.3.4,2.3.4.5
 
-.. _bagpipe-bgp: https://github.com/Orange-OpenSource/bagpipe-bgp
-.. _networking-bagpipe: https://github.com/openstack/networking-bagpipe
+.. _networking-bagpipe: https://docs.openstack.org/developer/networking-bagpipe
 
