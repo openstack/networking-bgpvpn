@@ -26,6 +26,7 @@ from neutron_lib.plugins import directory
 
 from oslo_log import log
 
+from networking_bgpvpn._i18n import _
 from networking_bgpvpn._i18n import _LI
 from networking_bgpvpn._i18n import _LW
 
