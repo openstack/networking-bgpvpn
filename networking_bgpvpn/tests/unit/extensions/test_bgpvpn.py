@@ -20,10 +20,10 @@ from oslo_utils import uuidutils
 
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from webob import exc
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
-from networking_bgpvpn.neutron.services.common import constants
 
 _uuid = uuidutils.generate_uuid
 _get_path = test_base._get_path
@@ -42,8 +42,8 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self._setUpExtension(
             BGPVPN_PLUGIN_BASE_NAME,
-            constants.BGPVPN,
-            bgpvpn.RESOURCE_ATTRIBUTE_MAP,
+            bgpvpn_def.LABEL,
+            bgpvpn_def.RESOURCE_ATTRIBUTE_MAP,
             bgpvpn.Bgpvpn,
             BGPVPN_PREFIX,
             plural_mappings=plural_mappings,

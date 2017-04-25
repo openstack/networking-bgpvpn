@@ -27,6 +27,7 @@ from neutron import extensions as n_extensions
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit.extensions import test_l3
 from neutron.tests.unit.extensions.test_l3 import TestL3NatServicePlugin
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron import extensions
@@ -42,11 +43,11 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
     def setUp(self, service_provider=None, core_plugin=None):
         if not service_provider:
-            provider = (constants.BGPVPN +
+            provider = (bgpvpn_def.LABEL +
                         ':dummy:networking_bgpvpn.neutron.services.'
                         'service_drivers.driver_api.BGPVPNDriver:default')
         else:
-            provider = (constants.BGPVPN + ':test:' + service_provider +
+            provider = (bgpvpn_def.LABEL + ':test:' + service_provider +
                         ':default')
 
         bits = provider.split(':')
@@ -77,7 +78,7 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         # of the plugin
         ext_mgr = api_extensions.PluginAwareExtensionManager(
             extensions_path,
-            {constants.BGPVPN: plugin.BGPVPNPlugin(),
+            {bgpvpn_def.LABEL: plugin.BGPVPNPlugin(),
              'l3_plugin_name': TestL3NatServicePlugin()})
 
         super(BgpvpnTestCaseMixin, self).setUp(
@@ -87,7 +88,7 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         # find the BGPVPN plugin that was instantiated by the
         # extension manager:
-        self.bgpvpn_plugin = directory.get_plugin(constants.BGPVPN)
+        self.bgpvpn_plugin = directory.get_plugin(bgpvpn_def.LABEL)
 
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
