@@ -52,7 +52,7 @@ class BgpvpnTest(base):
     def test_delete_bgpvpn_as_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
-        self.assertRaises(exceptions.NotFound,
+        self.assertRaises(exceptions.Forbidden,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
 
     @test.attr(type=['negative'])

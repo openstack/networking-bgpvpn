@@ -20,6 +20,7 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
+from neutron.db import _model_query as model_query
 from neutron.db import common_db_mixin
 
 from neutron_lib.db import constants as db_const
@@ -96,8 +97,31 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
                                            cascade='all, delete-orphan')
 
 
+def _list_bgpvpns_result_filter_hook(query, filters):
+    values = filters and filters.get('networks', [])
+    if values:
+        query = query.join(BGPVPNNetAssociation)
+        query = query.filter(BGPVPNNetAssociation.network_id.in_(values))
+
+    values = filters and filters.get('routers', [])
+    if values:
+        query = query.join(BGPVPNRouterAssociation)
+        query = query.filter(BGPVPNRouterAssociation.router_id.in_(values))
+
+    return query
+
+
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
     """BGPVPN service plugin database class using SQLAlchemy models."""
+
+    def __new__(cls, *args, **kwargs):
+        model_query.register_hook(
+            BGPVPN,
+            "bgpvpn_filter_by_resource_association",
+            query_hook=None,
+            filter_hook=None,
+            result_filters=_list_bgpvpns_result_filter_hook)
+        return super(BGPVPNPluginDb, cls).__new__(cls, *args, **kwargs)
 
     def _get_bgpvpns_for_tenant(self, session, tenant_id, fields):
         try:
@@ -131,26 +155,6 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 utils.rtrd_str2list(bgpvpn_db['export_targets'])
         }
         return self._fields(res, fields)
-
-    def _list_bgpvpns_result_filter_hook(self, query, filters):
-        values = filters and filters.get('networks', [])
-        if values:
-            query = query.join(BGPVPNNetAssociation)
-            query = query.filter(BGPVPNNetAssociation.network_id.in_(values))
-
-        values = filters and filters.get('routers', [])
-        if values:
-            query = query.join(BGPVPNRouterAssociation)
-            query = query.filter(BGPVPNRouterAssociation.router_id.in_(values))
-
-        return query
-
-    common_db_mixin.CommonDbMixin.register_model_query_hook(
-        BGPVPN,
-        "bgpvpn_filter_by_resource_association",
-        None,
-        None,
-        '_list_bgpvpns_result_filter_hook')
 
     def create_bgpvpn(self, context, bgpvpn):
         rt = utils.rtrd_list2str(bgpvpn['route_targets'])
