@@ -4,7 +4,9 @@
 _XTRACE_NETWORKING_BGPVPN=$(set +o | grep xtrace)
 set -o xtrace
 
-source $NEUTRON_DIR/devstack/lib/l2_agent
+if is_service_enabled q-agt; then
+   source $NEUTRON_DIR/devstack/lib/l2_agent
+fi
 
 if [[ "$1" == "source" ]]; then
     # no-op
