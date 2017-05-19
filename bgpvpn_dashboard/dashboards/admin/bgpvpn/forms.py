@@ -26,14 +26,14 @@ from bgpvpn_dashboard.dashboards.project.bgpvpn import forms \
     as project_forms
 
 
-RT_REGEX = constants.RT_REGEX[1:-1]
-RTS_REGEX = '^%s( *, *%s)*$' % (RT_REGEX, RT_REGEX)
+RTRD_REGEX = constants.RTRD_REGEX[1:-1]
+RTRDS_REGEX = '^%s( *, *%s)*$' % (RTRD_REGEX, RTRD_REGEX)
 
 
 class CommonData(project_forms.CommonData):
     route_targets = forms.CharField(
         max_length=255,
-        validators=[RegexValidator(regex=RTS_REGEX,
+        validators=[RegexValidator(regex=RTRDS_REGEX,
                                    message=_("Route targets is not valid"))],
         label=_("Route targets"),
         required=False,
@@ -41,7 +41,7 @@ class CommonData(project_forms.CommonData):
 
     import_targets = forms.CharField(
         max_length=255,
-        validators=[RegexValidator(regex=RTS_REGEX,
+        validators=[RegexValidator(regex=RTRDS_REGEX,
                                    message=_("Import targets is not valid"))],
         label=_("Import targets"),
         required=False,
@@ -49,7 +49,7 @@ class CommonData(project_forms.CommonData):
 
     export_targets = forms.CharField(
         max_length=255,
-        validators=[RegexValidator(regex=RTS_REGEX,
+        validators=[RegexValidator(regex=RTRDS_REGEX,
                                    message=_("Export targets is not valid"))],
         label=_("Export targets"),
         required=False,
