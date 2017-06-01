@@ -19,7 +19,7 @@ testresources>=0.2.4 # Apache-2.0/BSD
 testscenarios>=0.4
 testtools>=1.4.0
 reno>=0.1.1  # Apache2
-pylint===1.4.5
+pylint==1.4.5
 networking-bagpipe>=5.0.0,<6
 
 -e git+https://git.openstack.org/openstack/networking-odl@c62edca4437a0fb82403463bd839e2f27a0fd5be#egg=networking-odl
