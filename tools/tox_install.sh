@@ -18,6 +18,7 @@ BRANCH_NAME=master
 
 install_project() {
     local project=$1
+    local branch=${2:-$BRANCH_NAME}
 
     set +e
     project_installed=$(echo "import $project" | python 2>/dev/null ; echo $?)
@@ -36,7 +37,7 @@ install_project() {
         pushd $PROJECT_DIR
         $ZUUL_CLONER --cache-dir \
             /opt/git \
-            --branch $BRANCH_NAME \
+            --branch $branch \
             http://git.openstack.org \
             openstack/$project
         cd openstack/$project
@@ -45,7 +46,7 @@ install_project() {
     else
         echo "PIP HARDCODE" > /tmp/tox_install.txt
         if [ -z "$PIP_LOCATION" ]; then
-            PIP_LOCATION="git+https://git.openstack.org/openstack/$project@$BRANCH_NAME#egg=$project"
+            PIP_LOCATION="git+https://git.openstack.org/openstack/$project@$branch#egg=$project"
         fi
         $install_cmd -U -e ${PIP_LOCATION}
     fi
@@ -59,6 +60,7 @@ shift
 install_project neutron
 install_project horizon
 install_project networking-bagpipe
+install_project networking-odl 4.0.0
 
 $install_cmd -U $*
 exit $?
