@@ -87,7 +87,7 @@ def network_association_create(request, bgpvpn_id, **kwargs):
 
 
 def network_association_delete(request, resource_id, bgpvpn_id):
-    LOG.debug("router_association_delete(): resource_id=%s bgpvpnid=%s",
+    LOG.debug("network_association_delete(): resource_id=%s bgpvpnid=%s",
               resource_id, bgpvpn_id)
     neutronclient(request).delete_network_association(resource_id, bgpvpn_id)
 
