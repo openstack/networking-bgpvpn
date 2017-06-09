@@ -13,16 +13,18 @@ If you use ``pip``, follow these steps to install networking-bgpvpn:
     * identify the version of the networking-bgpvpn package that matches
       your Openstack version:
 
-      * Newton: most recent of 5.0.x
-      * Mitaka: most recent of 4.0.x
       * Liberty: most recent of 3.0.x
-      * (see `<http://git.openstack.org/cgit/openstack/releases/tree/deliverables/_independent/networking-bgpvpn.yaml>`_)
+      * Mitaka: most recent of 4.0.x
+      * Newton: most recent of 5.0.x
+      * Ocata: most recent of 6.0.x
+      * Pike: most recent of 7.0.x
+      * (see `<https://releases.openstack.org/index.html>`_)
 
     * indicate pip to (a) install precisely this version and (b) take into
       account Openstack upper constraints on package versions for dependencies
-      (example for newton)::
+      (example for ocata)::
 
-          $ pip install -c  https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=stable/newton networking-bgpvpn=5.0.0
+          $ pip install -c  https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=stable/ocata networking-bgpvpn=6.0.0
 
 =============
 Configuration
