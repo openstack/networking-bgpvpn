@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==============
-BaGPipe driver
-==============
+==================
+OVS/BaGPipe driver
+==================
 
 Introduction
 ------------
@@ -14,7 +14,7 @@ Introduction
 The **BaGPipe** driver for the BGPVPN service plugin is designed to work jointly with the openvswitch
 ML2 mechanism driver.
 
-It relies on the use of the bagpipe-bgp BGP VPN implementation on compute node
+It relies on the use of the bagpipe-bgp BGP VPN implementation on compute nodes
 and the MPLS implementation in OpenVSwitch.
 
 Architecture overview
@@ -64,19 +64,6 @@ In devstack
 
      enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
      # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
-
-  * enable the ``openvswitch`` and ``l2population`` ML2 mechanism drivers::
-
-     Q_PLUGIN=ml2
-     Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch,l2population
-
-  * and activate the agent ARP responder (you need to enable l2population too for the ARP responder to be enabled)::
-
-     [[post-config|/$Q_PLUGIN_CONF_FILE]]
-
-     [agent]
-     l2_population=True
-     arp_responder=True
 
 * on a control node, if you want to run the Fake Route-Reflector there (relevant only for a multinode setup)::
 
