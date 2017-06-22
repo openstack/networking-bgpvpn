@@ -47,7 +47,6 @@ class CommonData(forms.SelfHandlingForm):
     def clean(self):
         cleaned_data = super(CommonData, self).clean()
         name = cleaned_data.get('name')
-        bgpvpn_id = cleaned_data.get('bgpvpn_id')
         try:
             if self.request.user.is_superuser:
                 for attribute in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
@@ -59,27 +58,14 @@ class CommonData(forms.SelfHandlingForm):
                     tenant_id = self.request.user.tenant_id
                 else:
                     tenant_id = cleaned_data.get('tenant_id')
-                bgpvpns = bgpvpn_api.bgpvpns_list(self.request,
-                                                  name=name,
-                                                  tenant_id=tenant_id)
+                bgpvpn_api.bgpvpns_list(
+                    self.request, name=name, tenant_id=tenant_id)
             else:
-                bgpvpns = bgpvpn_api.bgpvpns_list(self.request,
-                                                  name=name)
+                bgpvpn_api.bgpvpns_list(self.request, name=name)
         except Exception:
             msg = _('Unable to get BGPVPN with name %s') % name
             exceptions.check_message(["Connection", "refused"], msg)
             raise
-        if bgpvpns:
-            if self.action == 'update':
-                for bgpvpn in bgpvpns:
-                    if bgpvpn.id != bgpvpn_id:
-                        raise forms.ValidationError(
-                            _('The name "%s" is already '
-                              'used by another BGPVPN.') % name)
-            else:
-                raise forms.ValidationError(
-                    _('The name "%s" is already '
-                      'used by another BGPVPN.') % name)
         return cleaned_data
 
     @staticmethod
