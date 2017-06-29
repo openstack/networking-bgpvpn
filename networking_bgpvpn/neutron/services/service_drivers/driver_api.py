@@ -207,6 +207,10 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         pass
 
     @abc.abstractmethod
+    def delete_net_assoc_precommit(self, context, net_assoc):
+        pass
+
+    @abc.abstractmethod
     def delete_net_assoc_postcommit(self, context, net_assoc):
         pass
 
@@ -216,6 +220,10 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     @abc.abstractmethod
     def create_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+    @abc.abstractmethod
+    def delete_router_assoc_precommit(self, context, router_assoc):
         pass
 
     @abc.abstractmethod
@@ -232,8 +240,6 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
     Any exception raised during a precommit method will result in not having
     related records in the databases.
     """
-    def __init__(self, service_plugin):
-        super(BGPVPNDriver, self).__init__(service_plugin)
 
     def create_bgpvpn_precommit(self, context, bgpvpn):
         pass

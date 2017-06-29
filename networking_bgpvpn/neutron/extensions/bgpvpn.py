@@ -20,7 +20,6 @@ import six
 from neutron.api import extensions
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
-from neutron.plugins.common import constants as n_const
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api import extensions as api_extensions
@@ -38,7 +37,6 @@ LOG = log.getLogger(__name__)
 
 
 extensions.append_api_extensions_path(bgpvpn_ext.__path__)
-n_const.EXT_TO_SERVICE_MAPPING['bgpvpn'] = bgpvpn_def.LABEL
 
 
 class BGPVPNNotFound(n_exc.NotFound):
@@ -103,19 +101,19 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
 
     @classmethod
     def get_name(cls):
-        return "BGPVPN extension"
+        return bgpvpn_def.NAME
 
     @classmethod
     def get_alias(cls):
-        return "bgpvpn"
+        return bgpvpn_def.ALIAS
 
     @classmethod
     def get_description(cls):
-        return "Extension for BGPVPN service"
+        return bgpvpn_def.DESCRIPTION
 
     @classmethod
     def get_updated(cls):
-        return "2014-06-10T17:00:00-00:00"
+        return bgpvpn_def.UPDATED_TIMESTAMP
 
     @classmethod
     def get_resources(cls):
@@ -177,7 +175,7 @@ class BGPVPNPluginBase(libbase.ServicePluginBase):
         return bgpvpn_def.LABEL
 
     def get_plugin_description(self):
-        return 'BGP VPN service plugin'
+        return 'BGP VPN Interconnection service plugin'
 
     @abc.abstractmethod
     def create_bgpvpn(self, context, bgpvpn):

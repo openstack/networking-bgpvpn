@@ -38,6 +38,13 @@ from networking_bgpvpn.neutron.services.service_drivers import driver_api
 _uuid = uuidutils.generate_uuid
 
 
+def http_client_error(req, res):
+    explanation = "Request '%s %s %s' failed: %s" % (req.method, req.url,
+                                                     req.body, res.body)
+    return webob.exc.HTTPClientError(code=res.status_int,
+                                     explanation=explanation)
+
+
 class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                           test_l3.L3NatTestCaseMixin):
 
@@ -108,11 +115,11 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             req_data = kwargs.get('data')
         else:
             req_data['bgpvpn'].update(kwargs)
-        bgpvpn_req = self.new_create_request(
+        req = self.new_create_request(
             'bgpvpn/bgpvpns', req_data, fmt=fmt)
-        res = bgpvpn_req.get_response(self.ext_api)
+        res = req.get_response(self.ext_api)
         if res.status_int >= 400:
-            raise webob.exc.HTTPClientError(code=res.status_int)
+            raise http_client_error(req, res)
         bgpvpn = self.deserialize('json', res)
         yield bgpvpn
         if do_delete:
@@ -124,15 +131,15 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         fmt = 'json'
         data = {'network_association': {'network_id': net_id,
                                         'tenant_id': self._tenant_id}}
-        bgpvpn_net_req = self.new_create_request(
+        req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
             fmt=fmt,
             id=bgpvpn_id,
             subresource='network_associations')
-        res = bgpvpn_net_req.get_response(self.ext_api)
+        res = req.get_response(self.ext_api)
         if res.status_int >= 400:
-            raise webob.exc.HTTPClientError(code=res.status_int)
+            raise http_client_error(req, res)
         assoc = self.deserialize('json', res)
         yield assoc
         if do_disassociate:
@@ -144,22 +151,22 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 sub_id=assoc['network_association']['id'])
             res = del_req.get_response(self.ext_api)
             if res.status_int >= 400:
-                raise webob.exc.HTTPClientError(code=res.status_int)
+                raise http_client_error(del_req, res)
 
     @contextlib.contextmanager
     def assoc_router(self, bgpvpn_id, router_id, do_disassociate=True):
         fmt = 'json'
         data = {'router_association': {'router_id': router_id,
                                        'tenant_id': self._tenant_id}}
-        bgpvpn_router_req = self.new_create_request(
+        req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
             fmt=fmt,
             id=bgpvpn_id,
             subresource='router_associations')
-        res = bgpvpn_router_req.get_response(self.ext_api)
+        res = req.get_response(self.ext_api)
         if res.status_int >= 400:
-            raise webob.exc.HTTPClientError(code=res.status_int)
+            raise http_client_error(req, res)
         assoc = self.deserialize('json', res)
         yield assoc
         if do_disassociate:
@@ -171,26 +178,21 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 sub_id=assoc['router_association']['id'])
             res = del_req.get_response(self.ext_api)
             if res.status_int >= 400:
-                raise webob.exc.HTTPClientError(code=res.status_int)
+                raise http_client_error(del_req, res)
 
 
 class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
-    def setUp(self):
-        super(TestBGPVPNServicePlugin, self).setUp()
-
-    @mock.patch.object(plugin.BGPVPNPlugin, '_validate_network')
-    def test_bgpvpn_net_assoc_create(self, mock_validate):
+    def test_bgpvpn_net_assoc_create(self):
         with self.network() as net, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(
                     self.bgpvpn_plugin,
                     '_validate_network',
                     return_value=net['network']) as mock_validate, \
-                self.assoc_net(bgpvpn['bgpvpn']['id'],
-                               net['network']['id']):
-                    mock_validate.assert_called_once_with(
-                        mock.ANY, net['network']['id'])
+                self.assoc_net(bgpvpn['bgpvpn']['id'], net['network']['id']):
+            mock_validate.assert_called_once_with(
+                mock.ANY, net['network']['id'])
 
     def test_associate_empty_network(self):
         with self.bgpvpn() as bgpvpn:
@@ -254,15 +256,15 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
     def test_bgpvpn_router_assoc_create(self):
         with self.router(tenant_id=self._tenant_id) as router,\
-            self.bgpvpn() as bgpvpn, \
-            mock.patch.object(
-                self.bgpvpn_plugin,
-                '_validate_router',
-                return_value=router['router']) as mock_validate, \
-            self.assoc_router(bgpvpn['bgpvpn']['id'],
-                              router['router']['id']):
-                mock_validate.assert_called_once_with(
-                    mock.ANY, router['router']['id'])
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(
+                    self.bgpvpn_plugin,
+                    '_validate_router',
+                    return_value=router['router']) as mock_validate, \
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id']):
+            mock_validate.assert_called_once_with(
+                mock.ANY, router['router']['id'])
 
     def test_associate_empty_router(self):
         with self.bgpvpn() as bgpvpn:
@@ -342,20 +344,20 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
     def test_router_net_combination(self):
-        with self.network() as net:
-            with self.bgpvpn() as bgpvpn:
-                with self.router(tenant_id=self._tenant_id) as router:
-                    self._test_router_net_combination_validation(
-                        net['network'],
-                        router['router'],
-                        bgpvpn['bgpvpn'])
-        with self.network() as net:
-            with self.bgpvpn() as bgpvpn:
-                with self.router(tenant_id=self._tenant_id) as router:
-                    self._test_net_router_combination_validation(
-                        net['network'],
-                        router['router'],
-                        bgpvpn['bgpvpn'])
+        with self.network() as net,\
+                self.bgpvpn() as bgpvpn, \
+                self.router(tenant_id=self._tenant_id) as router:
+            self._test_router_net_combination_validation(
+                net['network'],
+                router['router'],
+                bgpvpn['bgpvpn'])
+        with self.network() as net, \
+                self.bgpvpn() as bgpvpn, \
+                self.router(tenant_id=self._tenant_id) as router:
+            self._test_net_router_combination_validation(
+                net['network'],
+                router['router'],
+                bgpvpn['bgpvpn'])
 
     def _test_router_net_combination_validation(self, network, router, bgpvpn):
         net_id = network['id']
@@ -363,15 +365,15 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
         router_id = router['id']
         data = {'router_association': {'router_id': router_id,
                                        'tenant_id': self._tenant_id}}
-        bgpvpn_router_req = self.new_create_request(
+        req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
             fmt=self.fmt,
             id=bgpvpn_id,
             subresource='router_associations')
-        res = bgpvpn_router_req.get_response(self.ext_api)
+        res = req.get_response(self.ext_api)
         if res.status_int >= 400:
-            raise webob.exc.HTTPClientError(code=res.status_int)
+            raise http_client_error(req, res)
 
         with self.subnet(network={'network': network}) as subnet:
             data = {"subnet_id": subnet['subnet']['id']}
@@ -383,7 +385,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 subresource='add_router_interface')
             res = bgpvpn_rtr_intf_req.get_response(self.ext_api)
             if res.status_int >= 400:
-                raise webob.exc.HTTPClientError(code=res.status_int)
+                raise http_client_error(bgpvpn_rtr_intf_req, res)
 
             data = {'network_association': {'network_id': net_id,
                                             'tenant_id': self._tenant_id}}
@@ -403,15 +405,15 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
         data = {'network_association': {'network_id': net_id,
                                         'tenant_id': self._tenant_id}}
-        bgpvpn_net_req = self.new_create_request(
+        req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
             fmt=self.fmt,
             id=bgpvpn_id,
             subresource='network_associations')
-        res = bgpvpn_net_req.get_response(self.ext_api)
+        res = req.get_response(self.ext_api)
         if res.status_int >= 400:
-            raise webob.exc.HTTPClientError(code=res.status_int)
+            raise http_client_error(req, res)
 
         with self.subnet(network={'network': network}) as subnet:
             data = {"subnet_id": subnet['subnet']['id']}
@@ -423,7 +425,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 subresource='add_router_interface')
             res = bgpvpn_rtr_intf_req.get_response(self.ext_api)
             if res.status_int >= 400:
-                raise webob.exc.HTTPClientError(code=res.status_int)
+                raise http_client_error(bgpvpn_rtr_intf_req, res)
 
             data = {'router_association': {'router_id': router_id,
                                            'tenant_id': self._tenant_id}}
@@ -521,20 +523,20 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     def test_delete_bgpvpn_precommit_fails(self):
         with self.bgpvpn(do_delete=False) as bgpvpn, \
-            mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
-                              'delete_bgpvpn',
-                              return_value=self.converted_data), \
-            mock.patch.object(driver_api.BGPVPNDriver,
-                              'delete_bgpvpn_precommit',
-                              new=self._raise_bgpvpn_driver_precommit_exc):
-                bgpvpn_req = self.new_delete_request('bgpvpn/bgpvpns',
-                                                     bgpvpn['bgpvpn']['id'])
-                res = bgpvpn_req.get_response(self.ext_api)
-                self.assertEqual(webob.exc.HTTPError.code,
-                                 res.status_int)
-                # Assert that existing bgpvpn remains
-                list = self._list('bgpvpn/bgpvpns', fmt='json')
-                self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+                mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
+                                  'delete_bgpvpn',
+                                  return_value=self.converted_data), \
+                mock.patch.object(driver_api.BGPVPNDriver,
+                                  'delete_bgpvpn_precommit',
+                                  new=self._raise_bgpvpn_driver_precommit_exc):
+            bgpvpn_req = self.new_delete_request('bgpvpn/bgpvpns',
+                                                 bgpvpn['bgpvpn']['id'])
+            res = bgpvpn_req.get_response(self.ext_api)
+            self.assertEqual(webob.exc.HTTPError.code,
+                             res.status_int)
+            # Assert that existing bgpvpn remains
+            list = self._list('bgpvpn/bgpvpns', fmt='json')
+            self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
@@ -616,18 +618,18 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     def test_update_bgpvpn_precommit_fails(self):
         with self.bgpvpn() as bgpvpn, \
-            mock.patch.object(driver_api.BGPVPNDriver,
-                              'update_bgpvpn_precommit',
-                              new=self._raise_bgpvpn_driver_precommit_exc):
-                new_data = {"bgpvpn": {"name": "foo"}}
-                self._update('bgpvpn/bgpvpns',
-                             bgpvpn['bgpvpn']['id'],
-                             new_data,
-                             expected_code=webob.exc.HTTPError.code)
-                show_bgpvpn = self._show('bgpvpn/bgpvpns',
-                                         bgpvpn['bgpvpn']['id'])
-                self.assertEqual(self.bgpvpn_data['bgpvpn']['name'],
-                                 show_bgpvpn['bgpvpn']['name'])
+                mock.patch.object(driver_api.BGPVPNDriver,
+                                  'update_bgpvpn_precommit',
+                                  new=self._raise_bgpvpn_driver_precommit_exc):
+            new_data = {"bgpvpn": {"name": "foo"}}
+            self._update('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'],
+                         new_data,
+                         expected_code=webob.exc.HTTPError.code)
+            show_bgpvpn = self._show('bgpvpn/bgpvpns',
+                                     bgpvpn['bgpvpn']['id'])
+            self.assertEqual(self.bgpvpn_data['bgpvpn']['name'],
+                             show_bgpvpn['bgpvpn']['name'])
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_net_assoc_postcommit')
@@ -663,10 +665,10 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     def test_create_bgpvpn_net_assoc_precommit_fails(self):
         with self.bgpvpn() as bgpvpn, \
-            self.network() as net, \
-            mock.patch.object(driver_api.BGPVPNDriver,
-                              'create_net_assoc_precommit',
-                              new=self._raise_bgpvpn_driver_precommit_exc):
+                self.network() as net, \
+                mock.patch.object(driver_api.BGPVPNDriver,
+                                  'create_net_assoc_precommit',
+                                  new=self._raise_bgpvpn_driver_precommit_exc):
             fmt = 'json'
             data = {'network_association': {'network_id': net['network']['id'],
                                             'tenant_id': self._tenant_id}}
@@ -766,7 +768,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                         mock_pre_commit,
                                         mock_post_commit):
         with self.bgpvpn() as bgpvpn, \
-            self.router(tenant_id=self._tenant_id) as router:
+                self.router(tenant_id=self._tenant_id) as router:
             bgpvpn_id = bgpvpn['bgpvpn']['id']
             router_id = router['router']['id']
             assoc_id = _uuid()
