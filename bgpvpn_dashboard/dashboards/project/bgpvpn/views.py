@@ -41,8 +41,7 @@ class IndexView(tables.DataTableView):
     def get_data(self):
         tenant_id = self.request.user.tenant_id
         bgpvpns = bgpvpn_api.bgpvpns_list(self.request, tenant_id=tenant_id)
-        networks = api.neutron.network_list_for_tenant(self.request,
-                                                       tenant_id)
+        networks = api.neutron.network_list_for_tenant(self.request, tenant_id)
         routers = api.neutron.router_list(self.request, tenant_id=tenant_id)
         for bgpvpn in bgpvpns:
             networks_list = [network for network in networks
