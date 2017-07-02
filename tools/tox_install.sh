@@ -15,13 +15,15 @@
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 BRANCH_NAME=master
+GIT_BASE=${GIT_BASE:-https://git.openstack.org/}
 
 install_project() {
     local project=$1
     local branch=${2:-$BRANCH_NAME}
+    local module_name=${project//-/_}
 
     set +e
-    project_installed=$(echo "import $project" | python 2>/dev/null ; echo $?)
+    project_installed=$(echo "import $module_name" | python 2>/dev/null ; echo $?)
     set -e
 
     if [ $project_installed -eq 0 ]; then
@@ -45,10 +47,10 @@ install_project() {
         popd
     else
         echo "PIP HARDCODE" > /tmp/tox_install.txt
-        if [ -z "$PIP_LOCATION" ]; then
-            PIP_LOCATION="git+https://git.openstack.org/openstack/$project@$branch#egg=$project"
-        fi
-        $install_cmd -U -e ${PIP_LOCATION}
+        local GIT_REPO="$GIT_BASE/openstack/$project"
+        SRC_DIR="$VIRTUAL_ENV/src/$project"
+        git clone --depth 1 --branch $branch $GIT_REPO $SRC_DIR
+        $install_cmd -U -e $SRC_DIR
     fi
 }
 
