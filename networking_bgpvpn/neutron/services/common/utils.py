@@ -71,6 +71,7 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
         'route_distinguishers': rtrd_str2list(bgpvpn['route_distinguishers']),
         'networks': bgpvpn.get('networks', []),
         'routers': bgpvpn.get('routers', []),
+        'ports': bgpvpn.get('ports', []),
     }
     return filter_fields(res, fields)
 
@@ -88,6 +89,15 @@ def make_router_assoc_dict(id, tenant_id, bgpvpn_id, router_id, fields=None):
            'tenant_id': tenant_id,
            'bgpvpn_id': bgpvpn_id,
            'router_id': router_id}
+    return filter_fields(res, fields)
+
+
+def make_port_assoc_dict(id, tenant_id, bgpvpn_id, port_id, fields=None):
+    # NOTE(tmorin): fields need to be added here, this isn't used yet
+    res = {'id': id,
+           'tenant_id': tenant_id,
+           'bgpvpn_id': bgpvpn_id,
+           'port_id': port_id}
     return filter_fields(res, fields)
 
 

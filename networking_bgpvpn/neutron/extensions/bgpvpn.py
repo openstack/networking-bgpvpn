@@ -21,7 +21,7 @@ from neutron.api import extensions
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
 
-from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
 from neutron_lib.api import extensions as api_extensions
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
@@ -30,13 +30,12 @@ from neutron_lib.services import base as libbase
 from oslo_log import log
 
 from networking_bgpvpn._i18n import _
-
-from networking_bgpvpn.neutron import extensions as bgpvpn_ext
+from networking_bgpvpn.neutron import extensions as bgpvpn_extensions
 
 LOG = log.getLogger(__name__)
 
 
-extensions.append_api_extensions_path(bgpvpn_ext.__path__)
+extensions.append_api_extensions_path(bgpvpn_extensions.__path__)
 
 
 class BGPVPNNotFound(n_exc.NotFound):
@@ -97,43 +96,29 @@ class BGPVPNDriverError(n_exc.NeutronException):
     message = _("%(method)s failed.")
 
 
-class Bgpvpn(api_extensions.ExtensionDescriptor):
+class Bgpvpn(api_extensions.APIExtensionDescriptor):
 
-    @classmethod
-    def get_name(cls):
-        return bgpvpn_def.NAME
-
-    @classmethod
-    def get_alias(cls):
-        return bgpvpn_def.ALIAS
-
-    @classmethod
-    def get_description(cls):
-        return bgpvpn_def.DESCRIPTION
-
-    @classmethod
-    def get_updated(cls):
-        return bgpvpn_def.UPDATED_TIMESTAMP
+    api_definition = bgpvpn_api_def
 
     @classmethod
     def get_resources(cls):
         plural_mappings = resource_helper.build_plural_mappings(
-            {}, bgpvpn_def.RESOURCE_ATTRIBUTE_MAP)
+            {}, bgpvpn_api_def.RESOURCE_ATTRIBUTE_MAP)
         resources = resource_helper.build_resource_info(
             plural_mappings,
-            bgpvpn_def.RESOURCE_ATTRIBUTE_MAP,
-            bgpvpn_def.LABEL,
+            bgpvpn_api_def.RESOURCE_ATTRIBUTE_MAP,
+            bgpvpn_api_def.LABEL,
             register_quota=True,
             translate_name=True)
-        plugin = directory.get_plugin(bgpvpn_def.LABEL)
-        for collection_name in bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP:
+        plugin = directory.get_plugin(bgpvpn_api_def.LABEL)
+        for collection_name in bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP:
             # Special handling needed for sub-resources with 'y' ending
             # (e.g. proxies -> proxy)
             resource_name = collection_name[:-1]
-            parent = bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].\
-                get('parent')
-            params = bgpvpn_def.SUB_RESOURCE_ATTRIBUTE_MAP[collection_name].\
-                get('parameters')
+            parent = bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP[
+                collection_name].get('parent')
+            params = bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP[
+                collection_name].get('parameters')
 
             controller = base.create_resource(collection_name, resource_name,
                                               plugin, params,
@@ -145,34 +130,37 @@ class Bgpvpn(api_extensions.ExtensionDescriptor):
             resource = extensions.ResourceExtension(
                 collection_name,
                 controller, parent,
-                path_prefix='bgpvpn',
+                path_prefix=bgpvpn_api_def.ALIAS,
                 attr_map=params)
             resources.append(resource)
         return resources
+
+    def get_extended_resources(self, version):
+        # we need to declare these extensions here so that they can be extended
+        # by the bgpvpn-routes-control extension
+        if version == "2.0":
+            return dict(list(bgpvpn_api_def.RESOURCE_ATTRIBUTE_MAP.items()) +
+                        list(bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP.items())
+                        )
+        else:
+            return {}
 
     @classmethod
     def get_plugin_interface(cls):
         return BGPVPNPluginBase
 
-    def update_attributes_map(self, attributes):
-        super(Bgpvpn, self).update_attributes_map(
-            attributes, extension_attrs_map=bgpvpn_def.RESOURCE_ATTRIBUTE_MAP)
-
-    def get_extended_resources(self, version):
-        if version == "2.0":
-            return bgpvpn_def.RESOURCE_ATTRIBUTE_MAP
-        else:
-            return {}
-
 
 @six.add_metaclass(abc.ABCMeta)
 class BGPVPNPluginBase(libbase.ServicePluginBase):
 
+    path_prefix = "/" + bgpvpn_api_def.ALIAS
+    supported_extension_aliases = [bgpvpn_api_def.ALIAS]
+
     def get_plugin_name(self):
-        return bgpvpn_def.LABEL
+        return bgpvpn_api_def.LABEL
 
     def get_plugin_type(self):
-        return bgpvpn_def.LABEL
+        return bgpvpn_api_def.LABEL
 
     def get_plugin_description(self):
         return 'BGP VPN Interconnection service plugin'

@@ -31,14 +31,15 @@ from oslo_log import log
 from networking_bgpvpn._i18n import _
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
+from networking_bgpvpn.neutron.extensions \
+    import bgpvpn_routes_control as bgpvpn_rc
 from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
 
-class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
-    supported_extension_aliases = ["bgpvpn"]
-    path_prefix = "/bgpvpn"
+class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
+                   bgpvpn_rc.BGPVPNRoutesControlPluginBase):
 
     def __init__(self):
         super(BGPVPNPlugin, self).__init__()
@@ -123,6 +124,11 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
         plugin = directory.get_plugin()
         self._validate_router_has_net_assocs(context, router, plugin)
         return router
+
+    def _validate_port(self, context, port_id):
+        plugin = directory.get_plugin()
+        port = plugin.get_port(context, port_id)
+        return port
 
     def _validate_router_has_net_assocs(self, context, router, plugin):
         filter = {'device_id': [router['id']],
@@ -229,3 +235,63 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase):
 
     def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
         self.driver.delete_router_assoc(context, assoc_id, bgpvpn_id)
+
+    def _validate_port_association_routes_bgpvpn(self, context,
+                                                 port_association,
+                                                 bgpvpn_id, assoc_id=None):
+        for route in [r for r in port_association.get('routes', []) if
+                      r['type'] == bgpvpn_rc.api_def.BGPVPN_TYPE]:
+            try:
+                route_bgpvpn = self.get_bgpvpn(context, route['bgpvpn_id'])
+            except bgpvpn.BGPVPNNotFound:
+                raise bgpvpn_rc.BGPVPNPortAssocRouteNoSuchBGPVPN(
+                    bgpvpn_id=route['bgpvpn_id'])
+
+            assoc_tenant_id = port_association.get('project_id')
+            if assoc_tenant_id is None:
+                # update, rather than create, we need to retrieve the tenant
+                assoc = self.get_bgpvpn_port_association(context,
+                                                         assoc_id, bgpvpn_id)
+                assoc_tenant_id = assoc.get('project_id')
+
+            if route_bgpvpn['project_id'] != assoc_tenant_id:
+                raise bgpvpn_rc.BGPVPNPortAssocRouteWrongBGPVPNTenant(
+                    bgpvpn_id=route['bgpvpn_id'])
+
+    def create_bgpvpn_port_association(self, context, bgpvpn_id,
+                                       port_association):
+        port_association = port_association['port_association']
+        port = self._validate_port(context, port_association['port_id'])
+        bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
+        if not port['tenant_id'] == bgpvpn['project_id']:
+            msg = "port doesn't belong to the bgpvpn owner"
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        if not (port_association['project_id'] == bgpvpn['project_id']):
+            msg = "port association and bgpvpn should " \
+                  "belong to the same tenant"
+            raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
+        self._validate_port_association_routes_bgpvpn(context,
+                                                      port_association,
+                                                      bgpvpn_id)
+        return self.driver.create_port_assoc(context,
+                                             bgpvpn_id, port_association)
+
+    def get_bgpvpn_port_association(self, context, assoc_id, bgpvpn_id,
+                                    fields=None):
+        return self.driver.get_port_assoc(context, assoc_id, bgpvpn_id, fields)
+
+    def get_bgpvpn_port_associations(self, context, bgpvpn_id,
+                                     filters=None, fields=None):
+        return self.driver.get_port_assocs(context, bgpvpn_id, filters, fields)
+
+    def update_bgpvpn_port_association(self, context, assoc_id, bgpvpn_id,
+                                       port_association):
+        port_association = port_association['port_association']
+        self._validate_port_association_routes_bgpvpn(context,
+                                                      port_association,
+                                                      bgpvpn_id, assoc_id)
+        return self.driver.update_port_assoc(context, assoc_id, bgpvpn_id,
+                                             port_association)
+
+    def delete_bgpvpn_port_association(self, context, assoc_id, bgpvpn_id):
+        self.driver.delete_port_assoc(context, assoc_id, bgpvpn_id)

@@ -23,10 +23,13 @@ from sqlalchemy.orm import exc
 from neutron.db import _model_query as model_query
 from neutron.db import common_db_mixin
 
+from neutron_lib.api.definitions import bgpvpn_routes_control
 from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
+from networking_bgpvpn.neutron.extensions\
+    import bgpvpn_routes_control as bgpvpn_rc_ext
 from networking_bgpvpn.neutron.services.common import utils
 
 LOG = log.getLogger(__name__)
@@ -75,6 +78,62 @@ class BGPVPNRouterAssociation(model_base.BASEV2, model_base.HasId,
                               lazy='joined',)
 
 
+class BGPVPNPortAssociation(model_base.BASEV2, model_base.HasId,
+                            HasProjectNotNullable):
+    """Represents the association between a bgpvpn and a port."""
+    __tablename__ = 'bgpvpn_port_associations'
+
+    bgpvpn_id = sa.Column(sa.String(36),
+                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
+                          nullable=False)
+    port_id = sa.Column(sa.String(36),
+                        sa.ForeignKey('ports.id', ondelete='CASCADE'),
+                        nullable=False)
+    sa.UniqueConstraint(bgpvpn_id, port_id)
+    advertise_fixed_ips = sa.Column(sa.Boolean(), nullable=False,
+                                    server_default=sa.true())
+    port = orm.relationship("Port",
+                            backref=orm.backref('bgpvpn_associations',
+                                                cascade='all'),
+                            lazy='joined',)
+    routes = orm.relationship("BGPVPNPortAssociationRoute",
+                              backref="bgpvpn_port_associations")
+
+
+class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
+    """Represents an item of the 'routes' attribute of a port association."""
+    __tablename__ = 'bgpvpn_port_association_routes'
+
+    port_association_id = sa.Column(
+        sa.String(length=36),
+        sa.ForeignKey('bgpvpn_port_associations.id', ondelete='CASCADE'),
+        nullable=False)
+    type = sa.Column(sa.Enum(*bgpvpn_routes_control.ROUTE_TYPES,
+                             name="bgpvpn_port_assoc_route_type"),
+                     nullable=False)
+    local_pref = sa.Column(sa.Integer(),
+                           nullable=True)
+    # prefix is NULL unless type is 'prefix'
+    prefix = sa.Column(sa.String(49),
+                       nullable=True)
+    # bgpvpn_id is NULL unless type is 'bgpvpn'
+    bgpvpn_id = sa.Column(sa.String(length=36),
+                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
+                          nullable=True)
+
+    port_association = orm.relationship(
+        "BGPVPNPortAssociation",
+        backref=orm.backref('port_association_routes',
+                            cascade='all'),
+        lazy='select')
+    bgpvpn = orm.relationship(
+        "BGPVPN",
+        backref=orm.backref("port_association_routes",
+                            uselist=False,
+                            lazy='select',
+                            cascade='all, delete-orphan'))
+
+
 class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
     """Represents a BGPVPN Object."""
     name = sa.Column(sa.String(255))
@@ -93,6 +152,10 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
                                            backref="bgpvpn",
                                            lazy='select',
                                            cascade='all, delete-orphan')
+    port_associations = orm.relationship("BGPVPNPortAssociation",
+                                         backref="bgpvpn",
+                                         lazy='select',
+                                         cascade='all, delete-orphan')
 
 
 def _list_bgpvpns_result_filter_hook(query, filters):
@@ -106,7 +169,41 @@ def _list_bgpvpns_result_filter_hook(query, filters):
         query = query.join(BGPVPNRouterAssociation)
         query = query.filter(BGPVPNRouterAssociation.router_id.in_(values))
 
+    values = filters and filters.get('ports', [])
+    if values:
+        query = query.join(BGPVPNRouterAssociation)
+        query = query.filter(BGPVPNPortAssociation.port_id.in_(values))
+
     return query
+
+
+def _add_port_assoc_route_db_from_dict(context, route, port_association_id):
+    if route['type'] == 'prefix':
+        kwargs = {'prefix': route['prefix']}
+    elif route['type'] == 'bgpvpn':
+        kwargs = {'bgpvpn_id': route['bgpvpn_id']}
+    else:
+        # not reached
+        pass
+
+    context.session.add(BGPVPNPortAssociationRoute(
+        port_association_id=port_association_id,
+        type=route['type'],
+        local_pref=route.get('local_pref', None),
+        **kwargs
+    ))
+
+
+def port_assoc_route_dict_from_db(route_db):
+    route = {
+        'type': route_db.type,
+        'local_pref': route_db.local_pref
+    }
+    if route_db.type == 'prefix':
+        route.update({'prefix': route_db.prefix})
+    elif route_db.type == 'bgpvpn':
+        route.update({'bgpvpn_id': route_db.bgpvpn_id})
+    return route
 
 
 class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
@@ -136,11 +233,14 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                     bgpvpn_db.network_associations]
         router_list = [router_assocs.router_id for router_assocs in
                        bgpvpn_db.router_associations]
+        port_list = [port_assocs.port_id for port_assocs in
+                     bgpvpn_db.port_associations]
         res = {
             'id': bgpvpn_db['id'],
             'tenant_id': bgpvpn_db['tenant_id'],
             'networks': net_list,
             'routers': router_list,
+            'ports': port_list,
             'name': bgpvpn_db['name'],
             'type': bgpvpn_db['type'],
             'route_targets':
@@ -329,3 +429,82 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             router_assoc = self._make_router_assoc_dict(router_assoc_db)
             context.session.delete(router_assoc_db)
         return router_assoc
+
+    def _make_port_assoc_dict(self, port_assoc_db, fields=None):
+        routes = [port_assoc_route_dict_from_db(r)
+                  for r in port_assoc_db['routes']]
+        res = {'id': port_assoc_db['id'],
+               'tenant_id': port_assoc_db['tenant_id'],
+               'bgpvpn_id': port_assoc_db['bgpvpn_id'],
+               'port_id': port_assoc_db['port_id'],
+               'advertise_fixed_ips': port_assoc_db['advertise_fixed_ips'],
+               'routes': routes}
+        return self._fields(res, fields)
+
+    def _get_port_assoc(self, context, assoc_id, bgpvpn_id):
+        try:
+            query = self._model_query(context, BGPVPNPortAssociation)
+            return query.filter(BGPVPNPortAssociation.id == assoc_id,
+                                BGPVPNPortAssociation.bgpvpn_id == bgpvpn_id
+                                ).one()
+        except exc.NoResultFound:
+            raise bgpvpn_rc_ext.BGPVPNPortAssocNotFound(id=assoc_id,
+                                                        bgpvpn_id=bgpvpn_id)
+
+    def create_port_assoc(self, context, bgpvpn_id, port_association):
+        port_id = port_association['port_id']
+        advertise_fixed_ips = port_association['advertise_fixed_ips']
+        try:
+            with context.session.begin(subtransactions=True):
+                port_assoc_db = BGPVPNPortAssociation(
+                    tenant_id=port_association['tenant_id'],
+                    bgpvpn_id=bgpvpn_id,
+                    port_id=port_id,
+                    advertise_fixed_ips=advertise_fixed_ips)
+                context.session.add(port_assoc_db)
+        except db_exc.DBDuplicateEntry:
+            LOG.warning(("port %(port_id)s is already associated to "
+                         "BGPVPN %(bgpvpn_id)s"),
+                        {'port_id': port_id,
+                         'bgpvpn_id': bgpvpn_id})
+            raise bgpvpn_rc_ext.BGPVPNPortAssocAlreadyExists(
+                bgpvpn_id=bgpvpn_id, port_id=port_association['port_id'])
+
+        with context.session.begin(subtransactions=True):
+            for route in port_association['routes']:
+                    _add_port_assoc_route_db_from_dict(context,
+                                                       route, port_assoc_db.id)
+        return self._make_port_assoc_dict(port_assoc_db)
+
+    def get_port_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        port_assoc_db = self._get_port_assoc(context, assoc_id, bgpvpn_id)
+        return self._make_port_assoc_dict(port_assoc_db, fields)
+
+    def get_port_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        filters['bgpvpn_id'] = [bgpvpn_id]
+        return self._get_collection(context, BGPVPNPortAssociation,
+                                    self._make_port_assoc_dict,
+                                    filters, fields)
+
+    def update_port_assoc(self, context, assoc_id, bgpvpn_id, port_assoc):
+        with context.session.begin(subtransactions=True):
+            port_assoc_db = self._get_port_assoc(context, assoc_id, bgpvpn_id)
+            for route_db in port_assoc_db.routes:
+                context.session.delete(route_db)
+            for route in port_assoc.pop('routes', []):
+                _add_port_assoc_route_db_from_dict(context, route, assoc_id)
+            port_assoc_db.update(port_assoc)
+        return self._make_port_assoc_dict(port_assoc_db)
+
+    def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
+        LOG.info(("deleting port association %(id)s for "
+                  "BGPVPN %(bgpvpn)s"),
+                 {'id': assoc_id, 'bgpvpn': bgpvpn_id})
+        with context.session.begin(subtransactions=True):
+            port_assoc_db = self._get_port_assoc(context, assoc_id,
+                                                 bgpvpn_id)
+            port_assoc = self._make_port_assoc_dict(port_assoc_db)
+            context.session.delete(port_assoc_db)
+        return port_assoc

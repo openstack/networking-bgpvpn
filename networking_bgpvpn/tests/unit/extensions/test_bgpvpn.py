@@ -20,7 +20,7 @@ from oslo_utils import uuidutils
 
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
-from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
 from webob import exc
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
@@ -29,21 +29,18 @@ _uuid = uuidutils.generate_uuid
 _get_path = test_base._get_path
 BGPVPN_PREFIX = 'bgpvpn'
 BGPVPN_URI = BGPVPN_PREFIX + '/' + 'bgpvpns'
-BGPVPN_PLUGIN_BASE_NAME = (
-    bgpvpn.BGPVPNPluginBase.__module__ + '.' +
-    bgpvpn.BGPVPNPluginBase.__name__)
 
 
-class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
-    fmt = 'json'
+class BgpvpnExtensionTestCaseBase(test_extensions_base.ExtensionTestCase):
 
     def setUp(self):
-        super(BgpvpnExtensionTestCase, self).setUp()
+        super(BgpvpnExtensionTestCaseBase, self).setUp()
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self._setUpExtension(
-            BGPVPN_PLUGIN_BASE_NAME,
-            bgpvpn_def.LABEL,
-            bgpvpn_def.RESOURCE_ATTRIBUTE_MAP,
+            '%s.%s' % (bgpvpn.BGPVPNPluginBase.__module__,
+                       bgpvpn.BGPVPNPluginBase.__name__),
+            bgpvpn_api_def.LABEL,
+            None,
             bgpvpn.Bgpvpn,
             BGPVPN_PREFIX,
             plural_mappings=plural_mappings,
@@ -58,6 +55,9 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
             '/network_associations'
         self.ROUTER_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
             '/router_associations'
+
+
+class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
 
     def test_bgpvpn_create(self):
         bgpvpn_id = _uuid()
