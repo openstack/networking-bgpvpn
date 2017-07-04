@@ -51,7 +51,10 @@ class CommonData(forms.SelfHandlingForm):
             if self.request.user.is_superuser:
                 for attribute in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
                     if not cleaned_data.get(attribute):
-                        cleaned_data[attribute] = None
+                        del cleaned_data[attribute]
+                    else:
+                        cleaned_data[attribute] = bgpvpn_common.format_rt(
+                            cleaned_data[attribute])
                 # if an admin user use the bgpvpn panel project
                 # tenant_id field doesn't exist
                 if not cleaned_data.get('tenant_id'):
@@ -75,9 +78,6 @@ class CommonData(forms.SelfHandlingForm):
 
     def handle(self, request, data):
         params = {}
-        if request.user.is_superuser:
-            for key in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
-                params[key] = bgpvpn_common.format_rt(data.pop(key))
         params.update(data)
         try:
             if self.action == 'update':
