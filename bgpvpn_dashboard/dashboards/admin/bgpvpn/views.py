@@ -63,9 +63,12 @@ class IndexView(project_views.IndexView):
 
 class CreateView(forms.ModalFormView):
     form_class = bgpvpn_forms.CreateBgpVpn
+    form_id = "create_bgpvpn_form"
     template_name = 'admin/bgpvpn/create.html'
+    submit_label = _("Create BGPVPN")
     success_url = reverse_lazy('horizon:admin:bgpvpn:index')
     page_title = _("Create BGPVPN")
+    submit_url = reverse_lazy("horizon:admin:bgpvpn:create")
 
 
 class EditDataView(project_views.EditDataView):
