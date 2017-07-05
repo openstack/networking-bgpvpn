@@ -1,6 +1,6 @@
 # This file is hooked from https://github.com/openstack-infra/project-config/blob/master/jenkins/jobs/networking-bgpvpn.yaml
 
-export OVERRIDE_ENABLED_SERVICES=n-api,n-crt,n-cpu,n-cond,n-sch,placement-api,q-svc,q-agt,g-api,g-reg,q-dhcp,q-l3,q-meta,key,mysql,rabbit,b-bgp
+export OVERRIDE_ENABLED_SERVICES=n-api,n-crt,n-cpu,n-cond,n-sch,placement-api,q-svc,q-agt,g-api,g-reg,q-dhcp,q-l3,q-meta,key,mysql,rabbit,b-bgp,n-api-meta
 
 if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
     export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
