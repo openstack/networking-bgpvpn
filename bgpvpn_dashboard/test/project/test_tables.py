@@ -63,7 +63,7 @@ class TestUpdateRouterAssociations(testtools.TestCase):
         self.assertEqual('foo_reverse_url?step=update_bgpvpn_router', result)
 
 
-class TestFonctionGet(testtools.TestCase):
+class TestFunctionGet(testtools.TestCase):
 
     @mock.patch.object(bgpvpn_tables, 'reverse')
     def test_get_network_url(self, mock_reverse):

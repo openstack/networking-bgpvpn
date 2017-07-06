@@ -89,7 +89,7 @@ class TestEditDataView(helpers.APITestCase):
                          self.bgpvpn_view.template_name)
 
     @mock.patch.object(bgpvpn_views, 'bgpvpn_api', autospec=True)
-    def test_get_initial(self, mock_bgpvpn_api):
+    def test_get_initial_user(self, mock_bgpvpn_api):
         self.bgpvpn_view.request.user.is_superuser = False
         bgpvpn_data = {"name": "foo-name",
                        "id": "foo-id",
@@ -97,6 +97,30 @@ class TestEditDataView(helpers.APITestCase):
         expected_data = {"name": "foo-name",
                          "bgpvpn_id": "foo-id",
                          "type": "l3"}
+        mock_bgpvpn_api.bgpvpn_get.return_value = bgpvpn_api.Bgpvpn(
+            bgpvpn_data)
+        result = self.bgpvpn_view.get_initial()
+
+        mock_bgpvpn_api.bgpvpn_get.assert_called_once_with(
+            self.bgpvpn_view.request, "foo-id")
+        for key, val in expected_data.items():
+            self.assertEqual(val, result[key])
+
+    @mock.patch.object(bgpvpn_views, 'bgpvpn_api', autospec=True)
+    def test_get_initial_admin(self, mock_bgpvpn_api):
+        self.bgpvpn_view.request.user.is_superuser = True
+        bgpvpn_data = {"name": "foo-name",
+                       "id": "foo-id",
+                       "type": "l3",
+                       "route_targets": ["65432:1", "65432:2"],
+                       "import_targets": [],
+                       "export_targets": []}
+        expected_data = {"name": "foo-name",
+                         "bgpvpn_id": "foo-id",
+                         "type": "l3",
+                         "route_targets": "65432:1,65432:2",
+                         "import_targets": "",
+                         "export_targets": ""}
         mock_bgpvpn_api.bgpvpn_get.return_value = bgpvpn_api.Bgpvpn(
             bgpvpn_data)
         result = self.bgpvpn_view.get_initial()
