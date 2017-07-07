@@ -275,11 +275,11 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         self.assertDictSupersetOf(return_value,
                                   res['network_association'])
 
-    def _invalid_datas_for_creation(self, target):
+    def _invalid_data_for_creation(self, target):
         return [None, {}, {target: None}, {target: {}}]
 
-    def test_bgpvpn_net_create_with_invalid_datas(self):
-        for data in self._invalid_datas_for_creation('network_association'):
+    def test_bgpvpn_net_create_with_invalid_data(self):
+        for data in self._invalid_data_for_creation('network_association'):
             res = self.api.post(_get_path(self.NET_ASSOC_URI, fmt=self.fmt),
                                 self.serialize(data),
                                 content_type='application/%s' % self.fmt,
@@ -348,8 +348,8 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
         self.assertDictSupersetOf(return_value,
                                   res['router_association'])
 
-    def test_bgpvpn_router_create_with_invalid_datas(self):
-        for data in self._invalid_datas_for_creation('router_association'):
+    def test_bgpvpn_router_create_with_invalid_data(self):
+        for data in self._invalid_data_for_creation('router_association'):
             res = self.api.post(_get_path(self.ROUTER_ASSOC_URI, fmt=self.fmt),
                                 self.serialize(data),
                                 content_type='application/%s' % self.fmt,
