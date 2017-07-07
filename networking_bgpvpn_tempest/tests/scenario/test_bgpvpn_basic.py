@@ -143,7 +143,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             network = self.networks[i]
             server = self._create_server(
                 name[i], keypair, network, port_ips[i], security_group_ids,
-                self.manager)
+                self.os_primary)
             self.servers.append(server)
             self.servers_keypairs[server['id']] = keypair
             self.server_fixed_ips[server['id']] = (
