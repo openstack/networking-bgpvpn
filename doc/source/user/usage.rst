@@ -103,6 +103,6 @@ Examples
 BGPVPN + Network Association Resources
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- .. literalinclude:: ./samples/bgpvpn-sample01.py
+ .. literalinclude:: ../samples/bgpvpn-sample01.py
 
 

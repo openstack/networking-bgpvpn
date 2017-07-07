@@ -6,7 +6,8 @@ Introduction
 ------------
 
 The **OpenContrail** driver for the BGPVPN service plugin is designed to work
-jointly with the `OpenContrail SDN controller`_.
+jointly with the `OpenContrail SDN controller <http://www.opencontrail.org/>`__
+(`GitHub <https://github.com/Juniper/contrail-controller>`__).
 
 Limitations
 -----------
@@ -85,7 +86,6 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
  enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
  NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver:default"
 
-.. _OpenContrail SDN controller : https://github.com/Juniper/contrail-controller
 .. _route distinguisher : http://docs.openstack.org/developer/networking-bgpvpn/api.html#route-distinguishers
 .. _associations with routers : http://docs.openstack.org/developer/networking-bgpvpn/api.html#router-association
 .. _network associations : http://docs.openstack.org/developer/networking-bgpvpn/api.html#network-association

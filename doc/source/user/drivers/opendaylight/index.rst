@@ -3,7 +3,7 @@ OpenDaylight driver
 ===================
 
 The **OpenDaylight** driver for the BGPVPN service plugin is designed to work
-jointly with the OpenDaylight SDN controller.
+jointly with the `OpenDaylight SDN controller <http://www.opendaylight.org/>`__.
 
 OpenDaylight driver requires `networking-odl plugin`_ which comes with its own
 devstack scripts. Details on how to configure devstack for OpenDaylight

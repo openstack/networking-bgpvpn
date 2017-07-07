@@ -25,7 +25,7 @@ Heat Orchestration Template (HOT) example 1
 This template has to be run with admin rights and will create
 a BGPVPN for the current tenant, along with a Network associated with it:
 
-    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-00.yaml
+    .. literalinclude:: ../../../networking_bgpvpn_heat/examples/bgpvpn_test-00.yaml
        :language: yaml
 
 In devstack, this HOT file can be used with cloud admin privileges in the demo
@@ -61,7 +61,7 @@ This is a set of two templates:
 
 * one that has to be run with admin rights and will create a BGPVPN for the 'demo' tenant:
 
-    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-04-admin.yaml
+    .. literalinclude:: ../../../networking_bgpvpn_heat/examples/bgpvpn_test-04-admin.yaml
        :language: yaml
 
     .. code-block:: shell-session
@@ -75,7 +75,7 @@ This is a set of two templates:
 
     * create a second Network connected to a Router, and bind the Router to the 'default_vpn'
 
-    .. literalinclude:: ../../networking_bgpvpn_heat/examples/bgpvpn_test-04-tenant.yaml
+    .. literalinclude:: ../../../networking_bgpvpn_heat/examples/bgpvpn_test-04-tenant.yaml
        :language: yaml
 
     .. code-block:: shell-session

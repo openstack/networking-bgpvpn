@@ -34,18 +34,11 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   overview
-   api
-   installation
-   usage
-   heat
-   horizon
-   contributing
-   specs
-   future/index
+   user/index
+   install/index
+   contributor/index
 
-Indices and Tables
-==================
+.. rubric:: Indices and Tables
 
 * :ref:`genindex`
 * :ref:`search`

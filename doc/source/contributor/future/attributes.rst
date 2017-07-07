@@ -68,8 +68,10 @@ and from a BGP VPN and expose this state to the tenant.
 ~~~~~~~~~~~~~~~~
 
 VXLAN is one option among others that could be used for BGP E-VPNs for instance
-in the context of E-VPN [draft-ietf-bess-evpn-overlay]_. When VXLAN is used on a
-hardware platforms the use of a locally-assigned id may not be always possible
+in the context of E-VPN (`draft-ietf-bess-evpn-overlay
+<https://tools.ietf.org/html/draft-ietf-bess-evpn-overlay>`__).
+When VXLAN is used on a hardware
+platforms the use of a locally-assigned id may not be always possible
 which introduce the need to configure a globally-assigned VXLAN VNID.
 
 The 'VNID' optional VNID attribute allows the admin to enforce the use of a

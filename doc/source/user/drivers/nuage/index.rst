@@ -8,7 +8,8 @@
 Nuage Networks driver
 =====================
 
-The Nuage Network driver works jointly with Nuage Networks VSP.
+The Nuage Network driver works jointly with
+`Nuage Networks VSP <http://www.nuagenetworks.net/>`__.
 
 A pre-requisite for the nuage BGPVPN driver is that the Nuage-specific
 installation and configuration steps have been applied; in particular the
