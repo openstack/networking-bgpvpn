@@ -43,18 +43,24 @@ Currently defined techniques are:
 
 API call to list the available techniques, with example answers:
 
-  * GET /bgpvpn/techniques ::
+* GET /bgpvpn/techniques:
+
+  .. code-block:: json
 
      { "techniques": {
         "l3": [ "ipvpn" ],
         "l2": [ "evpn" ]
      } }
 
-  * GET /bgpvpn/techniques/l3 ::
+* GET /bgpvpn/techniques/l3:
+
+  .. code-block:: json
 
      { "l3": [ "ipvpn"] }
 
-  * GET /bgpvpn/techniques/l2 ::
+* GET /bgpvpn/techniques/l2:
+
+  .. code-block:: json
 
      { "l2": [ "evpn"] }
 

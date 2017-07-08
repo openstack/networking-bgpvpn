@@ -38,9 +38,9 @@ installed. Their installation folders are respectively <horizon> and
 
 Copy configuration file:
 
-    .. code-block:: shell
+.. code-block:: shell
 
-       cp <networking-bgpvpn>/bgpvpn_dashboard/enabled/_[0-9]*.py <horizon>/openstack_dashboard/local/enabled/
+   cp <networking-bgpvpn>/bgpvpn_dashboard/enabled/_[0-9]*.py <horizon>/openstack_dashboard/local/enabled/
 
 Restart the web server hosting Horizon.
 

@@ -47,13 +47,15 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 
 * Clone devstack:
 
-   git clone git@github.com:openstack-dev/devstack
+  .. code-block:: console
+
+     git clone git@github.com:openstack-dev/devstack
 
 * Here a proposed devstack ``local.conf`` file which permits to deploy
   OpenStack keystone, glance, nova, neutron/networking-bgpvpn and
   compile/install all OpenContrail services and dependences:
 
-.. code:: bash
+.. code-block:: bash
 
  [[local|localrc]]
  LOG=True

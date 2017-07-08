@@ -7,7 +7,7 @@ Use from Neutron API CLI
 
 Example commands to use by the admin to create a BGPVPN resource:
 
-.. code-block:: shell
+.. code-block:: console
 
 	neutron bgpvpn-create --route-targets 64512:1 --tenant-id b954279e1e064dc9b8264474cb3e6bd2
 	neutron bgpvpn-list
@@ -15,7 +15,7 @@ Example commands to use by the admin to create a BGPVPN resource:
 
 Example commands to use by the tenant owning the BGPVPN to associate a Network to it:
 
-.. code-block:: shell
+.. code-block:: console
 
 	neutron bgpvpn-net-assoc-create myBGPVPN --network 828cddad3b834e79b79abc1b87b6cca0
 	# returns <net-assoc-uuid>
@@ -103,6 +103,6 @@ Examples
 BGPVPN + Network Association Resources
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- .. literalinclude:: ../samples/bgpvpn-sample01.py
+.. literalinclude:: ../samples/bgpvpn-sample01.py
 
 
