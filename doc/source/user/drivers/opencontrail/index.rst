@@ -8,6 +8,10 @@ Introduction
 The **OpenContrail** driver for the BGPVPN service plugin is designed to work
 jointly with the `OpenContrail SDN controller <http://www.opencontrail.org/>`__
 (`GitHub <https://github.com/Juniper/contrail-controller>`__).
+There are two versions of the driver. `Version 1`_ and `version 2`_.
+
+.. _Version 1: https://github.com/openstack/networking-bgpvpn/tree/master/networking_bgpvpn/neutron/services/service_drivers/opencontrail
+.. _Version 2: https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn
 
 Limitations
 -----------
