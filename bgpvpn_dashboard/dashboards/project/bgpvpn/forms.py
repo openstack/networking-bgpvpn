@@ -18,6 +18,7 @@ import logging
 
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
@@ -44,27 +45,6 @@ class CommonData(forms.SelfHandlingForm):
             self.fields = collections.OrderedDict(
                 (k, self.fields[k]) for k in self.fields_order)
 
-    def clean(self):
-        cleaned_data = super(CommonData, self).clean()
-        name = cleaned_data.get('name')
-        try:
-            if self.request.user.is_superuser:
-                # if an admin user use the bgpvpn panel project
-                # tenant_id field doesn't exist
-                if not cleaned_data.get('tenant_id'):
-                    tenant_id = self.request.user.tenant_id
-                else:
-                    tenant_id = cleaned_data.get('tenant_id')
-                bgpvpn_api.bgpvpns_list(
-                    self.request, name=name, tenant_id=tenant_id)
-            else:
-                bgpvpn_api.bgpvpns_list(self.request, name=name)
-        except Exception:
-            msg = _('Unable to get BGPVPN with name %s') % name
-            exceptions.check_message(["Connection", "refused"], msg)
-            raise
-        return cleaned_data
-
     @staticmethod
     def _del_attributes(attributes, data):
         for attribute in attributes:
@@ -78,8 +58,12 @@ class CommonData(forms.SelfHandlingForm):
         params.update(data)
         try:
             if self.action == 'update':
+                # attribute tenant_id is required in request when admin user is
+                # logged and bgpvpn form from admin menu is used
                 if request.user.is_superuser and data.get('tenant_id'):
                     attributes = ('bgpvpn_id', 'type', 'tenant_id')
+                # attribute tenant_id does not exist in request
+                # when non-admin user is logged
                 else:
                     attributes = ('bgpvpn_id', 'type')
                 self._del_attributes(attributes, params)
