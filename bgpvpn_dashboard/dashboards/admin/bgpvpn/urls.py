@@ -13,15 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import patterns
 from django.conf.urls import url
 
 import bgpvpn_dashboard.dashboards.admin.bgpvpn.views as bgpvpn_views
 
 BGPVPN = r'^(?P<bgpvpn_id>[^/]+)/%s$'
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', bgpvpn_views.IndexView.as_view(), name='index'),
     url(r'^create/$', bgpvpn_views.CreateView.as_view(), name='create'),
     url(BGPVPN % 'edit', bgpvpn_views.EditDataView.as_view(), name='edit'),
@@ -30,4 +28,4 @@ urlpatterns = patterns(
         name='update-associations'),
     url(r'^(?P<bgpvpn_id>[^/]+)/detail/$',
         bgpvpn_views.DetailProjectView.as_view(), name='detail'),
-)
+]
