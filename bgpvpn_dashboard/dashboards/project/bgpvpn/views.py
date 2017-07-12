@@ -40,17 +40,15 @@ class IndexView(tables.DataTableView):
     @memoized.memoized_method
     def get_data(self):
         tenant_id = self.request.user.tenant_id
-        bgpvpns = bgpvpn_api.bgpvpns_list(self.request, tenant_id=tenant_id)
-        networks = api.neutron.network_list_for_tenant(self.request, tenant_id)
-        routers = api.neutron.router_list(self.request, tenant_id=tenant_id)
-        for bgpvpn in bgpvpns:
-            networks_list = [network for network in networks
-                             if network.id in bgpvpn.networks]
-            routers_list = [router for router in routers
-                            if router.id in bgpvpn.routers]
-            bgpvpn.networks = networks_list
-            bgpvpn.routers = routers_list
-        return bgpvpns
+        bgpvpns_list = bgpvpn_api.bgpvpns_list(
+            self.request, tenant_id=tenant_id)
+        for bgpvpn in bgpvpns_list:
+            bgpvpn.networks = [api.neutron.network_get(
+                self.request, id, expand_subnet=False)
+                for id in bgpvpn.networks]
+            bgpvpn.routers = [api.neutron.router_get(self.request, id)
+                              for id in bgpvpn.routers]
+        return bgpvpns_list
 
 
 class EditDataView(forms.ModalFormView):

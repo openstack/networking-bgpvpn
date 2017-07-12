@@ -33,32 +33,24 @@ class IndexView(project_views.IndexView):
     table_class = bgpvpn_tables.BgpvpnTable
 
     @memoized.memoized_method
-    def _get_tenant_name(self):
+    def _get_tenant_name(self, id):
         try:
-            tenants, has_more = api.keystone.tenant_list(self.request)
+            return api.keystone.tenant_get(self.request, id).name
         except Exception:
-            tenants = []
             msg = _("Unable to retrieve information about the "
-                    "bgpvpns projects.")
+                    "tenant %s") % id
             exceptions.handle(self.request, msg)
 
-        return {t.id: t.name for t in tenants}
-
-    @memoized.memoized_method
     def get_data(self):
-        bgpvpns = bgpvpn_api.bgpvpns_list(self.request)
-        networks = api.neutron.network_list(self.request)
-        routers = api.neutron.router_list(self.request)
-        tenant_dict = self._get_tenant_name()
-        for bgpvpn in bgpvpns:
-            networks_list = [network for network in networks
-                             if network.id in bgpvpn.networks]
-            routers_list = [router for router in routers
-                            if router.id in bgpvpn.routers]
-            bgpvpn.networks = networks_list
-            bgpvpn.routers = routers_list
-            bgpvpn.tenant_name = tenant_dict.get(bgpvpn.tenant_id, None)
-        return bgpvpns
+        bgpvpns_list = bgpvpn_api.bgpvpns_list(self.request)
+        for bgpvpn in bgpvpns_list:
+            bgpvpn.networks = [api.neutron.network_get(
+                self.request, id, expand_subnet=False)
+                for id in bgpvpn.networks]
+            bgpvpn.routers = [api.neutron.router_get(self.request, id)
+                              for id in bgpvpn.routers]
+            bgpvpn.tenant_name = self._get_tenant_name(bgpvpn.tenant_id)
+        return bgpvpns_list
 
 
 class CreateView(forms.ModalFormView):

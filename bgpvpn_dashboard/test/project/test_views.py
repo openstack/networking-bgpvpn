@@ -55,18 +55,14 @@ class TestIndexView(helpers.APITestCase):
             }
         return bgpvpn_api.Bgpvpn(bgpvpn_info)
 
-    @mock.patch.object(bgpvpn_views, 'api', autospec=True)
     @mock.patch.object(bgpvpn_views, 'bgpvpn_api', autospec=True)
-    def test_get_data(self, mock_bgpvpn_api, mock_api):
+    def test_get_data(self, mock_bgpvpn_api):
         """Test that get_data works."""
 
         bgpvpn_foo = self._get_mock_bgpvpn("foo")
         bgpvpn_bar = self._get_mock_bgpvpn("bar")
 
-        mock_neutron_client = mock_api.neutron.neutronclient(mock.Mock())
         mock_bgpvpn_api.bgpvpns_list.return_value = [bgpvpn_bar, bgpvpn_foo]
-        mock_neutron_client.list_networks.return_value = []
-        mock_neutron_client.list_routers.return_value = []
         result = self.bgpvpn_view.get_data()
         expected_bgpvpns = [bgpvpn_bar, bgpvpn_foo]
         self.assertEqual(expected_bgpvpns, result)
