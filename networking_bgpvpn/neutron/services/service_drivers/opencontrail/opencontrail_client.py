@@ -13,12 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
+from networking_bgpvpn._i18n import _
 from networking_bgpvpn.neutron.services.service_drivers.opencontrail import \
     exceptions as oc_exc
+
 from oslo_config import cfg
 from oslo_log import log
+from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
+
 import requests
 from six.moves import http_client as httplib
 from six.moves.urllib import parse as urlparse
@@ -74,15 +77,17 @@ def get_auth_token():
             auth_port = "35357"
         auth_url = "%s://%s:%s" % (auth_protocol, auth_host, auth_port)
     url = auth_url + '/v2.0/tokens'
-    response = requests.post(url, data=json.dumps(auth_body),
+    response = requests.post(url, data=jsonutils.dumps(auth_body),
                              headers=DEFAULT_HEADERS)
 
     if response.status_code == 200:
-        auth_content = json.loads(response.text)
+        auth_content = jsonutils.loads(response.text)
         return auth_content['access']['token']['id']
     else:
-        raise RuntimeError("Authentication failure. Code: %d, reason: %s"
-                           % (response.status_code, response.reason))
+        raise RuntimeError(_("Authentication failure. Code: %(code)d, "
+                             "reason: %(reason)s")
+                           % {'code': response.status_code,
+                              'reason': response.reason})
 
 
 class RequestHandler(object):
@@ -173,7 +178,7 @@ class RequestHandler(object):
         }
 
         if data:
-            req_params.update({'data': json.dumps(data)})
+            req_params.update({'data': jsonutils.dumps(data)})
 
         return req_params
 
@@ -347,7 +352,7 @@ class OpenContrailAPIBaseClient(RequestHandler):
         elif operation in ['RETRIEVE', 'DELETE'] and key:
             body.update({'key': key})
         elif operation == 'STORE' and key and value:
-            body.update({'key': key, 'value': json.dumps(value)})
+            body.update({'key': key, 'value': jsonutils.dumps(value)})
         else:
             raise oc_exc.OpenContrailAPIBadKVAttributes
 

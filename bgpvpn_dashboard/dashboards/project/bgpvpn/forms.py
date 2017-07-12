@@ -95,7 +95,7 @@ class CommonData(forms.SelfHandlingForm):
                 bgpvpn = bgpvpn_api.bgpvpn_create(request, **params)
             else:
                 raise Exception(
-                    'Action type %s is not supported' % self.action)
+                    _('Action type %s is not supported') % self.action)
             msg = _('BGPVPN {name} was successfully {action}.').format(
                 name=data['name'],
                 action=success_action)
