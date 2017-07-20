@@ -28,5 +28,5 @@ implementation based on an Open Source BGP implementation is also provided.
 * Free software: Apache license
 * Source: http://git.openstack.org/cgit/openstack/networking-bgpvpn
 * Bugs: http://bugs.launchpad.net/bgpvpn
-* Doc: http://docs.openstack.org/developer/networking-bgpvpn
+* Doc: https://docs.openstack.org/networking-bgpvpn/latest/
 
