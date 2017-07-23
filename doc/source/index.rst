@@ -36,6 +36,7 @@ Contents
 
    user/index
    install/index
+   configuration/index
    contributor/index
 
 .. rubric:: Indices and Tables
