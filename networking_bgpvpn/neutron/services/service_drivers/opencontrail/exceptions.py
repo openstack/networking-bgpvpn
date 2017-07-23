@@ -15,6 +15,8 @@
 
 from neutron_lib import exceptions as n_exc
 
+from networking_bgpvpn._i18n import _
+
 # OpenContrail client API exceptions
 
 

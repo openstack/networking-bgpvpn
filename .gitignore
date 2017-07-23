@@ -43,8 +43,9 @@ bgpvpn_dashboard/test/.secret_key_store
 output/*.html
 output/*/index.html
 
-# Sphinx
+# Documentation
 doc/build
+etc/**/*.sample
 
 # pbr generates these
 AUTHORS
