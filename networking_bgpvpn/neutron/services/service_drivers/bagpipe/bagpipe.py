@@ -33,8 +33,6 @@ from oslo_log import log as logging
 
 from networking_bagpipe.agent.bgpvpn import rpc_client
 
-from networking_bgpvpn._i18n import _LE
-
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import constants
@@ -166,9 +164,9 @@ def network_is_external(context, net_id):
 
 
 def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
-    LOG.exception(_LE("Error during notification processing "
-                      "%(resource)s %(event)s, %(trigger)s, "
-                      "%(kwargs)s: %(exc)s"),
+    LOG.exception("Error during notification processing "
+                  "%(resource)s %(event)s, %(trigger)s, "
+                  "%(kwargs)s: %(exc)s",
                   {'trigger': trigger,
                    'resource': resource,
                    'event': event,

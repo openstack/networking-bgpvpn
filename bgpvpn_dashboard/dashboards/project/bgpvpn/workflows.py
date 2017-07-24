@@ -79,7 +79,7 @@ class UpdateAssociations(workflows.MembershipAction):
                 return api.neutron.network_list_for_tenant(request, tenant_id)
             else:
                 raise Exception(
-                    'Resource type %s is not supported' % resource_type)
+                    _('Resource type %s is not supported') % resource_type)
         except Exception:
             exceptions.handle(request, err_msg % resource_type)
 
@@ -235,7 +235,7 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
                 self._handle_type(request, data, 'router')
                 action = True
             if not action:
-                raise Exception('Associations type is not supported')
+                raise Exception(_('Associations type is not supported'))
         except Exception:
             return False
         return True
