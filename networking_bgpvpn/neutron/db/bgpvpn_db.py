@@ -254,7 +254,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
     def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
-        return self._make_net_assoc_dict(net_assoc_db, fields=None)
+        return self._make_net_assoc_dict(net_assoc_db, fields)
 
     def get_net_assocs(self, context, bgpvpn_id, filters=None, fields=None):
         if not filters:
