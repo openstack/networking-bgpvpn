@@ -106,5 +106,5 @@ In devstack
        # multi-node devstack setup
        #BAGPIPE_BGP_PEERS=1.2.3.4,2.3.4.5
 
-.. _networking-bagpipe: https://docs.openstack.org/developer/networking-bagpipe
+.. _networking-bagpipe: https://docs.openstack.org/networking-bagpipe/latest/
 
