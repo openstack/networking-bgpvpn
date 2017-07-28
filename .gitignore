@@ -32,6 +32,7 @@ bgpvpn_dashboard/test/.secret_key_store
 
 # Translations
 *.mo
+*.pot
 
 # Mr Developer
 .mr.developer.cfg

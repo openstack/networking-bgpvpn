@@ -12,12 +12,13 @@
 #    under the License.
 
 from heat.common import exception
-from heat.common.i18n import _
 from heat.engine import attributes
 from heat.engine.clients.os.neutron import neutron_constraints
 from heat.engine import constraints
 from heat.engine import properties
 from heat.engine.resources.openstack.neutron import neutron
+
+from networking_bgpvpn_heat._i18n import _
 
 
 class BGPVPN(neutron.NeutronResource):
