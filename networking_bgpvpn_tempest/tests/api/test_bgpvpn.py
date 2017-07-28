@@ -16,8 +16,8 @@
 from networking_bgpvpn_tempest.tests.base import BaseBgpvpnTest as base
 from oslo_utils import uuidutils
 from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 from testtools import ExpectedException
 
 
@@ -43,26 +43,26 @@ class BgpvpnTest(base):
     def test_create_bgpvpn(self):
         self.create_bgpvpn(self.bgpvpn_admin_client)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_create_bgpvpn_as_non_admin_fail(self):
         self.assertRaises(exceptions.Forbidden,
                           self.create_bgpvpn, self.bgpvpn_client)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_delete_bgpvpn_as_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
         self.assertRaises(exceptions.Forbidden,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_show_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_alt_client.show_bgpvpn, bgpvpn['id'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_list_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -70,7 +70,7 @@ class BgpvpnTest(base):
         self.assertNotIn(bgpvpn['id'],
                          [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_show_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -83,7 +83,7 @@ class BgpvpnTest(base):
                           self.bgpvpn_alt_client.show_network_association,
                           bgpvpn['id'], net_assoc['id'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_list_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -134,7 +134,7 @@ class BgpvpnTest(base):
         self.assertEqual(['64512:5'], bgpvpn['import_targets'])
         self.assertEqual(['64512:6'], bgpvpn['export_targets'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_update_route_target_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
@@ -147,7 +147,7 @@ class BgpvpnTest(base):
                 import_targets=['64512:3'],
                 export_targets=['64512:4'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_create_bgpvpn_with_invalid_routetargets(self):
         """Create a bgpvpn with invalid route target
 
@@ -176,7 +176,7 @@ class BgpvpnTest(base):
         self.assertRaises(exceptions.BadRequest,
                           self.bgpvpn_admin_client.create_bgpvpn, **postdata)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_update_bgpvpn_invalid_routetargets(self):
         """Update the bgpvpn with invalid route targets
 
@@ -207,7 +207,7 @@ class BgpvpnTest(base):
                           self.bgpvpn_admin_client.update_bgpvpn,
                           bgpvpn['bgpvpn']['id'], **updatedata)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_associate_invalid_network(self):
         """Associate the invalid network in bgpvpn
 
@@ -228,7 +228,7 @@ class BgpvpnTest(base):
                           uuidutils.generate_uuid(),
                           network['network']['id'])
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_disassociate_invalid_network(self):
         """Disassociate the invalid network in bgpvpn
 
@@ -277,7 +277,7 @@ class BgpvpnTest(base):
 
         self.routers_client.delete_router(router_id)
 
-    @test.attr(type=['negative'])
+    @decorators.attr(type=['negative'])
     def test_attach_associated_subnet_to_associated_router(self):
         # Create a first bgpvpn and associate a network with a subnet to it
         bgpvpn_net = self.create_bgpvpn(
