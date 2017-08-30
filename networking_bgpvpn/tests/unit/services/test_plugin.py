@@ -106,6 +106,12 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                                               'import_targets': [],
                                               'route_distinguishers': []})
 
+    def add_tenant(self, data):
+        data.update({
+            "project_id": self._tenant_id,
+            "tenant_id": self._tenant_id
+        })
+
     @contextlib.contextmanager
     def bgpvpn(self, do_delete=True, **kwargs):
         req_data = copy.deepcopy(self.bgpvpn_data)
@@ -541,21 +547,17 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
     def test_delete_bgpvpn(self, mock_delete_postcommit):
-        with self.bgpvpn(do_delete=False) as bgpvpn:
-            patcher = mock.patch.object(bgpvpn_db.BGPVPNPluginDb,
-                                        'delete_bgpvpn',
-                                        return_value=self.converted_data)
-            mock_delete_db = patcher.start()
-
+        with self.bgpvpn(do_delete=False) as bgpvpn, \
+                mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'delete_bgpvpn') \
+                as mock_delete_db, \
+                mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_bgpvpn',
+                                  return_value=self.converted_data):
             self._delete('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'])
             mock_delete_db.assert_called_once_with(mock.ANY,
                                                    bgpvpn['bgpvpn']['id'])
             mock_delete_postcommit.assert_called_once_with(mock.ANY,
                                                            self.converted_data)
-            patcher.stop()
-            self._delete('bgpvpn/bgpvpns',
-                         bgpvpn['bgpvpn']['id'])
 
     @mock.patch.object(bgpvpn_db.BGPVPNPluginDb, 'get_bgpvpn')
     def test_get_bgpvpn(self, mock_get_db):
@@ -600,7 +602,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             old_bgpvpn['routers'] = []
             old_bgpvpn['project_id'] = old_bgpvpn['tenant_id']
             new_bgpvpn = copy.copy(old_bgpvpn)
-            new_bgpvpn['name'] = 'foo'
+            update = {'name': 'foo'}
+            new_bgpvpn.update(update)
 
             mock_update_db.return_value = new_bgpvpn
 
@@ -752,6 +755,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     net_assoc = {'id': assoc_id,
                                  'network_id': net_id,
                                  'bgpvpn_id': bgpvpn_id}
+                    self.add_tenant(net_assoc)
                     mock_db_del.return_value = net_assoc
             mock_db_del.assert_called_once_with(mock.ANY,
                                                 assoc_id,
@@ -880,6 +884,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     router_assoc = {'id': assoc_id,
                                     'router_id': router_id,
                                     'bgpvpn_id': bgpvpn_id}
+                    self.add_tenant(router_assoc)
                     mock_db_del.return_value = router_assoc
             mock_db_del.assert_called_once_with(mock.ANY,
                                                 assoc_id,
