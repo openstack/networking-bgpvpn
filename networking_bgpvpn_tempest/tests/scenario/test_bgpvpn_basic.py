@@ -261,5 +261,5 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             external_network_id=CONF.network.public_network_id,
             port_id=self.ports[0]['id'])
         src_ip = self.fip['floating_ip_address']
-        dst_ip = self.server_fixed_ips[self.servers[0]['id']]
+        dst_ip = self.server_fixed_ips[self.servers[1]['id']]
         self._check_l3_bgpvpn(src_ip, dst_ip)
