@@ -186,6 +186,46 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_ping_to_unassociated_net(self):
+        """This test checks basic BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Associate network A to a given L3 BGPVPN
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn()
+        self.bgpvpn_client.create_network_association(self.bgpvpn['id'],
+                                                      self.networks[0]['id'])
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_disjoint_import_export(self):
+        """This test checks basic BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create invalid L3 BGPVPN with eRT<>iRT that is insufficient
+           for proper connectivity between network A and B
+        3. Associate network A and B to a given L3 BGPVPN
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._associate_all_nets_to_bgpvpn()
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
+
     def _create_security_group_for_test(self):
         self.security_group = self._create_security_group(
             tenant_id=self.bgpvpn_client.tenant_id)
