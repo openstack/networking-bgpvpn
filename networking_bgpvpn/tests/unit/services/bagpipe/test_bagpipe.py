@@ -17,9 +17,10 @@ import copy
 import mock
 import webob.exc
 
+from oslo_config import cfg
+
 from neutron.debug import debug_agent
 
-from neutron.plugins.ml2 import config as ml2_config
 from neutron.plugins.ml2 import rpc as ml2_rpc
 
 from neutron.tests.common import helpers
@@ -286,9 +287,9 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
     _plugin_name = 'neutron.plugins.ml2.plugin.Ml2Plugin'
 
     def setUp(self):
-        ml2_config.cfg.CONF.set_override('mechanism_drivers',
-                                         ['logger', 'fake_agent'],
-                                         'ml2')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'fake_agent'],
+                              'ml2')
 
         super(TestBagpipeServiceDriverCallbacks, self).setUp(self._plugin_name)
 
