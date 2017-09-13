@@ -28,4 +28,4 @@ def format_rt(route_targets):
     if route_targets:
         return re.compile(" *, *").split(route_targets)
     else:
-        return route_targets
+        return []
