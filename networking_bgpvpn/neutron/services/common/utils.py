@@ -14,6 +14,11 @@
 #    under the License.
 
 
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
+from neutron_lib.plugins import directory
+
+
 def rtrd_list2str(list):
     """Format Route Target list to string"""
     if not list:
@@ -59,6 +64,10 @@ def filter_fields(resource, fields):
     return resource
 
 
+def is_extension_supported(plugin, ext_alias):
+    return ext_alias in plugin.supported_extension_aliases
+
+
 def make_bgpvpn_dict(bgpvpn, fields=None):
     res = {
         'id': bgpvpn['id'],
@@ -73,6 +82,9 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
         'routers': bgpvpn.get('routers', []),
         'ports': bgpvpn.get('ports', []),
     }
+    plugin = directory.get_plugin(bgpvpn_def.LABEL)
+    if is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
+        res[bgpvpn_vni_def.VNI] = bgpvpn.get(bgpvpn_vni_def.VNI)
     return filter_fields(res, fields)
 
 

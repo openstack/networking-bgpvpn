@@ -23,9 +23,12 @@ from sqlalchemy.orm import exc
 from neutron.db import _model_query as model_query
 from neutron.db import common_db_mixin
 
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api.definitions import bgpvpn_routes_control
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
+from neutron_lib.plugins import directory
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.extensions\
@@ -144,6 +147,7 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
     import_targets = sa.Column(sa.String(255), nullable=True)
     export_targets = sa.Column(sa.String(255), nullable=True)
     route_distinguishers = sa.Column(sa.String(255), nullable=True)
+    vni = sa.Column(sa.Integer, nullable=True)
     network_associations = orm.relationship("BGPVPNNetAssociation",
                                             backref="bgpvpn",
                                             lazy='select',
@@ -252,6 +256,11 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             'export_targets':
                 utils.rtrd_str2list(bgpvpn_db['export_targets'])
         }
+
+        plugin = directory.get_plugin(bgpvpn_def.LABEL)
+        if utils.is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
+            res[bgpvpn_vni_def.VNI] = bgpvpn_db.get(bgpvpn_vni_def.VNI)
+
         return self._fields(res, fields)
 
     def create_bgpvpn(self, context, bgpvpn):
@@ -269,7 +278,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 route_targets=rt,
                 import_targets=i_rt,
                 export_targets=e_rt,
-                route_distinguishers=rd
+                route_distinguishers=rd,
+                vni=bgpvpn.get(bgpvpn_vni_def.VNI)
             )
             context.session.add(bgpvpn_db)
 

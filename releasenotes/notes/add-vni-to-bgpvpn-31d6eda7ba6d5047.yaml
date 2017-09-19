@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Add ``vni`` optional attribute to ``bgpvpn`` resource to control the VXLAN
+    VNI when VXLAN encapsulation is used.

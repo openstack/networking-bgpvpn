@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib import context
 
 from networking_bgpvpn.neutron.db.bgpvpn_db import BGPVPNPluginDb
@@ -21,6 +22,7 @@ from networking_bgpvpn.neutron.extensions.bgpvpn \
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNetAssocNotFound
 from networking_bgpvpn.neutron.extensions.bgpvpn import BGPVPNNotFound
 from networking_bgpvpn.neutron.services.common import constants
+from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.tests.unit.services import test_plugin
 
 
@@ -30,8 +32,8 @@ def _id_list(list):
 
 class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
-    def setUp(self):
-        super(BgpvpnDBTestCase, self).setUp()
+    def setUp(self, service_provider=None):
+        super(BgpvpnDBTestCase, self).setUp(service_provider)
         self.ctx = context.get_admin_context()
         self.plugin_db = BGPVPNPluginDb()
 
@@ -46,7 +48,8 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                  "route_targets": ["64512:1"],
                  "import_targets": ["64512:11", "64512:12"],
                  "export_targets": ["64512:13", "64512:14"],
-                 "route_distinguishers": ["64512:15", "64512:16"]
+                 "route_distinguishers": ["64512:15", "64512:16"],
+                 "vni": "1000"
                  }
             )
 
@@ -69,6 +72,16 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                              bgpvpn['export_targets'])
             self.assertEqual(["64512:15", "64512:16"],
                              bgpvpn['route_distinguishers'])
+
+            if utils.is_extension_supported(self.bgpvpn_plugin,
+                                            bgpvpn_vni_def.ALIAS):
+                self.assertEqual(1000, bgpvpn['vni'])
+            else:
+                #
+                # Test should ensure vni attribute is not present as
+                # bpvpn_vni extension is not loaded.
+                #
+                self.assertFalse('vni' in bgpvpn)
             self.assertEqual([net['network']['id']], bgpvpn['networks'])
 
             assoc1 = self.plugin_db.get_net_assoc(self.ctx, assoc1['id'],
@@ -444,3 +457,12 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                           assoc['routes'])
             self.assertIn(with_defaults(ROUTE_C),
                           assoc['routes'])
+
+
+class BgpvpnDBTestCaseWithVNI(BgpvpnDBTestCase):
+
+    def setUp(self):
+        test_service_provider = ('networking_bgpvpn.tests.unit.services'
+                                 '.test_plugin.TestBgpvpnDriverWithVni')
+        super(BgpvpnDBTestCaseWithVNI, self).setUp(
+            service_provider=test_service_provider)
