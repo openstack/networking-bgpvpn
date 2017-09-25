@@ -26,6 +26,8 @@ from networking_bgpvpn_tempest.tests.scenario import manager
 
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
+RT1 = '64512:1'
+RT2 = '64512:2'
 
 
 class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
@@ -37,6 +39,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.ports = []
         self.networks = []
         self.subnets = []
+        self.server_fips = {}
         self._create_security_group_for_test()
 
     @test.services('compute', 'network')
@@ -55,6 +58,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
     @test.services('compute', 'network')
@@ -71,6 +75,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
@@ -92,6 +97,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
     @test.services('compute', 'network')
@@ -113,6 +119,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self.delete_router(self.router_b)
         self._associate_fip_and_check_l3_bgpvpn()
 
@@ -132,6 +139,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
         self._associate_fip_and_check_l3_bgpvpn()
@@ -153,6 +161,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
@@ -171,6 +180,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
         self._create_servers()
@@ -226,6 +236,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                             subnet_id=subnet_id)
         return router
 
+    def _create_router_and_associate_fip(self, server_index):
+        server = self.servers[server_index]
+        router = self._create_fip_router(
+            subnet_id=self.subnets[server_index]['id'])
+        self.server_fips[server['id']] = self.create_floating_ip(
+            server, external_network_id=CONF.network.public_network_id,
+            port_id=self.ports[server_index]['id'])
+        return router
+
     def _create_server(self, name, keypair, network, ip_address,
                        security_group_ids, clients):
         create_port_body = {'fixed_ips': [{'ip_address': ip_address}],
@@ -266,40 +285,67 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                 server['addresses'][network['name']][0]['addr'])
             self.assertTrue(self.servers_keypairs)
 
-    def _create_l3_bgpvpn(self):
+    def _create_l3_bgpvpn(self, name='test-l3-bgpvpn', rts=None,
+                          import_rts=None, export_rts=None):
+        if rts is None:
+            rts = [RT1]
+        import_rts = import_rts or []
+        export_rts = export_rts or []
         self.bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client, tenant_id=self.bgpvpn_client.tenant_id,
-            name='l3bgpvpn', route_targets=['64512:1'])
+            name=name, route_targets=rts, export_targets=export_rts,
+            import_targets=import_rts)
+
+    def _update_l3_bgpvpn(self, rts=None, import_rts=None, export_rts=None,
+                          bgpvpn=None):
+        bgpvpn = bgpvpn or self.bgpvpn
+        if rts is None:
+            rts = [RT1]
+        import_rts = import_rts or []
+        export_rts = export_rts or []
+        LOG.debug('Updating targets in BGPVPN %s', bgpvpn['id'])
+        self.bgpvpn_admin_client.update_bgpvpn(bgpvpn['id'],
+                                               route_targets=rts,
+                                               export_targets=export_rts,
+                                               import_targets=import_rts)
+
+    def _associate_all_nets_to_bgpvpn(self, bgpvpn=None):
+        bgpvpn = bgpvpn or self.bgpvpn
         for network in self.networks:
-            LOG.debug('Associating network %s to BGPVPN %s', network['id'],
-                      self.bgpvpn['id'])
-            self.bgpvpn_client.create_network_association(self.bgpvpn['id'],
+            self.bgpvpn_client.create_network_association(bgpvpn['id'],
                                                           network['id'])
         LOG.debug('BGPVPN network associations completed')
 
-    def _check_l3_bgpvpn(self, server_1_ip, server_2_ip):
-        private_key = self.servers_keypairs[self.servers[0]['id']][
+    def _check_l3_bgpvpn(self, from_server=None, to_server=None,
+                         should_succeed=True):
+        from_server = from_server or self.servers[0]
+        to_server = to_server or self.servers[1]
+        server_1_ip = self.server_fips[from_server['id']][
+            'floating_ip_address']
+        server_2_ip = self.server_fixed_ips[to_server['id']]
+        private_key = self.servers_keypairs[from_server['id']][
             'private_key']
         ssh_client = self.get_remote_client(server_1_ip,
                                             private_key=private_key)
         try:
-            msg = "Timed out waiting for %s to become reachable" % server_2_ip
+            msg = ""
+            if should_succeed:
+                msg = "Timed out waiting for {ip} to become reachable".format(
+                    ip=server_2_ip)
+            else:
+                msg = ("Unexpected ping response from VM with IP address "
+                       "{dest} originated from VM with IP address "
+                       "{src}").format(dest=server_2_ip, src=server_1_ip)
             self.assertTrue(
-                self._check_remote_connectivity(ssh_client, server_2_ip, True),
+                self._check_remote_connectivity(ssh_client, server_2_ip,
+                                                should_succeed),
                 msg)
         except Exception:
-            LOG.exception("Unable to ping VM with IP address {dest} from VM "
-                          "with IP address {src}".format(dest=server_2_ip,
-                                                         src=server_1_ip))
+            LOG.exception(("Unable to ping VM with IP address {dest} from VM "
+                           "with IP address {src}").format(dest=server_2_ip,
+                                                           src=server_1_ip))
             raise
 
-    def _associate_fip_and_check_l3_bgpvpn(self):
-        self.router = self._create_fip_router(
-            subnet_id=self.subnets[0]['id'])
-        self.fip = self.create_floating_ip(
-            self.servers[0],
-            external_network_id=CONF.network.public_network_id,
-            port_id=self.ports[0]['id'])
-        src_ip = self.fip['floating_ip_address']
-        dst_ip = self.server_fixed_ips[self.servers[1]['id']]
-        self._check_l3_bgpvpn(src_ip, dst_ip)
+    def _associate_fip_and_check_l3_bgpvpn(self, should_succeed=True):
+        self.router = self._create_router_and_associate_fip(0)
+        self._check_l3_bgpvpn(should_succeed=should_succeed)
