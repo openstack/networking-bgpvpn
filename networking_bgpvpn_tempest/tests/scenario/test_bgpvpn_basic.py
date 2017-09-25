@@ -41,7 +41,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @test.services('compute', 'network')
     def test_bgpvpn_basic(self):
-        """This test check basic BGPVPN.
+        """This test checks basic BGPVPN.
 
         1. Create networks A and B with their respective subnets
         2. Start up server 1 in network A
@@ -59,7 +59,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @test.services('compute', 'network')
     def test_bgpvpn_variant1(self):
-        """This test check basic BGPVPN.
+        """This test checks basic BGPVPN.
 
         1. Create networks A and B with their respective subnets
         2. Associate network A and network B to a given L3 BGPVPN
@@ -76,7 +76,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @test.services('compute', 'network')
     def test_bgpvpn_variant2(self):
-        """This test check basic BGPVPN.
+        """This test checks basic BGPVPN.
 
         1. Create networks A and B with their respective subnets
         2. Start up server 1 in network A
@@ -96,7 +96,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @test.services('compute', 'network')
     def test_bgpvpn_variant3(self):
-        """This test check basic BGPVPN.
+        """This test checks basic BGPVPN.
 
         1. Create networks A and B with their respective subnets
         2. Start up server 1 in network A
@@ -118,7 +118,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @test.services('compute', 'network')
     def test_bgpvpn_variant4(self):
-        """This test check basic BGPVPN.
+        """This test checks basic BGPVPN.
 
         1. Create networks A and B with their respective subnets
         2. Start up server 1 in network A
@@ -134,6 +134,46 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_l3_bgpvpn()
         self.router_b = self._create_fip_router(
             subnet_id=self.subnets[1]['id'])
+        self._associate_fip_and_check_l3_bgpvpn()
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_variant5(self):
+        """This test checks basic BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create router and connect it to network B
+        3. Associate network A and network B to a given L3 BGPVPN
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 2 can ping server 1
+        """
+        self._create_networks_and_subnets()
+        self.router_b = self._create_fip_router(
+            subnet_id=self.subnets[1]['id'])
+        self._create_l3_bgpvpn()
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn()
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_variant6(self):
+        """This test checks basic BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Associate network A and network B to a given L3 BGPVPN
+        3. Create router and connect it to network B
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 2 can ping server 1
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn()
+        self.router_b = self._create_fip_router(
+            subnet_id=self.subnets[1]['id'])
+        self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
     def _create_security_group_for_test(self):
