@@ -241,6 +241,12 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         return self.driver.get_router_assocs(context, bgpvpn_id, filters,
                                              fields)
 
+    def update_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id,
+                                         router_association):
+        router_association = router_association['router_association']
+        return self.driver.update_router_assoc(context, assoc_id, bgpvpn_id,
+                                               router_association)
+
     def delete_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id):
         self.driver.delete_router_assoc(context, assoc_id, bgpvpn_id)
 

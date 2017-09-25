@@ -109,6 +109,11 @@ class Bgpvpn_routes_control(api_extensions.APIExtensionDescriptor):
 class BGPVPNRoutesControlPluginBase(libbase.ServicePluginBase):
 
     @abc.abstractmethod
+    def update_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id,
+                                         router_association):
+        pass
+
+    @abc.abstractmethod
     def create_bgpvpn_port_association(self, context, bgpvpn_id,
                                        port_association):
         pass
