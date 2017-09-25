@@ -25,7 +25,6 @@ from networking_bgpvpn.neutron.services.common import constants
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms \
     as project_forms
 
-
 RTRD_REGEX = constants.RTRD_REGEX[4:-1]
 RTRDS_REGEX = '^%s( *, *%s)*$' % (RTRD_REGEX, RTRD_REGEX)
 
