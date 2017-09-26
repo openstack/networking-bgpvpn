@@ -30,17 +30,6 @@ class TestEditDataBgpVpn(helpers.APITestCase):
         self.bgpvpn_form.action = "update"
 
     @mock.patch.object(bgpvpn_form, 'bgpvpn_api')
-    def test_clean(self, mock_bgpvpn_api):
-        expected_result = {"bgpvpn_id": "foo-id",
-                           "name": "foo-updated"}
-        list_bgpvpns = [bgpvpn_api.Bgpvpn({"id": "foo-id", "name": "foo"})]
-        mock_bgpvpn_api.bgpvpns_list.return_value = list_bgpvpns
-        self.bgpvpn_form.cleaned_data = expected_result
-        result = self.bgpvpn_form.clean()
-
-        self.assertEqual(expected_result, result)
-
-    @mock.patch.object(bgpvpn_form, 'bgpvpn_api')
     def test_handle(self, mock_bgpvpn_api):
         self.bgpvpn_form.request.user.is_superuser = False
         test_data = {"bgpvpn_id": "foo-id",
