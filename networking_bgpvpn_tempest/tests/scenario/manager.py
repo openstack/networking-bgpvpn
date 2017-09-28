@@ -716,8 +716,10 @@ class NetworkScenarioTest(ScenarioTest):
         This function will create:
         1. egress and ingress tcp port 22 allow rule in order to allow ssh
         access for ipv4.
-        2. egress and ingress ipv6 icmp allow rule, in order to allow icmpv6.
-        3. egress and ingress ipv4 icmp allow rule, in order to allow icmpv4.
+        2. egress and ingress tcp port 80 allow rule in order to allow http
+        access for ipv4.
+        3. egress and ingress ipv6 icmp allow rule, in order to allow icmpv6.
+        4. egress and ingress ipv4 icmp allow rule, in order to allow icmpv4.
         """
 
         if security_group_rules_client is None:
@@ -731,6 +733,12 @@ class NetworkScenarioTest(ScenarioTest):
                 protocol='tcp',
                 port_range_min=22,
                 port_range_max=22,
+            ),
+            dict(
+                # http
+                protocol='tcp',
+                port_range_min=80,
+                port_range_max=80,
             ),
             dict(
                 # ping

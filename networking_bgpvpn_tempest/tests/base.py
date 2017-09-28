@@ -86,3 +86,7 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
         bgpvpn = body['bgpvpn']
         self.bgpvpns.append(bgpvpn)
         return bgpvpn
+
+    def delete_bgpvpn(self, client, bgpvpn):
+        client.delete_bgpvpn(bgpvpn['id'])
+        self.bgpvpns.remove(bgpvpn)
