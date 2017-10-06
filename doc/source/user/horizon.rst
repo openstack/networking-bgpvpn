@@ -42,6 +42,23 @@ Copy configuration file:
 
    cp <networking-bgpvpn>/bgpvpn_dashboard/enabled/_[0-9]*.py <horizon>/openstack_dashboard/local/enabled/
 
+Configure the policy file for BGPVPN dashboard in OpenStack Dashboard ``local_settings.py``.
+``<bgpvpn-dashboard-dir>`` is a directory which contains configurations for
+BGPVPN dashboard and the location varies across distributions or deployments.
+``<bgpvpn-dashboard-dir>`` can be found with: ``dirname $(python -c 'import bgpvpn_dashboard as _; print _.__file__')``
+
+.. code-block:: python
+
+   POLICY_FILES[' networking-bgpvpn'] = '<bgpvpn-dashboard-dir>/bgpvpn_dashboard/etc/bgpvpn-horizon.conf'
+
+.. note::
+
+   If you do not configure ``POLICY_FILES`` in your ``local_settings.py``,
+   you also need to define the default ``POLICY_FILES`` in
+   ``local_settings.py``. If you use the example ``local_settings.py`` file
+   from horizon, what you need is to uncomment ``POLICY_FILES`` (which contains
+   the default values).
+
 Restart the web server hosting Horizon.
 
 The BGPVPN Interconnections panels will now be in your Horizon dashboard.
