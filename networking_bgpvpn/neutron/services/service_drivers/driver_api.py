@@ -14,6 +14,7 @@
 #    under the License.
 
 import abc
+import copy
 import six
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
@@ -113,20 +114,21 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
     def get_bgpvpn(self, context, id, fields=None):
         return self.bgpvpn_db.get_bgpvpn(context, id, fields)
 
-    def update_bgpvpn(self, context, id, bgpvpn):
+    def update_bgpvpn(self, context, id, bgpvpn_delta):
         old_bgpvpn = self.get_bgpvpn(context, id)
         with context.session.begin(subtransactions=True):
-            bgpvpn = self.bgpvpn_db.update_bgpvpn(
-                context, id, bgpvpn)
-            self.update_bgpvpn_precommit(context, old_bgpvpn, bgpvpn)
-
+            new_bgpvpn = copy.deepcopy(old_bgpvpn)
+            new_bgpvpn.update(bgpvpn_delta)
+            self.update_bgpvpn_precommit(context, old_bgpvpn, new_bgpvpn)
+            bgpvpn = self.bgpvpn_db.update_bgpvpn(context, id, bgpvpn_delta)
         self.update_bgpvpn_postcommit(context, old_bgpvpn, bgpvpn)
         return bgpvpn
 
     def delete_bgpvpn(self, context, id):
         with context.session.begin(subtransactions=True):
-            bgpvpn = self.bgpvpn_db.delete_bgpvpn(context, id)
+            bgpvpn = self.bgpvpn_db.get_bgpvpn(context, id)
             self.delete_bgpvpn_precommit(context, bgpvpn)
+            self.bgpvpn_db.delete_bgpvpn(context, id)
         self.delete_bgpvpn_postcommit(context, bgpvpn)
 
     def create_net_assoc(self, context, bgpvpn_id, network_association):
@@ -148,10 +150,14 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
         with context.session.begin(subtransactions=True):
-            net_assoc = self.bgpvpn_db.delete_net_assoc(context,
-                                                        assoc_id,
-                                                        bgpvpn_id)
+            net_assoc = self.bgpvpn_db.get_net_assoc(context,
+                                                     assoc_id,
+                                                     bgpvpn_id)
+
             self.delete_net_assoc_precommit(context, net_assoc)
+            self.bgpvpn_db.delete_net_assoc(context,
+                                            assoc_id,
+                                            bgpvpn_id)
         self.delete_net_assoc_postcommit(context, net_assoc)
 
     def create_router_assoc(self, context, bgpvpn_id, router_association):
@@ -172,10 +178,14 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
         with context.session.begin(subtransactions=True):
-            router_assoc = self.bgpvpn_db.delete_router_assoc(context,
-                                                              assoc_id,
-                                                              bgpvpn_id)
+            router_assoc = self.bgpvpn_db.get_router_assoc(context,
+                                                           assoc_id,
+                                                           bgpvpn_id)
             self.delete_router_assoc_precommit(context, router_assoc)
+            self.bgpvpn_db.delete_router_assoc(context,
+                                               assoc_id,
+                                               bgpvpn_id)
+
         self.delete_router_assoc_postcommit(context, router_assoc)
 
     @abc.abstractmethod
@@ -187,11 +197,11 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         pass
 
     @abc.abstractmethod
-    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
+    def update_bgpvpn_postcommit(self, context, old_bgpvpn, new_bgpvpn):
         pass
 
     @abc.abstractmethod
-    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, new_bgpvpn):
         pass
 
     @abc.abstractmethod
@@ -247,10 +257,10 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
     def create_bgpvpn_postcommit(self, context, bgpvpn):
         pass
 
-    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, new_bgpvpn):
         pass
 
-    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
+    def update_bgpvpn_postcommit(self, context, old_bgpvpn, new_bgpvpn):
         pass
 
     def delete_bgpvpn_precommit(self, context, bgpvpn):
