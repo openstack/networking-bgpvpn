@@ -35,14 +35,16 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
         neutron_server_config_add $NETWORKING_BGPVPN_CONF
     fi
-    if is_service_enabled q-agt && is_service_enabled b-bgp && [[ "$Q_AGENT" == "openvswitch" ]]; then
-        echo_summary "Configuring OVS agent for bagpipe"
+    if is_service_enabled q-agt && is_service_enabled b-bgp ; then
+        echo_summary "Configuring agent for bagpipe bgpvpn"
 
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
         configure_l2_agent
-        # l2pop and arp_responder are required for bagpipe driver
         iniset /$Q_PLUGIN_CONF_FILE agent l2_population True
-        iniset /$Q_PLUGIN_CONF_FILE agent arp_responder True
+        if [[ "$Q_AGENT" == "openvswitch" ]]; then
+            # l2pop and arp_responder are required for bagpipe driver
+            iniset /$Q_PLUGIN_CONF_FILE agent arp_responder True
+        fi
     fi
     if is_service_enabled h-eng;then
         echo_summary "Enabling bgpvpn in $HEAT_CONF"
