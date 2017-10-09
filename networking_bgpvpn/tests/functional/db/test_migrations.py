@@ -26,16 +26,14 @@ BAGPIPE_TABLES = {
     'ml2_route_target_allocations',
 }
 
-ODL_TABLES = {
-    'odl_alembic_version',
-    'opendaylightjournal',
-    'opendaylight_maintenance',
-
+ODL_TABLE_PREFIXES = {
+    'odl_',
+    'opendaylight'
 }
 
 # EXTERNAL_TABLES should contain all names of tables that are not related to
 # current repo.
-EXTERNAL_TABLES = set(external.TABLES) | BAGPIPE_TABLES | ODL_TABLES
+EXTERNAL_TABLES = set(external.TABLES) | BAGPIPE_TABLES
 VERSION_TABLE = 'alembic_version_bgpvpn'
 
 
@@ -54,7 +52,9 @@ class _TestModelsMigrationsBGPVPN(test_migrations._TestModelsMigrations):
     def include_object(self, object_, name, type_, reflected, compare_to):
         if type_ == 'table' and (name.startswith('alembic') or
                                  name == VERSION_TABLE or
-                                 name in EXTERNAL_TABLES):
+                                 name in EXTERNAL_TABLES or
+                                 any([name.startswith(prefix)
+                                      for prefix in ODL_TABLE_PREFIXES])):
             return False
         if type_ == 'index' and reflected and name.startswith("idx_autoinc_"):
             return False
