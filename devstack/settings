@@ -6,6 +6,10 @@ NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-BGPVPN:Dummy:networking_bgp
 
 if is_service_enabled q-svc; then
     # l2pop is currently required for bagpipe driver
-    Q_ML2_PLUGIN_MECHANISM_DRIVERS="openvswitch,l2population"
+    if [[ -z "$Q_ML2_PLUGIN_MECHANISM_DRIVERS" ]]; then
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS="l2population"
+    else
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS+=",l2population"
+    fi
 fi
 
