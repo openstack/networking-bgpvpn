@@ -35,7 +35,6 @@ from networking_bagpipe.agent.bgpvpn import rpc_client
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
-from networking_bgpvpn.neutron.services.common import constants
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
@@ -216,19 +215,32 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     def _format_bgpvpn_network_route_targets(self, bgpvpns):
         """Format BGPVPN network informations (VPN type and route targets)
 
-        {
+        [{
             'type': 'l3',
             'route_targets': ['12345:1', '12345:2'],
             'import_targets': ['12345:3'],
             'export_targets': ['12345:4']
+        },
+        {
+            'type': 'l3',
+            'route_targets': ['12346:1']
+        },
+        {
+            'type': 'l2',
+            'route_targets': ['12347:1']
         }
+        ]
 
         to
 
         {
             'l3vpn' : {
-                'import_rt': ['12345:1', '12345:2', '12345:3'],
-                'export_rt': ['12345:1', '12345:2', '12345:4']
+                'import_rt': ['12345:1', '12345:2', '12345:3', '12346:1'],
+                'export_rt': ['12345:1', '12345:2', '12345:4', '12346:1']
+            },
+            'l2vpn' : {
+                'import_rt': ['12347:1'],
+                'export_rt': ['12347:1']
             }
         }
 
@@ -259,11 +271,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                 bgpvpn_rts[bgpvpn['type'] + 'vpn']['export_rt'] += (
                     bgpvpn['export_targets']
                 )
-
-        # FIXME: Only returning l3vpn route targets. Must be modified to also
-        # return l2vpn ones in the future
-        if 'l2vpn' in bgpvpn_rts:
-            bgpvpn_rts.pop('l2vpn')
 
         return bgpvpn_rts
 
@@ -336,11 +343,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             raise bgpvpn_ext.BGPVPNRDNotSupported(driver=BAGPIPE_DRIVER_NAME)
 
     def create_bgpvpn_precommit(self, context, bgpvpn):
-        # Only l3 type is supported
-        if bgpvpn['type'] != constants.BGPVPN_L3:
-            raise bgpvpn_ext.BGPVPNTypeNotSupported(driver=BAGPIPE_DRIVER_NAME,
-                                                    type=bgpvpn['type'])
-
         self._common_precommit_checks(bgpvpn)
 
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
