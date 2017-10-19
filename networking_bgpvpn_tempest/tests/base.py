@@ -47,13 +47,13 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
         cls.route_distinguishers = []
         cls.bgpvpns = []
         cls.bgpvpn_client = bgpvpn_client.BgpvpnClient(
-            cls.os.auth_provider,
+            cls.os_primary.auth_provider,
             CONF.network.catalog_type,
             CONF.network.region or CONF.identity.region,
             endpoint_type=CONF.network.endpoint_type,
             build_interval=CONF.network.build_interval,
             build_timeout=CONF.network.build_timeout,
-            **cls.os.default_params)
+            **cls.os_primary.default_params)
         cls.bgpvpn_admin_client = bgpvpn_client.BgpvpnClient(
             cls.os_admin.auth_provider,
             CONF.network.catalog_type,
