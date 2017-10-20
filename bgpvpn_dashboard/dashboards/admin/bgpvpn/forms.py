@@ -16,7 +16,9 @@
 from django.core.urlresolvers import reverse_lazy
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
+
 from horizon import forms
+
 from openstack_dashboard import api
 
 from bgpvpn_dashboard.common import bgpvpn as bgpvpn_common
@@ -25,7 +27,13 @@ from networking_bgpvpn.neutron.services.common import constants
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms \
     as project_forms
 
-RTRD_REGEX = constants.RTRD_REGEX[4:-1]
+
+if constants.RTRD_REGEX[0] == '^' and constants.RTRD_REGEX[-1] == '$':
+    RTRD_REGEX = constants.RTRD_REGEX[1:-1]
+else:
+    msg = _("Bug, inconsistency between neutron-lib and "
+            "networking-bgpvpn for RTRD regex")
+    raise Exception(msg)
 RTRDS_REGEX = '^%s( *, *%s)*$' % (RTRD_REGEX, RTRD_REGEX)
 
 
