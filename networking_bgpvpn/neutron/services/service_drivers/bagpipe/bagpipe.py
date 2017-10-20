@@ -272,6 +272,11 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                     bgpvpn['export_targets']
                 )
 
+            for attribute in ('import_rt', 'export_rt'):
+                if bgpvpn_rts[bgpvpn['type'] + 'vpn'][attribute]:
+                    bgpvpn_rts[bgpvpn['type'] + 'vpn'][attribute] = list(
+                        set(bgpvpn_rts[bgpvpn['type'] + 'vpn'][attribute]))
+
         return bgpvpn_rts
 
     def _bgpvpns_for_network(self, context, network_id):
