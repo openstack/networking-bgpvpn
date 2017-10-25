@@ -245,6 +245,89 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_delete_bgpvpn(self):
+        """This test checks BGPVPN delete.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Associate network A and network B to a given L3 BGPVPN
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 can ping server 2
+        9. Delete L3 BGPVPN
+        10. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn()
+        self._associate_all_nets_to_bgpvpn()
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn()
+        self.delete_bgpvpn(self.bgpvpn_admin_client, self.bgpvpn)
+        self._check_l3_bgpvpn(should_succeed=False)
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_delete_net_association(self):
+        """This test checks BGPVPN net association delete.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Associate network A and network B to a given L3 BGPVPN
+        4. Start up server 1 in network A
+        5. Start up server 2 in network B
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 can ping server 2
+        9. Delete association of network A
+        10. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn()
+        body = self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        assoc_b = body['network_association']
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_B]['id'])
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn()
+        self.bgpvpn_admin_client.delete_network_association(self.bgpvpn['id'],
+                                                            assoc_b['id'])
+        self._check_l3_bgpvpn(should_succeed=False)
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_delete_router_association(self):
+        """This test checks BGPVPN router association delete.
+
+        1. Create networks A and B with their respective subnets
+        2. Create router and connect it to network B
+        3. Create L3 BGPVPN
+        4. Associate network A to a given L3 BGPVPN
+        5. Associate router B to a given L3 BGPVPN
+        6. Start up server 1 in network A
+        7. Start up server 2 in network B
+        8. Create router and connect it to network A
+        9. Give a FIP to server 1
+        10. Check that server 1 can ping server 2
+        11. Delete association of router B
+        12. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        router_b = self._create_fip_router(
+            subnet_id=self.subnets[NET_B][0]['id'])
+        self._create_l3_bgpvpn()
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        body = self.bgpvpn_client.create_router_association(self.bgpvpn['id'],
+                                                            router_b['id'])
+        assoc_b = body['router_association']
+        self._create_servers()
+        self._associate_fip_and_check_l3_bgpvpn()
+        self.bgpvpn_admin_client.delete_router_association(self.bgpvpn['id'],
+                                                           assoc_b['id'])
+        self._check_l3_bgpvpn(should_succeed=False)
+
     def _create_security_group_for_test(self):
         self.security_group = self._create_security_group(
             tenant_id=self.bgpvpn_client.tenant_id)
