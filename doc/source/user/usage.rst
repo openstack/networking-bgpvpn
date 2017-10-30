@@ -2,27 +2,31 @@
 Usage
 ========
 
-Use from Neutron API CLI
+Use from OpenStack CLI
 ------------------------
 
 Example commands to use by the admin to create a BGPVPN resource:
 
 .. code-block:: console
 
-	neutron bgpvpn-create --route-targets 64512:1 --tenant-id b954279e1e064dc9b8264474cb3e6bd2
-	neutron bgpvpn-list
-	neutron bgpvpn-update 1009a0f326b6403180c18f3caa1430de --name myBGPVPN --tenant 4a75e08c45f14aa9afc5da081c9bb534
+	openstack bgpvpn create --route-target 64512:1 --project b954279e1e064dc9b8264474cb3e6bd2
+	openstack bgpvpn list
+	openstack bgpvpn set <bgpvpn-uuid> --name myBGPVPN
 
 Example commands to use by the tenant owning the BGPVPN to associate a Network to it:
 
 .. code-block:: console
 
-	neutron bgpvpn-net-assoc-create myBGPVPN --network 828cddad3b834e79b79abc1b87b6cca0
+	openstack bgpvpn network association create myBGPVPN <net-uuid>
 	# returns <net-assoc-uuid>
-	neutron bgpvpn-net-assoc-list myBGPVPN
-	neutron bgpvpn-net-assoc-show <net-assoc-uuid> myBGPVPN 
+	openstack bgpvpn network association list myBGPVPN
+	openstack bgpvpn network association show <net-assoc-uuid> myBGPVPN
 
-	neutron bgpvpn-net-assoc-delete <net-assoc-uuid> myBGPVPN
+	openstack bgpvpn network association delete <net-assoc-uuid> myBGPVPN
+
+    For more details about BGPVPN CLI, follow this page :
+
+    <https://docs.openstack.org/python-neutronclient/latest/cli/osc/v2/networking-bgpvpn.html>
 
 Use from Horizon
 ----------------
