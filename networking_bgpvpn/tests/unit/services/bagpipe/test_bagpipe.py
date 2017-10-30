@@ -738,3 +738,41 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
             self.assertTrue(log_exc.called)
+
+    def test_format_bgpvpn_network_route_targets(self):
+        driver = self.bgpvpn_plugin.driver
+        bgpvpns = [{
+            'type': 'l3',
+            'route_targets': ['12345:1', '12345:2', '12345:3'],
+            'import_targets': ['12345:2', '12345:3'],
+            'export_targets': ['12345:3', '12345:4']
+        },
+            {
+                'type': 'l3',
+                'route_targets': ['12345:3', '12346:1']
+            },
+            {
+                'type': 'l2',
+                'route_targets': ['12347:1']
+            }]
+        result = driver._format_bgpvpn_network_route_targets(bgpvpns)
+        expected = {
+            'l3vpn': {
+                'import_rt': ['12345:1', '12345:2', '12345:3', '12346:1'],
+                'export_rt': ['12345:1', '12345:2', '12345:3', '12345:4',
+                              '12346:1']
+            },
+            'l2vpn': {
+                'import_rt': ['12347:1'],
+                'export_rt': ['12347:1']
+            }
+        }
+
+        self.assertItemsEqual(result['l3vpn']['import_rt'],
+                              expected['l3vpn']['import_rt'])
+        self.assertItemsEqual(result['l3vpn']['export_rt'],
+                              expected['l3vpn']['export_rt'])
+        self.assertItemsEqual(result['l2vpn']['import_rt'],
+                              expected['l2vpn']['import_rt'])
+        self.assertItemsEqual(result['l2vpn']['export_rt'],
+                              expected['l2vpn']['export_rt'])
