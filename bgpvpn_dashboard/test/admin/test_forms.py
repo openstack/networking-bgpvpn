@@ -17,6 +17,7 @@ import mock
 
 from openstack_dashboard.test import helpers
 
+from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import forms as bgpvpn_a_form
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_p_form
 
@@ -62,3 +63,33 @@ class TestCreateDataBgpVpn(helpers.APITestCase):
         self.assertFalse(self.bgpvpn_form.has_error("route_targets"))
         self.assertFalse(self.bgpvpn_form.has_error("import_targets"))
         self.assertFalse(self.bgpvpn_form.has_error("export_targets"))
+
+    @mock.patch.object(bgpvpn_p_form, 'bgpvpn_api')
+    @mock.patch.object(bgpvpn_a_form, 'api')
+    def test_handle_update(self, mock_api, mock_bgpvpn_api):
+        data = {"bgpvpn_id": "foo-id",
+                "type": "l3",
+                "name": "foo-name",
+                "route_targets": "65421:1",
+                "import_targets": "65421:2",
+                "export_targets": "65421:3"}
+        mock_api.keystone.tenant_list.return_value = [], False
+        self.bgpvpn_form = bgpvpn_a_form.CreateBgpVpn(self.mock_request)
+        self.bgpvpn_form.action = "update"
+        expected_data = bgpvpn_api.Bgpvpn({"bgpvpn_id": "foo-id",
+                                           "name": "foo-name",
+                                           "tenant_id": "tenant_id",
+                                           "route_targets": ["65421:1"],
+                                           "import_targets": ["65421:2"],
+                                           "export_targets": ["65421:3"]})
+        mock_bgpvpn_api.bgpvpn_update.return_value = expected_data
+
+        result = self.bgpvpn_form.handle(self.mock_request, data)
+
+        mock_bgpvpn_api.bgpvpn_update.assert_called_once_with(
+            self.mock_request, "foo-id",
+            name="foo-name",
+            route_targets=["65421:1"],
+            import_targets=["65421:2"],
+            export_targets=["65421:3"])
+        self.assertEqual(result, expected_data)
