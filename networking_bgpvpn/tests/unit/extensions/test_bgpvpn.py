@@ -111,6 +111,7 @@ class BgpvpnExtensionTestCase(test_extensions_base.ExtensionTestCase):
                   ['4294967296:65535'],
                   ['1.1.1.1:655351'],
                   ['4294967295:65536'],
+                  [''],
                   ]
         for value in values:
             yield {'bgpvpn': {'name': 'bgpvpn1',
