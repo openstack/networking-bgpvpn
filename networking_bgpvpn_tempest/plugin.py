@@ -29,11 +29,8 @@ class NetworkingBgpvpnTempestPlugin(plugins.TempestPlugin):
         return full_test_dir, base_path
 
     def register_opts(self, conf):
-        conf.register_opt(project_config.service_option,
-                          group="service_available")
         conf.register_group(project_config.bgpvpn_group)
         conf.register_opts(project_config.BgpvpnGroup, group="bgpvpn")
 
     def get_opt_lists(self):
-        return [(project_config.bgpvpn_group.name, project_config.BgpvpnGroup),
-                ('service_available', [project_config.service_option])]
+        return [(project_config.bgpvpn_group.name, project_config.BgpvpnGroup)]

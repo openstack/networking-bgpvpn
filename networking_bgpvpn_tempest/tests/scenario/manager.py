@@ -21,6 +21,7 @@ from oslo_log import log
 from oslo_utils import netutils
 
 from tempest.common import compute
+from tempest.common import utils
 from tempest.common.utils.linux import remote_client
 from tempest.common.utils import net_utils
 from tempest.common import waiters
@@ -352,6 +353,9 @@ class NetworkScenarioTest(ScenarioTest):
         super(NetworkScenarioTest, cls).skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
+        if not utils.is_extension_enabled('bgpvpn', 'network'):
+            msg = "Bgpvpn extension not enabled."
+            raise cls.skipException(msg)
 
     def _create_network(self, networks_client=None,
                         tenant_id=None,
