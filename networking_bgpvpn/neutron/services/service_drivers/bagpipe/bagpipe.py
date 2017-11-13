@@ -162,6 +162,14 @@ def network_is_external(context, net_id):
         return False
 
 
+def get_networks_for_router(context, router_id):
+    ports = get_router_ports(context, router_id)
+    if ports:
+        return set([port['network_id'] for port in ports])
+    else:
+        return []
+
+
 def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
     LOG.exception("Error during notification processing "
                   "%(resource)s %(event)s, %(trigger)s, "
@@ -290,6 +298,13 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                                    network_id)
         )
 
+    def _networks_for_bgpvpn(self, context, bgpvpn):
+        networks = []
+        networks.extend(bgpvpn['networks'])
+        for router_id in bgpvpn['routers']:
+            networks.extend(get_networks_for_router(context, router_id))
+        return list(set(networks))
+
     def _retrieve_bgpvpn_network_info_for_port(self, context, port):
         """Retrieve BGP VPN network informations for a specific port
 
@@ -351,7 +366,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
         self._common_precommit_checks(bgpvpn)
 
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
-        for net_id in bgpvpn['networks']:
+        for net_id in self._networks_for_bgpvpn(context, bgpvpn):
             if get_network_ports(context, net_id):
                 # Format BGPVPN before sending notification
                 self.agent_rpc.delete_bgpvpn(
@@ -364,7 +379,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
             utils.get_bgpvpn_differences(bgpvpn, old_bgpvpn))
-        for net_id in bgpvpn['networks']:
+        for net_id in self._networks_for_bgpvpn(context, bgpvpn):
             if (get_network_ports(context, net_id)):
                 if ((key in added_keys for key in ('route_targets',
                                                    'import_targets',
@@ -470,22 +485,18 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
                                                port[portbindings.HOST_ID])
 
     def create_router_assoc_postcommit(self, context, router_assoc):
-        ports = get_router_ports(context, router_assoc['router_id'])
-        if ports:
-            net_ids = set([port['network_id'] for port in ports])
-            for net_id in net_ids:
-                net_assoc = {'network_id': net_id,
-                             'bgpvpn_id': router_assoc['bgpvpn_id']}
-                self.create_net_assoc_postcommit(context, net_assoc)
+        for net_id in get_networks_for_router(context,
+                                              router_assoc['router_id']):
+            net_assoc = {'network_id': net_id,
+                         'bgpvpn_id': router_assoc['bgpvpn_id']}
+            self.create_net_assoc_postcommit(context, net_assoc)
 
     def delete_router_assoc_postcommit(self, context, router_assoc):
-        ports = get_router_ports(context, router_assoc['router_id'])
-        if ports:
-            net_ids = set([port['network_id'] for port in ports])
-            for net_id in net_ids:
-                net_assoc = {'network_id': net_id,
-                             'bgpvpn_id': router_assoc['bgpvpn_id']}
-                self.delete_net_assoc_postcommit(context, net_assoc)
+        for net_id in get_networks_for_router(context,
+                                              router_assoc['router_id']):
+            net_assoc = {'network_id': net_id,
+                         'bgpvpn_id': router_assoc['bgpvpn_id']}
+            self.delete_net_assoc_postcommit(context, net_assoc)
 
     @log_helpers.log_method_call
     def notify_router_interface_created(self, context, router_id, net_id):
