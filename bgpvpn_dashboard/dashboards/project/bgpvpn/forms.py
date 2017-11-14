@@ -55,7 +55,7 @@ class CommonData(forms.SelfHandlingForm):
     def handle(self, request, data):
         params = {}
         for key in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
-            if data.get(key) and policy.check(
+            if key in data and policy.check(
                     (("networking-bgpvpn", "%s_bgpvpn:%s" %
                         (self.action, key)),), request):
                 params[key] = bgpvpn_common.format_rt(data.pop(key, None))
