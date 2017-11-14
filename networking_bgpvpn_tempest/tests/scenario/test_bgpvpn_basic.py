@@ -28,6 +28,25 @@ CONF = config.CONF
 LOG = logging.getLogger(__name__)
 RT1 = '64512:1'
 RT2 = '64512:2'
+NET_A = 'A'
+NET_A_BIS = 'A-Bis'
+NET_B = 'B'
+NET_A_S1 = '10.101.11.0/24'
+NET_A_S2 = '10.101.12.0/24'
+NET_B_S1 = '10.102.21.0/24'
+NET_B_S2 = '10.102.22.0/24'
+IP_A_S1_1 = '10.101.11.10'
+IP_B_S1_1 = '10.102.21.20'
+IP_A_S1_2 = '10.101.11.30'
+IP_B_S1_2 = '10.102.21.40'
+IP_A_S1_3 = '10.101.11.50'
+IP_B_S1_3 = '10.102.21.60'
+IP_A_S2_1 = '10.101.12.50'
+IP_B_S2_1 = '10.102.22.60'
+IP_A_BIS_S1_1 = IP_A_S1_1
+IP_A_BIS_S1_2 = IP_A_S1_2
+IP_A_BIS_S1_3 = IP_A_S1_3
+IP_A_BIS_S2_1 = IP_A_S2_1
 
 
 class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
@@ -36,9 +55,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.servers_keypairs = {}
         self.servers = []
         self.server_fixed_ips = {}
-        self.ports = []
-        self.networks = []
-        self.subnets = []
+        self.ports = {}
+        self.networks = {}
+        self.subnets = {}
         self.server_fips = {}
         self._create_security_group_for_test()
 
@@ -95,7 +114,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self.router_b = self._create_fip_router(
-            subnet_id=self.subnets[1]['id'])
+            subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
@@ -117,7 +136,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self.router_b = self._create_fip_router(
-            subnet_id=self.subnets[1]['id'])
+            subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self.delete_router(self.router_b)
@@ -141,7 +160,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
-            subnet_id=self.subnets[1]['id'])
+            subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip_and_check_l3_bgpvpn()
 
     @test.services('compute', 'network')
@@ -159,7 +178,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self.router_b = self._create_fip_router(
-            subnet_id=self.subnets[1]['id'])
+            subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self._create_servers()
@@ -182,7 +201,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
-            subnet_id=self.subnets[1]['id'])
+            subnet_id=self.subnets[NET_B][0]['id'])
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
@@ -201,8 +220,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_l3_bgpvpn()
-        self.bgpvpn_client.create_network_association(self.bgpvpn['id'],
-                                                      self.networks[0]['id'])
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
@@ -230,16 +249,22 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.security_group = self._create_security_group(
             tenant_id=self.bgpvpn_client.tenant_id)
 
-    def _create_networks_and_subnets(self):
-        name = ['A', 'B']
-        ip_cidrs = ['10.100.1.0/24', '10.100.2.0/24']
-        create_kwargs = {'ip_version': 4}
-        for i in [0, 1]:
-            network = self._create_network(namestart='network-' + name[i])
-            self.networks.append(network)
-            create_kwargs['cidr'] = ip_cidrs[i]
-            self.subnets.append(self._create_subnet_with_cidr(
-                network, namestart='subnet-' + name[i], **create_kwargs))
+    def _create_networks_and_subnets(self, names=None, subnet_cidrs=None):
+        if not names:
+            names = [NET_A, NET_B]
+        if not subnet_cidrs:
+            subnet_cidrs = [[NET_A_S1], [NET_B_S1]]
+        for (name, subnet_cidrs) in zip(names, subnet_cidrs):
+            network = self._create_network(namestart=name)
+            self.networks[name] = network
+            self.subnets[name] = []
+            for (j, cidr) in enumerate(subnet_cidrs):
+                sub_name = "subnet-%s-%d" % (name, j + 1)
+                subnet = self._create_subnet_with_cidr(network,
+                                                       namestart=sub_name,
+                                                       cidr=cidr,
+                                                       ip_version=4)
+                self.subnets[name].append(subnet)
 
     def _create_subnet_with_cidr(self, network, subnets_client=None,
                                  namestart='subnet-smoke', **kwargs):
@@ -276,13 +301,17 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                             subnet_id=subnet_id)
         return router
 
-    def _create_router_and_associate_fip(self, server_index):
+    def _associate_fip(self, server_index):
         server = self.servers[server_index]
-        router = self._create_fip_router(
-            subnet_id=self.subnets[server_index]['id'])
-        self.server_fips[server['id']] = self.create_floating_ip(
+        fip = self.create_floating_ip(
             server, external_network_id=CONF.network.public_network_id,
-            port_id=self.ports[server_index]['id'])
+            port_id=self.ports[server['id']]['id'])
+        self.server_fips[server['id']] = fip
+        return fip
+
+    def _create_router_and_associate_fip(self, server_index, subnet):
+        router = self._create_fip_router(subnet_id=subnet['id'])
+        self._associate_fip(server_index)
         return router
 
     def _create_server(self, name, keypair, network, ip_address,
@@ -293,7 +322,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         port = self._create_port(network_id=network['id'],
                                  client=clients.ports_client,
                                  **create_port_body)
-        self.ports.append(port)
         create_server_kwargs = {
             'key_name': keypair['name'],
             'networks': [{'uuid': network['id'], 'port': port['id']}]
@@ -307,18 +335,20 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         server = clients.servers_client.show_server(body['id'])['server']
         LOG.debug('Created server: %s with status: %s', server['id'],
                   server['status'])
+        self.ports[server['id']] = port
         return server
 
-    def _create_servers(self):
-        name = ['server-1', 'server-2']
+    def _create_servers(self, ports_config=None):
         keypair = self.create_keypair()
         security_group_ids = [self.security_group['id']]
-        port_ips = ['10.100.1.10', '10.100.2.20']
-        for i in [0, 1]:
-            network = self.networks[i]
+        if ports_config is None:
+            ports_config = [[self.networks[NET_A], IP_A_S1_1],
+                            [self.networks[NET_B], IP_B_S1_1]]
+        for (i, port_config) in enumerate(ports_config):
+            network = port_config[0]
             server = self._create_server(
-                name[i], keypair, network, port_ips[i], security_group_ids,
-                self.os_primary)
+                'server-' + str(i + 1), keypair, network, port_config[1],
+                security_group_ids, self.os_primary)
             self.servers.append(server)
             self.servers_keypairs[server['id']] = keypair
             self.server_fixed_ips[server['id']] = (
@@ -335,6 +365,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             self.bgpvpn_admin_client, tenant_id=self.bgpvpn_client.tenant_id,
             name=name, route_targets=rts, export_targets=export_rts,
             import_targets=import_rts)
+        return self.bgpvpn
 
     def _update_l3_bgpvpn(self, rts=None, import_rts=None, export_rts=None,
                           bgpvpn=None):
@@ -351,35 +382,77 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     def _associate_all_nets_to_bgpvpn(self, bgpvpn=None):
         bgpvpn = bgpvpn or self.bgpvpn
-        for network in self.networks:
-            self.bgpvpn_client.create_network_association(bgpvpn['id'],
-                                                          network['id'])
+        for network in self.networks.values():
+            self.bgpvpn_client.create_network_association(
+                bgpvpn['id'], network['id'])
         LOG.debug('BGPVPN network associations completed')
 
+    def _setup_ssh_client(self, server):
+        server_fip = self.server_fips[server['id']][
+            'floating_ip_address']
+        private_key = self.servers_keypairs[server['id']][
+            'private_key']
+        ssh_client = self.get_remote_client(server_fip,
+                                            private_key=private_key)
+        return ssh_client
+
+    def _setup_http_server(self, server_index):
+        server = self.servers[server_index]
+        ssh_client = self._setup_ssh_client(server)
+        ssh_client.exec_command("sudo nc -kl -p 80 -e echo '%s' &"
+                                % server['name'])
+
+    def _log_gw_arp_info(self, ssh_client, gateway_ip):
+        output = ssh_client.exec_command('arp -n %s' % gateway_ip)
+        LOG.warning("Ping origin server GW ARP info:")
+        LOG.warning(output)
+
     def _check_l3_bgpvpn(self, from_server=None, to_server=None,
-                         should_succeed=True):
+                         should_succeed=True, validate_server=False):
         from_server = from_server or self.servers[0]
         to_server = to_server or self.servers[1]
         server_1_ip = self.server_fips[from_server['id']][
             'floating_ip_address']
         server_2_ip = self.server_fixed_ips[to_server['id']]
-        private_key = self.servers_keypairs[from_server['id']][
-            'private_key']
-        ssh_client = self.get_remote_client(server_1_ip,
-                                            private_key=private_key)
+        ssh_client = self._setup_ssh_client(from_server)
         try:
+            should_be_reachable = should_succeed or validate_server
             msg = ""
-            if should_succeed:
+            if should_be_reachable:
                 msg = "Timed out waiting for {ip} to become reachable".format(
                     ip=server_2_ip)
             else:
                 msg = ("Unexpected ping response from VM with IP address "
                        "{dest} originated from VM with IP address "
                        "{src}").format(dest=server_2_ip, src=server_1_ip)
-            self.assertTrue(
-                self._check_remote_connectivity(ssh_client, server_2_ip,
-                                                should_succeed),
-                msg)
+            result = self._check_remote_connectivity(ssh_client, server_2_ip,
+                                                     should_be_reachable)
+            if should_be_reachable and not result:
+                allocation = self.ports[from_server['id']]['fixed_ips'][0]
+                subnet_id = allocation['subnet_id']
+                gateway_ip = ''
+                for net_name in self.subnets:
+                    for subnet in self.subnets[net_name]:
+                        if subnet_id == subnet['id']:
+                            gateway_ip = subnet['gateway_ip']
+                            break
+                self._log_gw_arp_info(ssh_client, gateway_ip)
+                ssh_client.exec_command('sudo arp -d %s' % gateway_ip)
+                LOG.warning("Ping origin server GW ARP cleared")
+                ssh_client.ping_host(gateway_ip)
+                self._log_gw_arp_info(ssh_client, gateway_ip)
+                result = self._check_remote_connectivity(ssh_client,
+                                                         server_2_ip,
+                                                         should_be_reachable)
+            self.assertTrue(result, msg)
+            if validate_server and result:
+                to_name = ssh_client.exec_command(
+                    "nc %s 80" % server_2_ip).strip()
+                result = to_name == to_server['name']
+                self.assertTrue(should_succeed == result,
+                                ("Destination server name is invalid. Has '"
+                                 "{name}', expected is '{exp}'").format(
+                                     name=to_name, exp=to_server['name']))
         except Exception:
             LOG.exception(("Unable to ping VM with IP address {dest} from VM "
                            "with IP address {src}").format(dest=server_2_ip,
@@ -387,5 +460,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             raise
 
     def _associate_fip_and_check_l3_bgpvpn(self, should_succeed=True):
-        self.router = self._create_router_and_associate_fip(0)
+        subnet = self.subnets[NET_A][0]
+        self.router = self._create_router_and_associate_fip(0, subnet)
         self._check_l3_bgpvpn(should_succeed=should_succeed)
