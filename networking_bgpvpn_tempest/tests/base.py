@@ -15,6 +15,7 @@
 
 from networking_bgpvpn_tempest.services.bgpvpn import bgpvpn_client
 import tempest.api.network.base as test
+from tempest.common import utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
 
@@ -23,11 +24,6 @@ CONF = config.CONF
 
 class BaseBgpvpnTest(test.BaseNetworkTest):
     """Base class for the Bgpvpn tests that use the Tempest Neutron REST client
-
-    Finally, it is assumed that the following option is defined in the
-    [service_available] section of etc/tempest.conf
-
-        bgpvpn as True
 
     """
 
@@ -75,8 +71,9 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
     @classmethod
     def skip_checks(cls):
         super(BaseBgpvpnTest, cls).skip_checks()
-        if not CONF.service_available.bgpvpn:
-            raise cls.skipException("Bgpvpn support is required")
+        if not utils.is_extension_enabled('bgpvpn', 'network'):
+            msg = "Bgpvpn extension not enabled."
+            raise cls.skipException(msg)
 
     def create_bgpvpn(self, client, **kwargs):
         if 'name' not in kwargs:

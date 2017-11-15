@@ -15,11 +15,6 @@
 
 from oslo_config import cfg
 
-service_option = cfg.BoolOpt("bgpvpn",
-                             default=False,
-                             help="Whether or not bgpvpn is expected to be "
-                                  "available")
-
 BgpvpnGroup = [
     cfg.IntOpt('min_asn',
                default=100,
