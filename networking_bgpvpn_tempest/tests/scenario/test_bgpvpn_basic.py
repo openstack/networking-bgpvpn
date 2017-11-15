@@ -19,6 +19,7 @@ from tempest.common import waiters
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
+from tempest.lib import decorators
 from tempest import test
 
 from networking_bgpvpn_tempest.tests import base
@@ -293,6 +294,171 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn()
 
     @test.services('compute', 'network')
+    def test_bgpvpn_update_rt_and_keep_local_connectivity_variant1(self):
+        """This test checks basic BGPVPN route targets update.
+
+        1. Create networks A and B with their respective subnets
+        2. Start up server 1 in network A
+        3. Start up server 2 in network B
+        4. Start up server 3 in network A
+        5. Start up server 4 in network B
+        6. Create invalid L3 BGPVPN with eRT<>iRT that is insufficient
+           for proper connectivity between network A and B
+        7. Associate network A to a given L3 BGPVPN
+        8. Create router A and connect it to network A
+        9. Give a FIP to server 1
+        10. Check that server 1 cannot ping server 2
+        11. Check that server 1 can ping server 3
+        12. Associate network B to a given L3 BGPVPN
+        13. Create router B and connect it to network B
+        14. Give a FIP to server 2
+        15. Check that server 1 still cannot ping server 2
+        16. Check that server 2 can ping server 4
+        17. Update L3 BGPVPN to have now only RT defined
+        18. Check that server 1 can now ping server 2
+        19. Check that server 1 still can ping server 3
+        20. Check that server 2 still can ping server 4
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_B], IP_B_S1_1],
+                             [self.networks[NET_A], IP_A_S1_2],
+                             [self.networks[NET_B], IP_B_S1_2]])
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        self.router_a = self._create_router_and_associate_fip(
+            0, self.subnets[NET_A][0])
+        self._check_l3_bgpvpn(should_succeed=False)
+        self._check_l3_bgpvpn(self.servers[0], self.servers[2])
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_B]['id'])
+        self.router_b = self._create_router_and_associate_fip(
+            1, self.subnets[NET_B][0])
+        self._check_l3_bgpvpn(should_succeed=False)
+        self._check_l3_bgpvpn(self.servers[1], self.servers[3])
+        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._check_l3_bgpvpn()
+        self._check_l3_bgpvpn(self.servers[0], self.servers[2])
+        self._check_l3_bgpvpn(self.servers[1], self.servers[3])
+
+    @test.services('compute', 'network')
+    @decorators.skip_because(bug="1731954")
+    def test_bgpvpn_update_rt_and_keep_local_connectivity_variant2(self):
+        """This test checks basic BGPVPN route targets update.
+
+        1. Create networks A and B with their respective subnets
+        2. Start up server 1 in network A
+        3. Start up server 2 in network B
+        4. Start up server 3 in network A
+        5. Start up server 4 in network B
+        6. Create invalid L3 BGPVPN with eRT<>iRT that is insufficient
+           for proper connectivity between network A and B
+        7. Create router A and connect it to network A
+        8. Give a FIP to server 1
+        9. Create router B and connect it to network B
+        10. Give a FIP to server 4
+        11. Associate network A to a given L3 BGPVPN
+        12. Check that server 1 cannot ping server 2
+        13. Check that server 1 can ping server 3
+        14. Associate router B to a given L3 BGPVPN
+        15. Check that server 1 still cannot ping server 2
+        16. Check that server 4 can ping server 2
+        17. Update L3 BGPVPN to have now only RT defined
+        18. Check that server 1 can now ping server 2
+        19. Check that server 1 still can ping server 3
+        20. Check that server 4 still can ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_B], IP_B_S1_1],
+                             [self.networks[NET_A], IP_A_S1_2],
+                             [self.networks[NET_B], IP_B_S1_2]])
+        self._create_router_and_associate_fip(
+            0, self.subnets[NET_A][0])
+        router_b = self._create_router_and_associate_fip(
+            3, self.subnets[NET_B][0])
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        self._check_l3_bgpvpn(should_succeed=False)
+        self._check_l3_bgpvpn(self.servers[0], self.servers[2])
+        self.bgpvpn_client.create_router_association(self.bgpvpn['id'],
+                                                     router_b['id'])
+        self._check_l3_bgpvpn(should_succeed=False)
+        self._check_l3_bgpvpn(self.servers[3], self.servers[1])
+        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._check_l3_bgpvpn()
+        self._check_l3_bgpvpn(self.servers[0], self.servers[2])
+        self._check_l3_bgpvpn(self.servers[3], self.servers[1])
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_tenant_separation_and_local_connectivity(self):
+        """This test checks tenant separation for BGPVPN.
+
+        1. Create networks A with subnet S1 and S2
+        2. Create networks A-Bis with subnet S1 and S2 (like for network A)
+        3. Create L3 BGPVPN for network A with RT1
+        4. Create L3 BGPVPN for network A-Bis with RT2
+        5. Associate network A to a given L3 BGPVPN
+        6. Associate network A-Bis to a given L3 BGPVPN
+        7. Start up server 1 in network A and subnet S1
+        8. Start up server 2 in network A-Bis and subnet S1
+        9. Start up server 3 in network A and subnet S1
+        10. Start up server 4 in network A-Bis and subnet S1
+        11. Start up server 5 in network A and subnet S1
+        12. Create router A and connect it to network A
+        13. Create router A-Bis and connect it to network A-Bis
+        14. Give a FIP to all servers
+        15. Setup dummy HTTP service on server 2 and 3
+        16. Check that server 1 pings server 3 instead of server 2
+        17. Check that server 1 can ping server 3
+        18. Check that server 2 cannot ping server 1
+        19. Check that server 2 pings itself instead of server 3
+        20. Check that server 2 can ping server 4
+        21. Check that server 2 pings server 4 instead of server 5
+        """
+        self._create_networks_and_subnets([NET_A, NET_A_BIS],
+                                          [[NET_A_S1, NET_A_S2],
+                                           [NET_A_S1, NET_A_S2]])
+        bgpvpn_a = self._create_l3_bgpvpn(name='test-l3-bgpvpn-a',
+                                          rts=[RT1])
+        bgpvpn_a_bis = self._create_l3_bgpvpn(name='test-l3-bgpvpn-a-bis',
+                                              rts=[RT2])
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_a['id'], self.networks[NET_A]['id'])
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_a_bis['id'], self.networks[NET_A_BIS]['id'])
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_A_BIS], IP_A_BIS_S1_2],
+                             [self.networks[NET_A], IP_A_S1_2],
+                             [self.networks[NET_A_BIS], IP_A_BIS_S1_3],
+                             [self.networks[NET_A], IP_A_S1_3]])
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_A_BIS][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+        self._associate_fip(2)
+        self._associate_fip(3)
+        self._associate_fip(4)
+        self._setup_http_server(1)
+        self._setup_http_server(2)
+        self._setup_http_server(3)
+        self._setup_http_server(4)
+        self._check_l3_bgpvpn(self.servers[0], self.servers[1],
+                              should_succeed=False, validate_server=True)
+        self._check_l3_bgpvpn(self.servers[0], self.servers[2],
+                              validate_server=True)
+        self._check_l3_bgpvpn(self.servers[1], self.servers[0],
+                              should_succeed=False)
+        self._check_l3_bgpvpn(self.servers[1], self.servers[2],
+                              should_succeed=False, validate_server=True)
+        self._check_l3_bgpvpn(self.servers[1], self.servers[3],
+                              validate_server=True)
+        self._check_l3_bgpvpn(self.servers[1], self.servers[4],
+                              should_succeed=False, validate_server=True)
+
+    @test.services('compute', 'network')
     def test_bgpvpn_negative_ping_to_unassociated_net(self):
         """This test checks basic BGPVPN.
 
@@ -413,6 +579,55 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._associate_fip_and_check_l3_bgpvpn()
         self.bgpvpn_admin_client.delete_router_association(self.bgpvpn['id'],
                                                            assoc_b['id'])
+        self._check_l3_bgpvpn(should_succeed=False)
+
+    @test.services('compute', 'network')
+    def test_bgpvpn_negative_update_to_disjoint_import_export(self):
+        """This test checks basic BGPVPN route targets update.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN with only RT defined
+        3. Start up server 1 in network A
+        4. Start up server 2 in network B
+        5. Associate network A to a given L3 BGPVPN
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 can ping server 2
+        9. Update L3 BGPVPN to have eRT<>iRT and no RT what is insufficient
+           for proper connectivity between network A and B
+        10. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_servers()
+        self._associate_all_nets_to_bgpvpn()
+        self._associate_fip_and_check_l3_bgpvpn()
+        self._update_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._check_l3_bgpvpn(should_succeed=False)
+
+    @test.services('compute', 'network')
+    @decorators.skip_because(bug="1732070")
+    def test_bgpvpn_negative_update_to_empty_rt_list(self):
+        """This test checks basic BGPVPN route targets update.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN with only RT defined
+        3. Start up server 1 in network A
+        4. Start up server 2 in network B
+        5. Associate network A and B to a given L3 BGPVPN
+        6. Create router and connect it to network A
+        7. Give a FIP to server 1
+        8. Check that server 1 can ping server 2
+        9. Update L3 BGPVPN to empty RT list what is insufficient
+           for proper connectivity between network A and B
+        10. Check that server 1 cannot ping server 2
+        """
+        self._create_networks_and_subnets()
+        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_servers()
+        self._associate_all_nets_to_bgpvpn()
+        self._associate_fip_and_check_l3_bgpvpn()
+        self._update_l3_bgpvpn(rts=[], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn(should_succeed=False)
 
     def _create_security_group_for_test(self):
