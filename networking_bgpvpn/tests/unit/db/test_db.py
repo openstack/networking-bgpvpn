@@ -387,3 +387,60 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertNotIn(bgpvpn1['bgpvpn']['id'], bgpvpn_id_list)
             self.assertIn(bgpvpn2['bgpvpn']['id'], bgpvpn_id_list)
             self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
+
+    def test_db_associate_disassociate_port(self):
+        with self.port(tenant_id=self._tenant_id) as port, \
+                self.bgpvpn() as bgpvpn:
+            port_id = port['port']['id']
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_port(bgpvpn_id, port_id):
+                bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn_id)
+                self.assertEqual([port_id], bgpvpn['ports'])
+            bgpvpn = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn_id)
+            self.assertEqual([], bgpvpn['ports'])
+
+    def test_db_update_port_association(self):
+        ROUTE_A = {'type': 'prefix',
+                   'prefix': '12.1.0.0/16'}
+        ROUTE_B = {'type': 'prefix',
+                   'prefix': '14.0.0.0/8',
+                   'local_pref': 200}
+        ROUTE_Bbis = {'type': 'prefix',
+                      'prefix': '14.0.0.0/8',
+                      'local_pref': 100}
+        ROUTE_C = {'type': 'prefix',
+                   'prefix': '18.1.0.0/16'}
+
+        def with_defaults(port_assoc_route):
+            r = dict(local_pref=None)
+            r.update(port_assoc_route)
+            return r
+
+        with self.network() as net, \
+                self.subnet(network={'network': net['network']}) as subnet, \
+                self.port(subnet={'subnet': subnet['subnet']}) as port, \
+                self.bgpvpn() as bgpvpn, \
+                self.assoc_port(bgpvpn['bgpvpn']['id'],
+                                port['port']['id'],
+                                advertise_fixed_ips=False,
+                                routes=[ROUTE_A, ROUTE_B]) as port_assoc:
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+
+            self._update('bgpvpn/bgpvpns/%s/port_associations' % bgpvpn_id,
+                         port_assoc['port_association']['id'],
+                         {'port_association': {'advertise_fixed_ips': True,
+                                               'routes': [ROUTE_Bbis, ROUTE_C]}
+                          })
+
+            assoc = self.show_port_assoc(
+                bgpvpn['bgpvpn']['id'],
+                port_assoc['port_association']['id'])
+            assoc = assoc['port_association']
+
+            self.assertTrue(assoc['advertise_fixed_ips'])
+            self.assertNotIn(with_defaults(ROUTE_A),
+                             assoc['routes'])
+            self.assertIn(with_defaults(ROUTE_Bbis),
+                          assoc['routes'])
+            self.assertIn(with_defaults(ROUTE_C),
+                          assoc['routes'])

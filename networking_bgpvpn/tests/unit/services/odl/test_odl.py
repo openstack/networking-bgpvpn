@@ -55,7 +55,8 @@ class TestOdlServiceDriver(TestBgpvpnOdlCommon):
                          'type': mock.ANY,
                          'id': id,
                          'networks': [net_id],
-                         'routers': []}}
+                         'routers': [],
+                         'ports': []}}
                     mocked_sendjson.assert_called_once_with(mock.ANY,
                                                             mock.ANY,
                                                             formatted_bgpvpn)
@@ -81,7 +82,8 @@ class TestOdlServiceDriver(TestBgpvpnOdlCommon):
                          'type': mock.ANY,
                          'id': id,
                          'networks': [],
-                         'routers': [router_id]}}
+                         'routers': [router_id],
+                         'ports': []}}
                     mocked_sendjson.assert_called_once_with(mock.ANY,
                                                             mock.ANY,
                                                             formatted_bgpvpn)

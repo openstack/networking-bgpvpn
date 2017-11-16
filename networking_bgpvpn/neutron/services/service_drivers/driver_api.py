@@ -18,6 +18,8 @@ import copy
 import six
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
+from networking_bgpvpn.neutron.extensions \
+    import bgpvpn_routes_control as bgpvpn_rc
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -291,4 +293,134 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
         pass
 
     def delete_router_assoc_postcommit(self, context, router_assoc):
+        pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BGPVPNDriverRCBase(BGPVPNDriverBase):
+    """Base class for drivers implementing the bgpvpn-routes-control API ext"""
+
+    def __init__(self, *args):
+        self._add_routes_control_to_supported_extensions()
+
+    def _add_routes_control_to_supported_extensions(self):
+        self.service_plugin.supported_extension_aliases.append(
+            bgpvpn_rc.Bgpvpn_routes_control.get_alias())
+
+    @abc.abstractmethod
+    def create_port_assoc(self, bgpvpn_id, port_association):
+        pass
+
+    @abc.abstractmethod
+    def get_port_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_port_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def update_port_assoc(self, context, assoc_id, port_association):
+        pass
+
+    @abc.abstractmethod
+    def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
+        pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
+    """BGPVPNDriverDBMixin with DB operations for bgpvpn-route-control ext."""
+
+    def __init__(self, *args, **xargs):
+        BGPVPNDriverDBMixin.__init__(self, *args, **xargs)
+        self._add_routes_control_to_supported_extensions()
+
+    def create_port_assoc(self, context, bgpvpn_id, port_association):
+        with context.session.begin(subtransactions=True):
+            port_assoc = self.bgpvpn_db.create_port_assoc(context, bgpvpn_id,
+                                                          port_association)
+            self.create_port_assoc_precommit(context, port_assoc)
+        self.create_port_assoc_postcommit(context, port_assoc)
+        return port_assoc
+
+    @abc.abstractmethod
+    def create_port_assoc_precommit(self, context, port_assoc):
+        pass
+
+    @abc.abstractmethod
+    def create_port_assoc_postcommit(self, context, port_assoc):
+        pass
+
+    def get_port_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
+        return self.bgpvpn_db.get_port_assoc(context, assoc_id,
+                                             bgpvpn_id, fields)
+
+    def get_port_assocs(self, context, bgpvpn_id, filters=None, fields=None):
+        return self.bgpvpn_db.get_port_assocs(context, bgpvpn_id,
+                                              filters, fields)
+
+    def update_port_assoc(self, context, assoc_id, bgpvpn_id, port_assoc):
+        old_port_assoc = self.get_port_assoc(context, assoc_id, bgpvpn_id)
+        with context.session.begin(subtransactions=True):
+            port_assoc = self.bgpvpn_db.update_port_assoc(context, assoc_id,
+                                                          bgpvpn_id,
+                                                          port_assoc)
+            self.update_port_assoc_precommit(context,
+                                             old_port_assoc, port_assoc)
+        self.update_port_assoc_postcommit(context,
+                                          old_port_assoc, port_assoc)
+        return port_assoc
+
+    @abc.abstractmethod
+    def update_port_assoc_precommit(self, context,
+                                    old_port_assoc, port_assoc):
+        pass
+
+    @abc.abstractmethod
+    def update_port_assoc_postcommit(self, context,
+                                     old_port_assoc, port_assoc):
+        pass
+
+    def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
+        with context.session.begin(subtransactions=True):
+            port_assoc = self.bgpvpn_db.get_port_assoc(context,
+                                                       assoc_id,
+                                                       bgpvpn_id)
+            self.delete_port_assoc_precommit(context, port_assoc)
+            self.bgpvpn_db.delete_port_assoc(context,
+                                             assoc_id,
+                                             bgpvpn_id)
+        self.delete_port_assoc_postcommit(context, port_assoc)
+
+    @abc.abstractmethod
+    def delete_port_assoc_precommit(self, context, port_assoc):
+        pass
+
+    @abc.abstractmethod
+    def delete_port_assoc_postcommit(self, context, port_assoc):
+        pass
+
+
+class BGPVPNDriverRC(BGPVPNDriverRCDBMixin, BGPVPNDriver):
+    """Base class for a DB driver supporting bgpvpn-routes-control API ext."""
+
+    def create_port_assoc_precommit(self, context, port_assoc):
+        pass
+
+    def create_port_assoc_postcommit(self, context, port_assoc):
+        pass
+
+    def update_port_assoc_precommit(self, context,
+                                    old_port_assoc, port_assoc):
+        pass
+
+    def update_port_assoc_postcommit(self, context,
+                                     old_port_assoc, port_assoc):
+        pass
+
+    def delete_port_assoc_precommit(self, context, port_assoc):
+        pass
+
+    def delete_port_assoc_postcommit(self, context, port_assoc):
         pass
