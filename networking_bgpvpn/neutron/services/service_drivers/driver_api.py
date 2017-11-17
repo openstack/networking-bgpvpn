@@ -98,8 +98,8 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
     the result to postcommit methods
     """
 
-    def __init__(self, service_plugin):
-        super(BGPVPNDriverDBMixin, self).__init__(service_plugin)
+    def __init__(self, *args, **kwargs):
+        super(BGPVPNDriverDBMixin, self).__init__(*args, **kwargs)
         self.bgpvpn_db = bgpvpn_db.BGPVPNPluginDb()
 
     def create_bgpvpn(self, context, bgpvpn):
@@ -300,7 +300,8 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
 class BGPVPNDriverRCBase(BGPVPNDriverBase):
     """Base class for drivers implementing the bgpvpn-routes-control API ext"""
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
+        super(BGPVPNDriverRCBase, self).__init__(*args, **kwargs)
         self._add_routes_control_to_supported_extensions()
 
     def _add_routes_control_to_supported_extensions(self):
