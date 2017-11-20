@@ -343,7 +343,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
 
     @test.services('compute', 'network')
-    @decorators.skip_because(bug="1731954")
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant2(self):
         """This test checks basic BGPVPN route targets update.
 
