@@ -15,12 +15,12 @@
 
 from oslo_log import log as logging
 from tempest.common import compute
+from tempest.common import utils
 from tempest.common import waiters
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
-from tempest import test
 
 from networking_bgpvpn_tempest.tests import base
 from networking_bgpvpn_tempest.tests.scenario import manager
@@ -62,7 +62,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.server_fips = {}
         self._create_security_group_for_test()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_basic(self):
         """This test checks basic BGPVPN.
 
@@ -81,7 +81,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant1(self):
         """This test checks basic BGPVPN.
 
@@ -99,7 +99,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant2(self):
         """This test checks basic BGPVPN.
 
@@ -120,7 +120,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant3(self):
         """This test checks basic BGPVPN.
 
@@ -143,7 +143,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.delete_router(self.router_b)
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant4(self):
         """This test checks basic BGPVPN.
 
@@ -164,7 +164,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant5(self):
         """This test checks basic BGPVPN.
 
@@ -185,7 +185,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_variant6(self):
         """This test checks basic BGPVPN.
 
@@ -206,7 +206,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_disjoint_targets(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -234,7 +234,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_common_target(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -261,7 +261,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_and_unassociated_net(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -293,7 +293,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant1(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -342,7 +342,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant2(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -391,7 +391,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_tenant_separation_and_local_connectivity(self):
         """This test checks tenant separation for BGPVPN.
 
@@ -457,7 +457,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[1], self.servers[4],
                               should_succeed=False, validate_server=True)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_ping_to_unassociated_net(self):
         """This test checks basic BGPVPN.
 
@@ -477,7 +477,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_disjoint_import_export(self):
         """This test checks basic BGPVPN.
 
@@ -497,7 +497,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_bgpvpn(self):
         """This test checks BGPVPN delete.
 
@@ -520,7 +520,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.delete_bgpvpn(self.bgpvpn_admin_client, self.bgpvpn)
         self._check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_net_association(self):
         """This test checks BGPVPN net association delete.
 
@@ -548,7 +548,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                             assoc_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_router_association(self):
         """This test checks BGPVPN router association delete.
 
@@ -580,7 +580,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                            assoc_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     def test_bgpvpn_negative_update_to_disjoint_import_export(self):
         """This test checks basic BGPVPN route targets update.
 
@@ -604,7 +604,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
         self._check_l3_bgpvpn(should_succeed=False)
 
-    @test.services('compute', 'network')
+    @utils.services('compute', 'network')
     @decorators.skip_because(bug="1732070")
     def test_bgpvpn_negative_update_to_empty_rt_list(self):
         """This test checks basic BGPVPN route targets update.
