@@ -23,8 +23,6 @@ from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
-from openstack_dashboard import policy
-
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.common import bgpvpn as bgpvpn_common
 
@@ -55,9 +53,7 @@ class CommonData(forms.SelfHandlingForm):
     def handle(self, request, data):
         params = {}
         for key in bgpvpn_common.RT_FORMAT_ATTRIBUTES:
-            if key in data and policy.check(
-                    (("networking-bgpvpn", "%s_bgpvpn:%s" %
-                        (self.action, key)),), request):
+            if key in data:
                 params[key] = bgpvpn_common.format_rt(data.pop(key, None))
         params.update(data)
         try:
