@@ -22,6 +22,7 @@ BGPVPN_OBJECT_PATH = '/bgpvpn/bgpvpns'
 BGPVPN_RESOURCE_PATH = '/bgpvpn/bgpvpns/%s'
 BGPVPN_NETWORK_ASSOCIATION_PATH = '/bgpvpn/bgpvpns/%s/network_associations'
 BGPVPN_ROUTER_ASSOCIATION_PATH = '/bgpvpn/bgpvpns/%s/router_associations'
+BGPVPN_PORT_ASSOCIATION_PATH = '/bgpvpn/bgpvpns/%s/port_associations'
 
 
 class BgpvpnClient(base.BaseNetworkClient):
@@ -86,4 +87,29 @@ class BgpvpnClient(base.BaseNetworkClient):
 
     def list_router_associations(self, bgpvpn_id, **filters):
         uri = BGPVPN_ROUTER_ASSOCIATION_PATH % bgpvpn_id
+        return self.list_resources(uri, **filters)
+
+    def create_port_association(self, bgpvpn_id, **kwargs):
+        uri = BGPVPN_PORT_ASSOCIATION_PATH % bgpvpn_id
+        post_data = {"port_association": kwargs}
+        return self.create_resource(uri, post_data)
+
+    def update_port_association(self, bgpvpn_id, association_id, **kwargs):
+        uri_pattern = BGPVPN_PORT_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        post_data = {"port_association": kwargs}
+        return self.update_resource(uri, post_data)
+
+    def delete_port_association(self, bgpvpn_id, association_id):
+        uri_pattern = BGPVPN_PORT_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        return self.delete_resource(uri)
+
+    def show_port_association(self, bgpvpn_id, association_id, **fields):
+        uri_pattern = BGPVPN_PORT_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        return self.show_resource(uri, **fields)
+
+    def list_port_associations(self, bgpvpn_id, **filters):
+        uri = BGPVPN_PORT_ASSOCIATION_PATH % bgpvpn_id
         return self.list_resources(uri, **filters)
