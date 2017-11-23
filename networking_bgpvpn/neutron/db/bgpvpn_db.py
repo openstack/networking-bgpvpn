@@ -111,7 +111,7 @@ class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
     type = sa.Column(sa.Enum(*bgpvpn_routes_control.ROUTE_TYPES,
                              name="bgpvpn_port_assoc_route_type"),
                      nullable=False)
-    local_pref = sa.Column(sa.Integer(),
+    local_pref = sa.Column(sa.BigInteger(),
                            nullable=True)
     # prefix is NULL unless type is 'prefix'
     prefix = sa.Column(sa.String(49),

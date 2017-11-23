@@ -58,7 +58,7 @@ def upgrade():
         sa.Column('type', sa.Enum("prefix", "bgpvpn",
                                   name="bgpvpn_port_association_route_type"),
                   nullable=False),
-        sa.Column('local_pref', sa.Integer(),
+        sa.Column('local_pref', sa.BigInteger(),
                   autoincrement=False, nullable=True),
         # an IPv6 prefix can be up to 49 chars (IPv4-mapped IPv6 string
         # representation: up to 45 chars, plus 4 chars for "/128" which is the
