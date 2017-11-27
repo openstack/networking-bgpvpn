@@ -39,13 +39,18 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
 
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
         configure_l2_agent
-        iniset /$Q_PLUGIN_CONF_FILE agent l2_population True
         if [[ "$Q_AGENT" == "openvswitch" ]]; then
             # l2pop and arp_responder are required for bagpipe driver
+            iniset /$Q_PLUGIN_CONF_FILE agent l2_population True
             iniset /$Q_PLUGIN_CONF_FILE agent arp_responder True
-        fi
+        elif [[ "$Q_AGENT" == "linuxbridge" ]]; then
+            # l2pop is required for EVPN/VXLAN bagpipe driver
+            iniset /$Q_PLUGIN_CONF_FILE vxlan l2_population True
+        else
+            die $LINENO "unsupported agent for networking-bagpipe: $Q_AGENT"
+	fi
     fi
-    if is_service_enabled h-eng;then
+    if is_service_enabled h-eng; then
         echo_summary "Enabling bgpvpn in $HEAT_CONF"
         iniset $HEAT_CONF DEFAULT plugin_dirs $NETWORKING_BGPVPN_DIR/networking_bgpvpn_heat
     fi

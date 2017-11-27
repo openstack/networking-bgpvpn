@@ -4,12 +4,3 @@ BGPVPN_DASHBOARD_ENABLE="$NETWORKING_BGPVPN_DIR/bgpvpn_dashboard/enabled/*"
 
 NETWORKING_BGPVPN_DRIVER=${NETWORKING_BGPVPN_DRIVER:-BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriverRC:default}
 
-if is_service_enabled q-svc; then
-    # l2pop is currently required for bagpipe driver
-    if [[ -z "$Q_ML2_PLUGIN_MECHANISM_DRIVERS" ]]; then
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS="l2population"
-    else
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS+=",l2population"
-    fi
-fi
-
