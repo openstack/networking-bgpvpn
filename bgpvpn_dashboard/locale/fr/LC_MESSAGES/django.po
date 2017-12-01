@@ -1,14 +1,15 @@
 # Cédric Savignan <liced@liced.fr>, 2017. #zanata
+# Thomas Morin <tmmorin.orange@gmail.com>, 2017. #zanata
 msgid ""
 msgstr ""
-"Project-Id-Version: networking-bgpvpn 8.0.0.0b2.dev35\n"
+"Project-Id-Version: networking-bgpvpn 8.0.0.0b2.dev38\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2017-11-29 11:02+0000\n"
+"POT-Creation-Date: 2017-11-30 21:33+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2017-11-29 10:02+0000\n"
-"Last-Translator: Cédric Savignan <liced@liced.fr>\n"
+"PO-Revision-Date: 2017-11-30 08:40+0000\n"
+"Last-Translator: Thomas Morin <tmmorin.orange@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
 "X-Generator: Zanata 3.9.6\n"
@@ -18,15 +19,15 @@ msgid ""
 "A single BGP Route Target or a comma-separated list of BGP Route Target. "
 "Example: 64512:1 or 64512:1,64512:2,64512:3"
 msgstr ""
-"Une simple Route Target BGP  ou une liste de BGP Route Targets séparée par "
-"une virgule. Exemple: 64512:1 ou 64512:1,64512:2,64512:3"
+"Un simple Route Target BGP ou une liste de Route Targets  BGP séparés par "
+"des virgules. Exemple: 64512:1 ou 64512:1,64512:2,64512:3 ."
 
 #, python-format
 msgid "Action type %s is not supported"
-msgstr "Type action %s non supporté"
+msgstr "Type d'action %s non supporté"
 
 msgid "All Networks"
-msgstr "Tous les Réseaux"
+msgstr "Tous les réseaux"
 
 msgid "All Routers"
 msgstr "Tous les routeurs"
@@ -41,7 +42,7 @@ msgid "BGPVPN"
 msgstr "BGPVPN"
 
 msgid "BGPVPN Interconnections"
-msgstr "BGPVPN Interconnections"
+msgstr "Interconnexions BGPVPN"
 
 msgid ""
 "Bug, inconsistency between neutron-lib and networking-bgpvpn for RTRD regex"
@@ -51,8 +52,18 @@ msgstr ""
 msgid "Create BGPVPN"
 msgstr "Créer un BGPVPN"
 
+msgid "Delete BGPVPN"
+msgid_plural "Delete BGPVPNs"
+msgstr[0] "Supprimer le  BGPVPN"
+msgstr[1] "Supprimer les BGPVPNs"
+
+msgid "Deleted BGPVPN"
+msgid_plural "Deleted BGPVPNs"
+msgstr[0] "BGPVPN supprimé"
+msgstr[1] "BGPVPN supprimés"
+
 msgid "Edit BGPVPN"
-msgstr "Modifier BGPVPN"
+msgstr "Modifier le BGPVPN"
 
 msgid "Edit BGPVPN associations"
 msgstr "Modifier les associations de BGPVPN"
@@ -61,10 +72,10 @@ msgid "Export Targets"
 msgstr "Export Targets"
 
 msgid "Export targets"
-msgstr "Export targets"
+msgstr "Export Targets"
 
 msgid "Export targets is not valid"
-msgstr "Export targets non valide"
+msgstr "Export Targets invalide"
 
 #, python-format
 msgid "Failed to delete BGPVPN %s"
@@ -77,14 +88,14 @@ msgid "Import Targets"
 msgstr "Import Targets"
 
 msgid "Import targets"
-msgstr "Import targets"
+msgstr "Import Targets"
 
 msgid "Import targets is not valid"
-msgstr "Import targets non valide"
+msgstr "Import Targets invalide"
 
 #, python-format
 msgid "Modified BGPVPN associations \"%s\"."
-msgstr "BGPVPN associations modifiées \"%s\"."
+msgstr "Associations BGPVPN modifiées \"%s\"."
 
 msgid "Name"
 msgstr "Nom"
@@ -118,13 +129,13 @@ msgid "Route Targets"
 msgstr "Route Targets"
 
 msgid "Route targets"
-msgstr "Route targets"
+msgstr "Route Targets"
 
 msgid "Route targets is not valid"
-msgstr "Route targets non valide"
+msgstr "Route Targets invalide"
 
 msgid "Router Associations"
-msgstr "Association de Routeurs"
+msgstr "Associations de Routeurs"
 
 msgid "Routers"
 msgstr "Routeurs"
@@ -136,10 +147,10 @@ msgid "Select a project"
 msgstr "Sélectionner un projet"
 
 msgid "Select the networks to be associated."
-msgstr "Sélectionner le réseaux à associer."
+msgstr "Sélectionner les réseaux à associer."
 
 msgid "Select the routers to be associated."
-msgstr "Sélectionner le routeur à associer."
+msgstr "Sélectionner les routeurs à associer."
 
 msgid "Selected Networks"
 msgstr "Réseaux sélectionnés"
@@ -175,13 +186,13 @@ msgid "Unable to retrieve information about the tenant %s"
 msgstr "Impossible de récupérer les informations à propos du tenant %s"
 
 msgid "Update Change"
-msgstr "Sauvegarger changements"
+msgstr "Sauvegarger les changements"
 
 msgid "Update Network Associations"
-msgstr "Modifier Associations Réseaux"
+msgstr "Modifier les Associations Réseaux"
 
 msgid "Update Router Associations"
-msgstr "Modifier Association Routeurs"
+msgstr "Modifier les Association Routeurs"
 
 msgid "l2"
 msgstr "l2"
