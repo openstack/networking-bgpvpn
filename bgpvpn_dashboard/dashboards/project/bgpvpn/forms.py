@@ -56,8 +56,10 @@ class CommonData(forms.SelfHandlingForm):
             if key in data:
                 params[key] = bgpvpn_common.format_rt(data.pop(key, None))
         params.update(data)
+        error_msg = _('Something went wrong with BGPVPN %s') % data['name']
         try:
             if self.action == 'update':
+                error_msg = _('Failed to update BGPVPN %s') % data['name']
                 # attribute tenant_id is required in request when admin user is
                 # logged and bgpvpn form from admin menu is used
                 if request.user.is_superuser and data.get('tenant_id'):
@@ -70,24 +72,19 @@ class CommonData(forms.SelfHandlingForm):
                 bgpvpn = bgpvpn_api.bgpvpn_update(request,
                                                   data['bgpvpn_id'],
                                                   **params)
-                success_action = 'modified'
+                msg = _('BGPVPN %s was successfully updated.') % data['name']
             elif self.action == 'create':
-                success_action = 'created'
+                error_msg = _('Failed to create BGPVPN %s') % data['name']
                 bgpvpn = bgpvpn_api.bgpvpn_create(request, **params)
+                msg = _('BGPVPN %s was successfully created.') % data['name']
             else:
                 raise Exception(
-                    _('Action type %s is not supported') % self.action)
-            msg = _('BGPVPN {name} was successfully {action}.').format(
-                name=data['name'],
-                action=success_action)
+                    _('Unsupported action type: %s') % self.action)
             LOG.debug(msg)
             messages.success(request, msg)
             return bgpvpn
         except Exception:
-            msg = _('Failed to {action} BGPVPN {name}').format(
-                action=self.action,
-                name=data['name'])
-            exceptions.handle(request, msg, redirect=self.failure_url)
+            exceptions.handle(request, error_msg, redirect=self.failure_url)
             return False
 
 

@@ -27,8 +27,14 @@ class UpdateAssociations(workflows.MembershipAction):
         super(UpdateAssociations, self).__init__(request,
                                                  *args,
                                                  **kwargs)
-        err_msg = _('Unable to retrieve %ss list. '
-                    'Please try again later.') % resource_type
+        err_msg = _('Something went wrong when retrieving the list of '
+                    'associations')
+        if resource_type == 'router':
+            err_msg = _('Unable to retrieve list of routers. '
+                        'Please try again later.')
+        elif resource_type == 'network':
+            err_msg = _('Unable to retrieve list of networks. '
+                        'Please try again later.')
         context = args[0]
 
         default_role_field_name = self.get_default_role_field_name()
@@ -79,7 +85,7 @@ class UpdateAssociations(workflows.MembershipAction):
                 return api.neutron.network_list_for_tenant(request, tenant_id)
             else:
                 raise Exception(
-                    _('Resource type %s is not supported') % resource_type)
+                    _('Resource type not supported: %s') % resource_type)
         except Exception:
             exceptions.handle(request, err_msg % resource_type)
 
@@ -161,15 +167,18 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
         list_method = getattr(bgpvpn_api,
                               '%s_association_list' % association_type)
         associations = data["%ss_association" % association_type]
+        error_msg = 'Unable to retrieve associations'
         try:
             old_associations = [
                 getattr(association,
                         '%s_id' % association_type) for association in
                 list_method(request, data['bgpvpn_id'])]
         except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve %ss associations') %
-                              association_type)
+            if association_type == 'router':
+                error_msg = _('Unable to retrieve router associations')
+            elif association_type == 'network':
+                error_msg = _('Unable to retrieve network associations')
+            exceptions.handle(request, error_msg)
             raise
 
         to_remove_associations = list(set(old_associations) -
@@ -180,6 +189,7 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
         # If new resource added to the list
         if len(to_add_associations) > 0:
             for resource in to_add_associations:
+                error_msg = _('Unable to associate resource %s') % resource
                 try:
                     create_asso = getattr(bgpvpn_api,
                                           '%s_association_create' %
@@ -189,11 +199,15 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
                                 data['bgpvpn_id'],
                                 **params)
                 except Exception as e:
-                    exceptions.handle(
-                        request,
-                        _('Unable to associate {} {} {}').format(
-                            association_type,
-                            resource, str(e)))
+                    if association_type == 'router':
+                        error_msg = _(
+                            'Unable to associate router {}: {}').format(
+                            resource, str(e))
+                    elif association_type == 'network':
+                        error_msg = _(
+                            'Unable to associate network {}: {}').format(
+                            resource, str(e))
+                    exceptions.handle(request, error_msg)
                     raise
 
         # If resource has been deleted from the list
@@ -213,11 +227,11 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
                             delete_method(request,
                                           association.id, data['bgpvpn_id'])
                 except Exception:
-                    exceptions.handle(
-                        request,
-                        _('Unable to disassociate {}s {}').format(
-                            association_type,
-                            resource))
+                    if association_type == 'router':
+                        error_msg = _('Unable to disassociate router {}')
+                    elif association_type == 'network':
+                        error_msg = _('Unable to disassociate network {}')
+                    exceptions.handle(request, error_msg)
                     raise
 
     def _set_params(self, data, association_type, resource):
