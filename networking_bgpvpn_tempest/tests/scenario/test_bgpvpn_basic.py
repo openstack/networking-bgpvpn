@@ -62,6 +62,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.server_fips = {}
         self._create_security_group_for_test()
 
+    @decorators.idempotent_id('afdd6cad-871a-4343-b97b-6319c76c815d')
     @utils.services('compute', 'network')
     def test_bgpvpn_basic(self):
         """This test checks basic BGPVPN.
@@ -81,6 +82,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('8a5a6fac-313c-464b-9c5c-29d4e1c0a51e')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant1(self):
         """This test checks basic BGPVPN.
@@ -99,6 +101,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('e7468636-0816-4092-82ca-3590680ed00b')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant2(self):
         """This test checks basic BGPVPN.
@@ -120,6 +123,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('7c66aa31-fb3a-4e15-8808-46eb361f153a')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant3(self):
         """This test checks basic BGPVPN.
@@ -143,6 +147,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.delete_router(self.router_b)
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('973ab26d-c7d8-4a32-9aa9-2d7e6f406135')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant4(self):
         """This test checks basic BGPVPN.
@@ -164,6 +169,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('2ac0696b-e828-4299-9e94-5f9c4988d961')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant5(self):
         """This test checks basic BGPVPN.
@@ -185,6 +191,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('9081338e-a52e-46bb-a40e-bda24ec4b1bd')
     @utils.services('compute', 'network')
     def test_bgpvpn_variant6(self):
         """This test checks basic BGPVPN.
@@ -206,6 +213,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
 
+    @decorators.idempotent_id('133497a1-2788-40f7-be01-b3b64b5ef8cd')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_disjoint_targets(self):
         """This test checks basic BGPVPN route targets update.
@@ -234,6 +242,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
+    @decorators.idempotent_id('bf417cad-0bc4-446a-b367-850aa619ca4f')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_common_target(self):
         """This test checks basic BGPVPN route targets update.
@@ -261,6 +270,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
+    @decorators.idempotent_id('08d4f40e-3cec-485b-9da2-76e67fbd9881')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_route_targets_and_unassociated_net(self):
         """This test checks basic BGPVPN route targets update.
@@ -293,6 +303,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
+    @decorators.idempotent_id('c8bfd695-f731-47a6-86e3-3dfa492e08e0')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant1(self):
         """This test checks basic BGPVPN route targets update.
@@ -342,6 +353,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
 
+    @decorators.idempotent_id('758a8731-5070-4b1e-9a66-d6ff05bb5be1')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant2(self):
         """This test checks basic BGPVPN route targets update.
@@ -391,6 +403,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
 
+    @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
     @utils.services('compute', 'network')
     def test_bgpvpn_tenant_separation_and_local_connectivity(self):
         """This test checks tenant separation for BGPVPN.
@@ -457,6 +470,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[1], self.servers[4],
                               should_succeed=False, validate_server=True)
 
+    @decorators.idempotent_id('8478074e-22df-4234-b02b-61257b475b18')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_ping_to_unassociated_net(self):
         """This test checks basic BGPVPN.
@@ -477,6 +491,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('b6d219b2-90bb-431f-a566-bf6a780d1578')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_disjoint_import_export(self):
         """This test checks basic BGPVPN.
@@ -497,6 +512,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('dc92643f-1b2c-4a3e-bc5e-ea780d721ef7')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_bgpvpn(self):
         """This test checks BGPVPN delete.
@@ -520,6 +536,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.delete_bgpvpn(self.bgpvpn_admin_client, self.bgpvpn)
         self._check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('2e6bf893-1410-4ef6-9948-1877f3a8f3d1')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_net_association(self):
         """This test checks BGPVPN net association delete.
@@ -548,6 +565,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                             assoc_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('9ebf4342-4448-4d63-98f9-44d3a606b6cf')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_delete_router_association(self):
         """This test checks BGPVPN router association delete.
@@ -580,6 +598,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                            assoc_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('be4471b3-5f57-4022-b719-b45a673a728b')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_update_to_disjoint_import_export(self):
         """This test checks basic BGPVPN route targets update.
@@ -604,6 +623,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
         self._check_l3_bgpvpn(should_succeed=False)
 
+    @decorators.idempotent_id('fb37a546-7263-4ffe-a42c-77eca377ff1a')
     @utils.services('compute', 'network')
     @decorators.skip_because(bug="1732070")
     def test_bgpvpn_negative_update_to_empty_rt_list(self):

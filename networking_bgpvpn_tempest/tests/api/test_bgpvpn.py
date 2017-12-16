@@ -40,15 +40,18 @@ class BgpvpnTest(base):
     ...
     """
 
+    @decorators.idempotent_id('4f90deb2-eb8e-4e7d-9d68-c5b5cc657f7e')
     def test_create_bgpvpn(self):
         self.create_bgpvpn(self.bgpvpn_admin_client)
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('0a911d61-d908-4c21-a11e-e403ac0d8e38')
     def test_create_bgpvpn_as_non_admin_fail(self):
         self.assertRaises(exceptions.Forbidden,
                           self.create_bgpvpn, self.bgpvpn_client)
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('596abfc2-fd89-491d-863d-25459db1df4b')
     def test_delete_bgpvpn_as_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -56,6 +59,7 @@ class BgpvpnTest(base):
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('b20110bb-393b-4342-8b30-6486cd2b4fc6')
     def test_show_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -63,6 +67,7 @@ class BgpvpnTest(base):
                           self.bgpvpn_alt_client.show_bgpvpn, bgpvpn['id'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('4875e65d-0b65-40c0-9efd-309420686ab4')
     def test_list_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -71,6 +76,7 @@ class BgpvpnTest(base):
                          [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('57b0da93-8e37-459f-9aaf-f903acc36025')
     def test_show_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -84,6 +90,7 @@ class BgpvpnTest(base):
                           bgpvpn['id'], net_assoc['id'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('2cbb10af-bf9c-4b32-b6a6-4066de783758')
     def test_list_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -95,6 +102,7 @@ class BgpvpnTest(base):
             .list_network_associations(bgpvpn['id'])
         self.assertFalse(net_assocs_alt['network_associations'])
 
+    @decorators.idempotent_id('51e1b079-aefa-4c37-8b1a-0567b3ef7954')
     def test_associate_disassociate_network(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -118,6 +126,7 @@ class BgpvpnTest(base):
 
         self.networks_client.delete_network(network_id)
 
+    @decorators.idempotent_id('559013fd-1e34-4fde-9599-f8aafe9ae716')
     def test_update_route_target(self):
         bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
@@ -135,6 +144,7 @@ class BgpvpnTest(base):
         self.assertEqual(['64512:6'], bgpvpn['export_targets'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('e35eb9be-fe1f-406c-b36b-fc1879328313')
     def test_update_route_target_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
@@ -148,6 +158,7 @@ class BgpvpnTest(base):
                 export_targets=['64512:4'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('464ca6f9-86e4-4ee3-9c65-f1edae93223d')
     def test_create_bgpvpn_with_invalid_routetargets(self):
         """Create a bgpvpn with invalid route target
 
@@ -177,6 +188,7 @@ class BgpvpnTest(base):
                           self.bgpvpn_admin_client.create_bgpvpn, **postdata)
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('7d4e9b87-e1ab-47a7-a8d6-9d179365556a')
     def test_update_bgpvpn_invalid_routetargets(self):
         """Update the bgpvpn with invalid route targets
 
@@ -208,6 +220,7 @@ class BgpvpnTest(base):
                           bgpvpn['bgpvpn']['id'], **updatedata)
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('f049ce21-d239-47c0-b13f-fb57a2a558ce')
     def test_associate_invalid_network(self):
         """Associate the invalid network in bgpvpn
 
@@ -229,6 +242,7 @@ class BgpvpnTest(base):
                           network['network']['id'])
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('078b2660-4adb-4c4c-abf0-b77bf0bface5')
     def test_disassociate_invalid_network(self):
         """Disassociate the invalid network in bgpvpn
 
@@ -254,6 +268,7 @@ class BgpvpnTest(base):
                           uuidutils.generate_uuid(),
                           association['network_association']['id'])
 
+    @decorators.idempotent_id('de8d94b0-0239-4a48-9574-c3a4a4f7cacb')
     def test_associate_disassociate_router(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
                                     tenant_id=self.bgpvpn_client.tenant_id)
@@ -278,6 +293,7 @@ class BgpvpnTest(base):
         self.routers_client.delete_router(router_id)
 
     @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('4be1f073-fe57-4858-b7b9-9a189e90b770')
     def test_attach_associated_subnet_to_associated_router(self):
         # Create a first bgpvpn and associate a network with a subnet to it
         bgpvpn_net = self.create_bgpvpn(
