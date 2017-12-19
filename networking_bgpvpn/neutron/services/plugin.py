@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from neutron.db import servicetype_db as st_db
 from neutron.services import provider_configuration as pconf
 from neutron.services import service_base
@@ -65,6 +67,12 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         registry.subscribe(self._notify_adding_interface_to_router,
                            resources.ROUTER_INTERFACE,
                            events.BEFORE_CREATE)
+
+    @property
+    def supported_extension_aliases(self):
+        exts = copy.copy(super(BGPVPNPlugin, self).supported_extension_aliases)
+        exts += self.driver.more_supported_extension_aliases
+        return exts
 
     def _notify_adding_interface_to_router(self, resource, event, trigger,
                                            **kwargs):
