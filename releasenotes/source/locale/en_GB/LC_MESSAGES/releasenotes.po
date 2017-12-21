@@ -1,0 +1,185 @@
+# Andi Chandler <andi@gowling.com>, 2017. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: Networking-bgpvpn Release Notes\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-19 20:14+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2017-12-12 08:36+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "3.0.1-6"
+msgstr "3.0.1-6"
+
+msgid "4.0.0"
+msgstr "4.0.0"
+
+msgid "5.0.0"
+msgstr "5.0.0"
+
+msgid "6.0.0"
+msgstr "6.0.0"
+
+msgid "7.0.0"
+msgstr "7.0.0"
+
+msgid "8.0.0.0b1"
+msgstr "8.0.0.0b1"
+
+msgid ""
+"BGPVPNs of type L2 are now supported with Neutron ML2 reference drivers "
+"(linuxbridge, OVS work in progress)."
+msgstr ""
+"BGPVPNs of type L2 are now supported with Neutron ML2 reference drivers "
+"(linuxbridge, OVS work in progress)."
+
+msgid ""
+"BaGPipe driver improvement for a clean integration in the Neutron "
+"OpenVSwitch agent (see Bug `1492021 <https://launchpad.net/bugs/1492021>`_). "
+"Instead of requiring to use a modified OVS agent, we now provide an "
+"extension that is loaded into the unmodified OVS agent."
+msgstr ""
+"BaGPipe driver improvement for a clean integration in the Neutron "
+"OpenVSwitch agent (see Bug `1492021 <https://launchpad.net/bugs/1492021>`_). "
+"Instead of requiring to use a modified OVS agent, we now provide an "
+"extension that is loaded into the unmodified OVS agent."
+
+msgid "Bug Fixes"
+msgstr "Bug Fixes"
+
+msgid "Current Series Release Notes"
+msgstr "Current Series Release Notes"
+
+msgid "Heat support for the whole BGPVPN Interconnection API"
+msgstr "Heat support for the whole BGPVPN Interconnection API"
+
+msgid "Horizon:"
+msgstr "Horizon:"
+
+msgid "Liberty Series Release Notes"
+msgstr "Liberty Series Release Notes"
+
+msgid "Mitaka Series Release Notes"
+msgstr "Mitaka Series Release Notes"
+
+msgid ""
+"Mitaka release is a short-cycle release to compensate for the delayed "
+"Liberty release and get the project in sync with Openstack release cycles"
+msgstr ""
+"Mitaka release is a short-cycle release to compensate for the delayed "
+"Liberty release and get the project in sync with OpenStack release cycles"
+
+msgid "Networking-bgpvpn Release Notes"
+msgstr "Networking-bgpvpn Release Notes"
+
+msgid "New Features"
+msgstr "New Features"
+
+msgid ""
+"New Horizon panels for BGPVPN resources, allowing you to create a bgpvpn and "
+"to associate related resources such as a network or a router."
+msgstr ""
+"New Horizon panels for BGPVPN resources, allowing you to create a BGPVPN and "
+"to associate related resources such as a network or a router."
+
+msgid "Newton Series Release Notes"
+msgstr "Newton Series Release Notes"
+
+msgid "Ocata Series Release Notes"
+msgstr "Ocata Series Release Notes"
+
+msgid "OpenDaylight driver now supports Router associations"
+msgstr "OpenDaylight driver now supports Router associations"
+
+msgid "Other Notes"
+msgstr "Other Notes"
+
+msgid "Pike Series Release Notes"
+msgstr "Pike Series Release Notes"
+
+msgid ""
+"Pre-commit hooks were added in the driver framework, and then leveraged in "
+"BaGPipe and OpenDaylight drivers"
+msgstr ""
+"Pre-commit hooks were added in the driver framework, and then leveraged in "
+"BaGPipe and OpenDaylight drivers"
+
+msgid "Prelude"
+msgstr "Prelude"
+
+msgid "Start using reno to manage release notes."
+msgstr "Start using Reno to manage release notes."
+
+msgid ""
+"The API now supports filtering BGPVPN resources based on the networks or "
+"routers they are associated with."
+msgstr ""
+"The API now supports filtering BGPVPN resources based on the networks or "
+"routers they are associated with."
+
+msgid ""
+"The BGPVPN Interconnection API can now be enabled by adding ``bgpvpn`` to "
+"``service_plugins`` in ``neutron.conf``, instead of the verbose "
+"``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin``."
+msgstr ""
+"The BGPVPN Interconnection API can now be enabled by adding ``bgpvpn`` to "
+"``service_plugins`` in ``neutron.conf``, instead of the verbose "
+"``networking_bgpvpn.neutron.services.plugin.BGPVPNPlugin``."
+
+msgid ""
+"The bagpipe driver now let happily coexist a BGPVPN association and a "
+"Neutron router. Traffic that does not match any VPN route will be handled by "
+"the Neutron router. This evolution depends on corresponding evolutions in "
+"networking-bagpipe and bagpipe-bgp. (`see bug 1627645 <https://bugs."
+"launchpad.net/networking-bgpvpn/+bug/1627645>`_)"
+msgstr ""
+"The bagpipe driver now let happily coexist a BGPVPN association and a "
+"Neutron router. Traffic that does not match any VPN route will be handled by "
+"the Neutron router. This evolution depends on corresponding evolutions in "
+"networking-bagpipe and bagpipe-bgp. (`see bug 1627645 <https://bugs."
+"launchpad.net/networking-bgpvpn/+bug/1627645>`_)"
+
+msgid ""
+"The ovs/bagpipe driver now let you use both a Neutron router and a BGPVPN "
+"association simultaneously on a given Port."
+msgstr ""
+"The ovs/bagpipe driver now let you use both a Neutron router and a BGPVPN "
+"association simultaneously on a given Port."
+
+msgid "a view of all the existing BGPVPNs."
+msgstr "a view of all the existing BGPVPNs."
+
+msgid ""
+"abiity to associate/disassociate BGPVPN to/from networks and routers (for "
+"both tenant and admin users)"
+msgstr ""
+"ability to associate/disassociate BGPVPN to/from networks and routers (for "
+"both tenant and admin users)"
+
+msgid ""
+"ability to create, update and delete BGPVPN resources for an admin user."
+msgstr ""
+"ability to create, update and delete BGPVPN resources for an admin user."
+
+msgid ""
+"ability to update BGPVPN resources for a tenant user. (with restrictions, "
+"compared to what an admin user can change)"
+msgstr ""
+"ability to update BGPVPN resources for a tenant user. (with restrictions, "
+"compared to what an admin user can change)"
+
+msgid "ability to view details of a BGPVPN."
+msgstr "ability to view details of a BGPVPN."
+
+msgid ""
+"with BaGPipe driver, the OVS agent does not lose BGPVPN flows on restart "
+"(Bug `1531459 <https://launchpad.net/bugs/1531459>`_)"
+msgstr ""
+"with BaGPipe driver, the OVS agent does not lose BGPVPN flows on restart "
+"(Bug `1531459 <https://launchpad.net/bugs/1531459>`_)"
