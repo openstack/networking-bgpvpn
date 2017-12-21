@@ -104,10 +104,9 @@ def make_port_assoc_dict(id, tenant_id, bgpvpn_id, port_id, fields=None):
 def get_bgpvpn_differences(current_dict, old_dict):
     """Compare 2 BGP VPN
 
-    - added elements (route_targets, import_targets or export_targets)
-    - removed elements (route_targets, import_targets or export_targets)
-    - changed values for keys in both dictionaries  (network_id,
-      route_targets, import_targets or export_targets)
+    - added keys
+    - removed keys
+    - changed values for keys in both dictionaries
     """
     set_current = set(current_dict.keys())
     set_old = set(old_dict.keys())

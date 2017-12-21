@@ -19,10 +19,11 @@ import webob.exc
 
 from oslo_config import cfg
 
+from neutron.db import agents_db
+from neutron.db import db_base_plugin_v2
 from neutron.debug import debug_agent
-
+from neutron.plugins.ml2 import plugin as ml2_plugin
 from neutron.plugins.ml2 import rpc as ml2_rpc
-
 from neutron.tests.common import helpers
 
 from neutron_lib.api.definitions import portbindings
@@ -42,6 +43,11 @@ def _expected_formatted_bgpvpn(id, net_id, rt=None, gateway_mac=None):
                 'gateway_mac': gateway_mac or mock.ANY}
 
 
+class TestCorePluginWithAgents(db_base_plugin_v2.NeutronDbPluginV2,
+                               agents_db.AgentDbMixin):
+    pass
+
+
 class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
 
     def setUp(self, plugin=None):
@@ -53,6 +59,16 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
         self.mock_detach_rpc = self.mocked_rpc.detach_port_from_bgpvpn
         self.mock_update_rpc = self.mocked_rpc.update_bgpvpn
         self.mock_delete_rpc = self.mocked_rpc.delete_bgpvpn
+
+        mock.patch(
+            'neutron.common.rpc.get_client').start().return_value
+
+        self.mock_registry_provide = mock.patch(
+            'neutron.api.rpc.callbacks.producer.registry.provide'
+        ).start()
+
+        if not plugin:
+            plugin = '%s.%s' % (__name__, TestCorePluginWithAgents.__name__)
 
         provider = ('networking_bgpvpn.neutron.services.service_drivers.'
                     'bagpipe.bagpipe.BaGPipeBGPVPNDriver')
@@ -321,17 +337,21 @@ BGPVPN_INFO = {'mac_address': 'de:ad:00:00:be:ef',
                }
 
 
+class TestCorePluginML2WithAgents(ml2_plugin.Ml2Plugin,
+                                  agents_db.AgentDbMixin):
+    pass
+
+
 class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
     '''Check that receiving callbacks results in RPC calls to the agent'''
-
-    _plugin_name = 'neutron.plugins.ml2.plugin.Ml2Plugin'
 
     def setUp(self):
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'fake_agent'],
                               'ml2')
 
-        super(TestBagpipeServiceDriverCallbacks, self).setUp(self._plugin_name)
+        super(TestBagpipeServiceDriverCallbacks, self).setUp(
+            "%s.%s" % (__name__, TestCorePluginML2WithAgents.__name__))
 
         self.port_create_status = 'DOWN'
         self.plugin = directory.get_plugin()
@@ -367,6 +387,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
 
         self.plugin.update_port_status(self.ctxt, port['port']['id'],
                                        status, helpers.HOST)
+
+    def test_registry_provide(self):
+        self.mock_registry_provide.assert_called_with(
+            mock.ANY,
+            'BGPVPNAssociations'
+        )
 
     def test_bagpipe_callback_to_rpc_update_down2active(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
