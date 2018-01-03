@@ -135,7 +135,9 @@ class Bgpvpn(api_extensions.APIExtensionDescriptor):
             resources.append(resource)
         return resources
 
-    def get_extended_resources(self, version):
+    # TODO(boden): remove with use of I8ae11633962a48de6e8559b85447b8c8c753d705
+    @classmethod
+    def get_extended_resources(cls, version):
         # we need to declare these extensions here so that they can be extended
         # by the bgpvpn-routes-control extension
         if version == "2.0":
