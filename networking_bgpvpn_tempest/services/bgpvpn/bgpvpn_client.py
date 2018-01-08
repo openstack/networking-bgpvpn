@@ -78,3 +78,12 @@ class BgpvpnClient(base.BaseNetworkClient):
         uri_pattern = BGPVPN_ROUTER_ASSOCIATION_PATH + "/%s"
         uri = uri_pattern % (bgpvpn_id, association_id)
         return self.delete_resource(uri)
+
+    def show_router_association(self, bgpvpn_id, association_id, **fields):
+        uri_pattern = BGPVPN_ROUTER_ASSOCIATION_PATH + "/%s"
+        uri = uri_pattern % (bgpvpn_id, association_id)
+        return self.show_resource(uri, **fields)
+
+    def list_router_associations(self, bgpvpn_id, **filters):
+        uri = BGPVPN_ROUTER_ASSOCIATION_PATH % bgpvpn_id
+        return self.list_resources(uri, **filters)

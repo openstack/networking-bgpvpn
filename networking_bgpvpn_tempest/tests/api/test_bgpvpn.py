@@ -50,6 +50,12 @@ class BgpvpnTest(base):
         self.assertRaises(exceptions.Forbidden,
                           self.create_bgpvpn, self.bgpvpn_client)
 
+    @decorators.idempotent_id('709b23b0-9719-47df-9f53-b0812a5d5a48')
+    def test_delete_bgpvpn(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        self.delete_bgpvpn(self.bgpvpn_admin_client, bgpvpn)
+
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('596abfc2-fd89-491d-863d-25459db1df4b')
     def test_delete_bgpvpn_as_non_admin_fail(self):
@@ -57,6 +63,13 @@ class BgpvpnTest(base):
                                     tenant_id=self.bgpvpn_client.tenant_id)
         self.assertRaises(exceptions.Forbidden,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
+
+    @decorators.idempotent_id('9fa29db8-35d0-4beb-a986-23c369499ab1')
+    def test_show_bgpvpn(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        bgpvpn_details = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])['bgpvpn']
+        self.assertEqual(bgpvpn['id'], bgpvpn_details['id'])
 
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('b20110bb-393b-4342-8b30-6486cd2b4fc6')
@@ -66,6 +79,14 @@ class BgpvpnTest(base):
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_alt_client.show_bgpvpn, bgpvpn['id'])
 
+    @decorators.idempotent_id('7a7feca2-1c24-4f5d-ad4b-b0e5a712adb1')
+    def test_list_bgpvpn(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        bgpvpns = self.bgpvpn_client.list_bgpvpns()['bgpvpns']
+        self.assertIn(bgpvpn['id'],
+                      [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns])
+
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('4875e65d-0b65-40c0-9efd-309420686ab4')
     def test_list_bgpvpn_as_non_owner_fail(self):
@@ -74,6 +95,23 @@ class BgpvpnTest(base):
         bgpvpns_alt = self.bgpvpn_alt_client.list_bgpvpns()['bgpvpns']
         self.assertNotIn(bgpvpn['id'],
                          [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
+
+    @decorators.idempotent_id('096281da-356d-4c04-bd55-784a26bb1b0c')
+    def test_list_show_network_association(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        network = self.networks_client.create_network()['network']
+
+        association = self.bgpvpn_client.create_network_association(
+            bgpvpn['id'], network['id'])['network_association']
+        net_assocs = self.bgpvpn_client\
+            .list_network_associations(bgpvpn['id'])['network_associations']
+        self.assertIn(association['id'],
+                      [net_assoc['id'] for net_assoc in net_assocs])
+        net_assoc_details = self.bgpvpn_client\
+            .show_network_association(bgpvpn['id'],
+                                      association['id'])['network_association']
+        self.assertEqual(association['id'], net_assoc_details['id'])
 
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('57b0da93-8e37-459f-9aaf-f903acc36025')
@@ -291,6 +329,24 @@ class BgpvpnTest(base):
         self.assertEqual(updated_bgpvpn['bgpvpn']['routers'], [])
 
         self.routers_client.delete_router(router_id)
+
+    @decorators.idempotent_id('3ae91755-b1b6-4c62-a699-a44eeb4ee522')
+    def test_list_show_router_association(self):
+        bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
+                                    tenant_id=self.bgpvpn_client.tenant_id)
+        router = self.routers_client.create_router()
+        router_id = router['router']['id']
+
+        association = self.bgpvpn_client.create_router_association(
+            bgpvpn['id'], router_id)['router_association']
+        rtr_assocs = self.bgpvpn_client\
+            .list_router_associations(bgpvpn['id'])['router_associations']
+        self.assertIn(association['id'],
+                      [rtr_assoc['id'] for rtr_assoc in rtr_assocs])
+        rtr_assoc_details = self.bgpvpn_client\
+            .show_router_association(bgpvpn['id'],
+                                     association['id'])['router_association']
+        self.assertEqual(association['id'], rtr_assoc_details['id'])
 
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('4be1f073-fe57-4858-b7b9-9a189e90b770')
