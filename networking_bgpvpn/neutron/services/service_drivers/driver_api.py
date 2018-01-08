@@ -29,6 +29,7 @@ class BGPVPNDriverBase(object):
     That driver interface does not persist BGPVPN data in any database. The
     driver needs to do it by itself.
     """
+    more_supported_extension_aliases = []
 
     def __init__(self, service_plugin):
         self.service_plugin = service_plugin
@@ -300,13 +301,11 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
 class BGPVPNDriverRCBase(BGPVPNDriverBase):
     """Base class for drivers implementing the bgpvpn-routes-control API ext"""
 
+    more_supported_extension_aliases = [
+        bgpvpn_rc.Bgpvpn_routes_control.get_alias()]
+
     def __init__(self, *args, **kwargs):
         super(BGPVPNDriverRCBase, self).__init__(*args, **kwargs)
-        self._add_routes_control_to_supported_extensions()
-
-    def _add_routes_control_to_supported_extensions(self):
-        self.service_plugin.supported_extension_aliases.append(
-            bgpvpn_rc.Bgpvpn_routes_control.get_alias())
 
     @abc.abstractmethod
     def create_port_assoc(self, bgpvpn_id, port_association):
@@ -335,7 +334,6 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
 
     def __init__(self, *args, **xargs):
         BGPVPNDriverDBMixin.__init__(self, *args, **xargs)
-        self._add_routes_control_to_supported_extensions()
 
     def create_port_assoc(self, context, bgpvpn_id, port_association):
         with context.session.begin(subtransactions=True):
