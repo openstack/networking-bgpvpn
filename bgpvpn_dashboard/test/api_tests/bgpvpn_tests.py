@@ -131,7 +131,7 @@ class BgpvpnApiTests(bgpvpn_test.APITestCase):
     @test.create_stubs({neutronclient: ('list_ext',)})
     def test_router_association_list(self):
         bgpvpn = self.bgpvpns.first()
-        ra = {'router_associations': self.api_network_associations.list()}
+        ra = {'router_associations': self.api_router_associations.list()}
         uri = BGPVPN_ROUTER_ASSOCIATION_PATH % bgpvpn.id
         neutronclient.list_ext('router_associations', uri, True).AndReturn(ra)
         self.mox.ReplayAll()
