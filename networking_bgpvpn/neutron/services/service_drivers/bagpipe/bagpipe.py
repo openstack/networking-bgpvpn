@@ -17,7 +17,6 @@ from sqlalchemy import orm
 from sqlalchemy import sql
 
 from neutron.api.rpc.callbacks import events as rpc_events
-from neutron.api.rpc.callbacks.producer import registry as pull_registry
 from neutron.api.rpc.handlers import resources_rpc
 
 from neutron.db.models import external_net
@@ -184,18 +183,6 @@ def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
                    'event': event,
                    'kwargs': kwargs,
                    'exc': e})
-
-
-def _get_associations(resource, network_id, **kwargs):
-    context = kwargs.get('context')
-    if context is None:
-        LOG.warning(
-            'Received pull for %(resource)s %(network_id)s without context',
-            {'resource': resource, 'network_id': network_id})
-        return
-
-    return bgpvpn_objects.BGPVPNAssociations.get_objects(context,
-                                                         network_id=network_id)
 
 
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
@@ -715,5 +702,3 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
     def setup_rpc(self):
         self._push_rpc = resources_rpc.ResourcesPushRpcApi()
-        pull_registry.provide(_get_associations,
-                              bgpvpn_objects.BGPVPNAssociations.obj_name())

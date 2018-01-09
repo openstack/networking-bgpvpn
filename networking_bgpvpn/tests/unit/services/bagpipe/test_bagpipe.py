@@ -388,12 +388,6 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
         self.plugin.update_port_status(self.ctxt, port['port']['id'],
                                        status, helpers.HOST)
 
-    def test_registry_provide(self):
-        self.mock_registry_provide.assert_called_with(
-            mock.ANY,
-            'BGPVPNAssociations'
-        )
-
     def test_bagpipe_callback_to_rpc_update_down2active(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
                        **{portbindings.HOST_ID: helpers.HOST}) as port:
