@@ -8,7 +8,7 @@ if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
 fi
 
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs"
 

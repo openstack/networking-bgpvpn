@@ -19,6 +19,7 @@ import webob.exc
 
 from oslo_config import cfg
 
+from neutron.api.rpc.handlers import resources_rpc
 from neutron.db import agents_db
 from neutron.db import db_base_plugin_v2
 from neutron.debug import debug_agent
@@ -33,6 +34,8 @@ from neutron_lib.plugins import directory
 
 from networking_bgpvpn.neutron.services.service_drivers.bagpipe import bagpipe
 from networking_bgpvpn.tests.unit.services import test_plugin
+
+from networking_bagpipe.objects import bgpvpn as objs
 
 
 def _expected_formatted_bgpvpn(id, net_id, rt=None, gateway_mac=None):
@@ -50,7 +53,9 @@ class TestCorePluginWithAgents(db_base_plugin_v2.NeutronDbPluginV2,
 
 class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
 
-    def setUp(self, plugin=None):
+    def setUp(self, plugin=None,
+              driver=('networking_bgpvpn.neutron.services.service_drivers.'
+                      'bagpipe.bagpipe.BaGPipeBGPVPNDriver')):
         self.mocked_rpc = mock.patch(
             'networking_bagpipe.agent.bgpvpn.rpc_client'
             '.BGPVPNAgentNotifyApi').start().return_value
@@ -63,16 +68,10 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
         mock.patch(
             'neutron.common.rpc.get_client').start().return_value
 
-        self.mock_registry_provide = mock.patch(
-            'neutron.api.rpc.callbacks.producer.registry.provide'
-        ).start()
-
         if not plugin:
             plugin = '%s.%s' % (__name__, TestCorePluginWithAgents.__name__)
 
-        provider = ('networking_bgpvpn.neutron.services.service_drivers.'
-                    'bagpipe.bagpipe.BaGPipeBGPVPNDriver')
-        super(TestBagpipeCommon, self).setUp(service_provider=provider,
+        super(TestBagpipeCommon, self).setUp(service_provider=driver,
                                              core_plugin=plugin)
 
         self.ctxt = n_context.Context('fake_user', self._tenant_id)
@@ -86,6 +85,195 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
         self.external_net = {'network':
                              self.plugin.create_network(self.ctxt,
                                                         {'network': n_dict})}
+
+
+class AnyOfClass(object):
+
+    def __init__(self, cls):
+        self._class = cls
+
+    def __eq__(self, other):
+        return isinstance(other, self._class)
+
+    def __repr__(self):
+        return "AnyOfClass<%s>" % self._class.__name__
+
+
+class TestBagpipeOVOPushPullMixin(object):
+    # tests for OVO-based push notifications go here
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_bgpvpn_update_name_only(self, mocked_push):
+        with self.bgpvpn() as bgpvpn:
+            self._update('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'],
+                         {'bgpvpn': {'name': 'newname'}})
+            # check that no RPC push is done for BGPVPN objects
+            self.assertTrue(
+                mocked_push.call_count == 0 or
+                (not any([isinstance(ovo, objs.BGPVPNNetAssociation)
+                          for ovo in mocked_push.mock_calls[0][1][1]]) and
+                 not any([isinstance(ovo, objs.BGPVPNRouterAssociation)
+                          for ovo in mocked_push.mock_calls[0][1][1]])
+                 )
+            )
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_bgpvpn_update_rts_no_assoc(self, mocked_push):
+        with self.bgpvpn() as bgpvpn:
+            self._update('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'],
+                         {'bgpvpn': {'route_targets': ['64512:43']}})
+            # check that no RPC push is done for BGPVPN objects
+            self.assertTrue(
+                mocked_push.call_count == 0 or
+                (not any([isinstance(ovo, objs.BGPVPNNetAssociation)
+                          for ovo in mocked_push.mock_calls[0][1][1]]) and
+                 not any([isinstance(ovo, objs.BGPVPNRouterAssociation)
+                          for ovo in mocked_push.mock_calls[0][1][1]])
+                 )
+            )
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, '_push')
+    def test_bgpvpn_update_delete_rts_with_assocs(self, mocked_push):
+        with self.bgpvpn(do_delete=False) as bgpvpn, \
+                self.network() as net, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                self.assoc_net(bgpvpn['bgpvpn']['id'],
+                               net['network']['id'],
+                               do_disassociate=False), \
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id'],
+                                  do_disassociate=False):
+            mocked_push.reset_mock()
+            self._update('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'],
+                         {'bgpvpn': {'route_targets': ['64512:43']}})
+
+            mocked_push.assert_any_call(mock.ANY, 'BGPVPNNetAssociation',
+                                        mock.ANY, 'updated')
+            mocked_push.assert_any_call(mock.ANY, 'BGPVPNRouterAssociation',
+                                        mock.ANY, 'updated')
+
+            mocked_push.reset_mock()
+
+            # delete BGPVPN
+            self._delete('bgpvpn/bgpvpns',
+                         bgpvpn['bgpvpn']['id'])
+
+            # after delete
+            mocked_push.assert_any_call(mock.ANY, 'BGPVPNNetAssociation',
+                                        mock.ANY, 'deleted')
+            mocked_push.assert_any_call(mock.ANY, 'BGPVPNRouterAssociation',
+                                        mock.ANY, 'deleted')
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_net_assoc_create_delete(self, mocked_push):
+        with self.network() as net, \
+                self.bgpvpn() as bgpvpn:
+            mocked_push.reset_mock()
+            with self.assoc_net(bgpvpn['bgpvpn']['id'],
+                                net['network']['id']):
+
+                mocked_push.assert_called_once_with(mock.ANY, mock.ANY,
+                                                    'created')
+
+                ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+                self.assertEqual(
+                    [AnyOfClass(objs.BGPVPNNetAssociation)],
+                    ovos_in_call
+                    )
+
+                mocked_push.reset_mock()
+
+            # after net assoc delete
+            mocked_push.assert_called_once_with(mock.ANY, mock.ANY, 'deleted')
+
+            ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+            self.assertEqual(
+                [AnyOfClass(objs.BGPVPNNetAssociation)],
+                ovos_in_call
+                )
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_router_assoc_create_delete(self, mocked_push):
+        with self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn:
+            mocked_push.reset_mock()
+            with self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                   router['router']['id']):
+
+                mocked_push.assert_called_once_with(mock.ANY, mock.ANY,
+                                                    'created')
+
+                ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+                self.assertEqual(
+                    [AnyOfClass(objs.BGPVPNRouterAssociation)],
+                    ovos_in_call
+                    )
+
+                mocked_push.reset_mock()
+
+            # after router assoc delete
+            mocked_push.assert_called_once_with(mock.ANY, mock.ANY, 'deleted')
+
+            ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+            self.assertEqual(
+                [AnyOfClass(objs.BGPVPNRouterAssociation)],
+                ovos_in_call
+                )
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_port_assoc_crud(self, mocked_push):
+        with self.port() as port, \
+                self.bgpvpn() as bgpvpn:
+            mocked_push.reset_mock()
+            with self.assoc_port(bgpvpn['bgpvpn']['id'],
+                                 port['port']['id']) as port_assoc:
+
+                mocked_push.assert_called_once_with(mock.ANY, mock.ANY,
+                                                    'created')
+
+                ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+                self.assertEqual(
+                    [AnyOfClass(objs.BGPVPNPortAssociation)],
+                    ovos_in_call
+                    )
+
+                mocked_push.reset_mock()
+
+                self._update(
+                    ('bgpvpn/bgpvpns/%s/port_associations' %
+                     bgpvpn['bgpvpn']['id']),
+                    port_assoc['port_association']['id'],
+                    {'port_association': {'advertise_fixed_ips': False}})
+
+                mocked_push.assert_called_once_with(mock.ANY, mock.ANY,
+                                                    'updated')
+
+                ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+                self.assertEqual(
+                    [AnyOfClass(objs.BGPVPNPortAssociation)],
+                    ovos_in_call
+                    )
+
+                mocked_push.reset_mock()
+
+            # after port assoc delete
+            mocked_push.assert_called_once_with(mock.ANY, mock.ANY, 'deleted')
+
+            ovos_in_call = mocked_push.mock_calls[0][1][1]
+
+            self.assertEqual(
+                [AnyOfClass(objs.BGPVPNPortAssociation)],
+                ovos_in_call
+                )
 
 
 class TestBagpipeServiceDriver(TestBagpipeCommon):
@@ -342,7 +530,9 @@ class TestCorePluginML2WithAgents(ml2_plugin.Ml2Plugin,
     pass
 
 
-class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
+class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
+                                        TestBagpipeOVOPushPullMixin):
+
     '''Check that receiving callbacks results in RPC calls to the agent'''
 
     def setUp(self):
@@ -836,3 +1026,86 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon):
                               expected['l2vpn']['import_rt'])
         self.assertItemsEqual(result['l2vpn']['export_rt'],
                               expected['l2vpn']['export_rt'])
+
+
+class TestBagpipeServiceDriverV2RPCs(TestBagpipeCommon,
+                                     TestBagpipeOVOPushPullMixin):
+    '''Check RPC push/pull and local registry callback effects'''
+
+    def setUp(self):
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'fake_agent'],
+                              'ml2')
+
+        super(TestBagpipeServiceDriverV2RPCs, self).setUp(
+            "%s.%s" % (__name__, TestCorePluginML2WithAgents.__name__),
+            driver=('networking_bgpvpn.neutron.services.service_drivers.'
+                    'bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver'))
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_router_itf_event_router_assoc(self, mocked_push):
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn, \
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id']):
+
+            mocked_push.reset_mock()
+
+            itf = self._router_interface_action('add',
+                                                router['router']['id'],
+                                                subnet['subnet']['id'],
+                                                None)
+
+            mocked_push.assert_any_call(
+                mock.ANY,
+                [AnyOfClass(objs.BGPVPNRouterAssociation)], 'updated')
+
+            mocked_push.reset_mock()
+
+            itf = self._router_interface_action('remove',
+                                                router['router']['id'],
+                                                subnet['subnet']['id'],
+                                                itf['port_id'])
+            mocked_push.assert_any_call(
+                mock.ANY,
+                [AnyOfClass(objs.BGPVPNRouterAssociation)], 'updated')
+
+    @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
+    def test_router_itf_event_network_assoc(self, mocked_push):
+        with self.network() as net, \
+                self.subnet(network=net) as subnet, \
+                self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn, \
+                self.assoc_net(bgpvpn['bgpvpn']['id'],
+                               net['network']['id']):
+
+            mocked_push.reset_mock()
+
+            itf = self._router_interface_action('add',
+                                                router['router']['id'],
+                                                subnet['subnet']['id'],
+                                                None)
+
+            mocked_push.assert_any_call(
+                mock.ANY,
+                [AnyOfClass(objs.BGPVPNNetAssociation)], 'updated')
+
+            mocked_push.reset_mock()
+
+            itf = self._router_interface_action('remove',
+                                                router['router']['id'],
+                                                subnet['subnet']['id'],
+                                                itf['port_id'])
+
+            mocked_push.assert_any_call(
+                mock.ANY,
+                [AnyOfClass(objs.BGPVPNNetAssociation)], 'updated')
+
+            ovos_in_call = mocked_push.mock_calls[0][1][1]
+            for ovo in ovos_in_call:
+                if not isinstance(ovo, objs.BGPVPNNetAssociation):
+                    continue
+                for subnet in ovo.all_subnets(net['network']['id']):
+                    self.assertIsNone(subnet['gateway_mac'])

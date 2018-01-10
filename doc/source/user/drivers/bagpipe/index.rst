@@ -41,6 +41,28 @@ interface of a network associated to a BGP VPN.
 Similarly, the driver will not bind a port on an external network. This behavior will be
 revisited once a use case is well identified.
 
+bagpipe_v2 driver
+-----------------
+
+For Queens release, the mechanism used by this driver for RPCs was changed.
+
+The v1 driver ``networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver``
+is backwards compatible with pre-Queens neutron agents and can be used during
+a rolling upgrade, e.g. from Pike to Queens.
+
+The v2 driver ``networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver``
+does not produce the old RPCs anymore and can be used:
+
+* on a greenfield deployment
+
+* after an upgrade
+
+* during a non-rolling upgrade (some BGPVPN operations would be
+  disrupted during the time where pre-Queens agent still run)
+
+Future developments may happen only on the v2 driver and the v1
+driver will be ultimately abandoned.
+
 How to use ?
 ------------
 
@@ -68,7 +90,7 @@ In devstack
 
     .. code-block:: ini
 
-       NETWORKING_BGPVPN_DRIVER="BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default"
+       NETWORKING_BGPVPN_DRIVER="BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
 
   * enable networking-bagpipe_, which contains code for agent extensions:
 
