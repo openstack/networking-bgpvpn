@@ -44,10 +44,18 @@ revisited once a use case is well identified.
 How to use ?
 ------------
 
-On an Openstack Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The steps to take to use this driver are generally:
 
-[TBC (package installation + config)]
+* install the networking-bagpipe package on both
+  control nodes and compute nodes
+
+* on control node, configure neutron to use bagpipe driver
+
+* on compute nodes, configure the neutron agent to use bagpipe_bgpvpn
+  extension and configure bagpipe-bgp
+
+Of course, the typical way is to have all this taken care of by
+an automated Openstack installer.
 
 In devstack
 ~~~~~~~~~~~
@@ -67,7 +75,8 @@ In devstack
     .. code-block:: ini
 
        enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
-       # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
+       # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/pike
+       # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/queens
 
 * on a control node, if you want to run the Fake Route-Reflector there (relevant only for a multinode setup):
 
@@ -84,9 +93,8 @@ In devstack
       .. code-block:: ini
 
          enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
-         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
-
-    * define ``Q_AGENT=openvswitch`` in ``local.conf``  (optional, this is actually the default now)
+         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/pike
+         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/queens
 
     * the ``bagpipe_bgpvpn`` agent extension is automatically added to the agent configuration by the devstack plugin
 
