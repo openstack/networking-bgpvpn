@@ -228,9 +228,9 @@ class UpdateBgpVpnAssociations(workflows.Workflow):
                                           association.id, data['bgpvpn_id'])
                 except Exception:
                     if association_type == 'router':
-                        error_msg = _('Unable to disassociate router {}')
+                        error_msg = _('Unable to disassociate router')
                     elif association_type == 'network':
-                        error_msg = _('Unable to disassociate network {}')
+                        error_msg = _('Unable to disassociate network')
                     exceptions.handle(request, error_msg)
                     raise
 
