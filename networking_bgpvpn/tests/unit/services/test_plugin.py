@@ -28,6 +28,7 @@ from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit.extensions import test_l3
 from neutron.tests.unit.extensions.test_l3 import TestL3NatServicePlugin
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron import extensions
@@ -43,6 +44,15 @@ def http_client_error(req, res):
                                                      req.body, res.body)
     return webob.exc.HTTPClientError(code=res.status_int,
                                      explanation=explanation)
+
+
+class TestBgpvpnDriverWithVni(driver_api.BGPVPNDriverRC):
+    more_supported_extension_aliases = (
+        driver_api.BGPVPNDriverRC.more_supported_extension_aliases +
+        [bgpvpn_vni_def.ALIAS])
+
+    def __init__(self, *args, **kwargs):
+        super(TestBgpvpnDriverWithVni, self).__init__(*args, **kwargs)
 
 
 class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
