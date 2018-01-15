@@ -198,7 +198,7 @@ def _get_associations(resource, network_id, **kwargs):
                                                          network_id=network_id)
 
 
-class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
+class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
     """BGPVPN Service Driver class for BaGPipe"""
 
@@ -473,6 +473,31 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriver):
             formated_bgpvpn = self._format_bgpvpn(context, bgpvpn,
                                                   net_assoc['network_id'])
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
+
+    def create_port_assoc_postcommit(self, context, port_assoc):
+        self._push_association(
+            context,
+            bgpvpn_objects.BGPVPNPortAssociation.get_object(
+                context,
+                id=port_assoc['id']),
+            rpc_events.CREATED)
+
+    def update_port_assoc_postcommit(self, context,
+                                     old_port_assoc, port_assoc):
+        self._push_association(
+            context,
+            bgpvpn_objects.BGPVPNPortAssociation.get_object(
+                context,
+                id=port_assoc['id']),
+            rpc_events.UPDATED)
+
+    def delete_port_assoc_precommit(self, context, port_assoc):
+        self._push_association(
+            context,
+            bgpvpn_objects.BGPVPNPortAssociation.get_object(
+                context,
+                id=port_assoc['id']),
+            rpc_events.DELETED)
 
     def _ignore_port(self, context, port):
         if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
