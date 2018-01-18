@@ -653,13 +653,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.security_group = self._create_security_group(
             tenant_id=self.bgpvpn_client.tenant_id)
 
-    def _create_networks_and_subnets(self, names=None, subnet_cidrs=None):
+    def _create_networks_and_subnets(self, names=None, subnet_cidrs=None,
+                                     port_security=True):
         if not names:
             names = [NET_A, NET_B]
         if not subnet_cidrs:
             subnet_cidrs = [[NET_A_S1], [NET_B_S1]]
         for (name, subnet_cidrs) in zip(names, subnet_cidrs):
-            network = self._create_network(namestart=name)
+            network = self._create_network(
+                namestart=name, port_security_enabled=port_security)
             self.networks[name] = network
             self.subnets[name] = []
             for (j, cidr) in enumerate(subnet_cidrs):
@@ -719,10 +721,13 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         return router
 
     def _create_server(self, name, keypair, network, ip_address,
-                       security_group_ids, clients):
+                       security_group_ids, clients, port_security):
+        security_groups = []
+        if port_security:
+            security_groups = security_group_ids
         create_port_body = {'fixed_ips': [{'ip_address': ip_address}],
                             'namestart': 'port-smoke',
-                            'security_groups': security_group_ids}
+                            'security_groups': security_groups}
         port = self._create_port(network_id=network['id'],
                                  client=clients.ports_client,
                                  **create_port_body)
@@ -742,7 +747,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.ports[server['id']] = port
         return server
 
-    def _create_servers(self, ports_config=None):
+    def _create_servers(self, ports_config=None, port_security=True):
         keypair = self.create_keypair()
         security_group_ids = [self.security_group['id']]
         if ports_config is None:
@@ -752,7 +757,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             network = port_config[0]
             server = self._create_server(
                 'server-' + str(i + 1), keypair, network, port_config[1],
-                security_group_ids, self.os_primary)
+                security_group_ids, self.os_primary, port_security)
             self.servers.append(server)
             self.servers_keypairs[server['id']] = keypair
             self.server_fixed_ips[server['id']] = (
@@ -806,6 +811,19 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         ssh_client.exec_command("sudo nc -kl -p 80 -e echo '%s' &"
                                 % server['name'])
 
+    def _setup_ip_forwarding(self, server_index):
+        server = self.servers[server_index]
+        ssh_client = self._setup_ssh_client(server)
+        ssh_client.exec_command("sudo sysctl -w net.ipv4.ip_forward=1")
+
+    def _setup_ip_address(self, server_index, cidr, device=None):
+        if device is None:
+            device = 'lo'
+        server = self.servers[server_index]
+        ssh_client = self._setup_ssh_client(server)
+        ssh_client.exec_command(("sudo ip addr add {cidr} "
+                                "dev {dev}").format(cidr=cidr, dev=device))
+
     def _log_gw_arp_info(self, ssh_client, gateway_ip):
         output = ssh_client.exec_command('arp -n %s' % gateway_ip)
         LOG.warning("Ping origin server GW ARP info:")
@@ -813,25 +831,40 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     def _check_l3_bgpvpn(self, from_server=None, to_server=None,
                          should_succeed=True, validate_server=False):
-        from_server = from_server or self.servers[0]
         to_server = to_server or self.servers[1]
-        server_1_ip = self.server_fips[from_server['id']][
+        to_server_name = None
+        if validate_server:
+            to_server_name = to_server['name']
+        destination_ip = self.server_fixed_ips[to_server['id']]
+        self._check_l3_bgpvpn_by_specific_ip(from_server=from_server,
+                                             to_server_ip=destination_ip,
+                                             should_succeed=should_succeed,
+                                             validate_server=to_server_name)
+
+    def _check_l3_bgpvpn_by_specific_ip(self, from_server=None,
+                                        to_server_ip=None,
+                                        should_succeed=True,
+                                        validate_server=None):
+        from_server = from_server or self.servers[0]
+        from_server_ip = self.server_fips[from_server['id']][
             'floating_ip_address']
-        server_2_ip = self.server_fixed_ips[to_server['id']]
+        if to_server_ip is None:
+            to_server_ip = self.server_fixed_ips[self.servers[1]['id']]
         ssh_client = self._setup_ssh_client(from_server)
         try:
-            should_be_reachable = should_succeed or validate_server
+            check_reachable = should_succeed or validate_server
             msg = ""
-            if should_be_reachable:
+            if check_reachable:
                 msg = "Timed out waiting for {ip} to become reachable".format(
-                    ip=server_2_ip)
+                    ip=to_server_ip)
             else:
                 msg = ("Unexpected ping response from VM with IP address "
                        "{dest} originated from VM with IP address "
-                       "{src}").format(dest=server_2_ip, src=server_1_ip)
-            result = self._check_remote_connectivity(ssh_client, server_2_ip,
-                                                     should_be_reachable)
-            if should_be_reachable and not result:
+                       "{src}").format(dest=to_server_ip, src=from_server_ip)
+            result = self._check_remote_connectivity(ssh_client,
+                                                     to_server_ip,
+                                                     check_reachable)
+            if check_reachable and not result:
                 allocation = self.ports[from_server['id']]['fixed_ips'][0]
                 subnet_id = allocation['subnet_id']
                 gateway_ip = ''
@@ -846,21 +879,22 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                 ssh_client.ping_host(gateway_ip)
                 self._log_gw_arp_info(ssh_client, gateway_ip)
                 result = self._check_remote_connectivity(ssh_client,
-                                                         server_2_ip,
-                                                         should_be_reachable)
+                                                         to_server_ip,
+                                                         check_reachable)
             self.assertTrue(result, msg)
             if validate_server and result:
                 to_name = ssh_client.exec_command(
-                    "nc %s 80" % server_2_ip).strip()
-                result = to_name == to_server['name']
+                    "nc %s 80" % to_server_ip).strip()
+                result = to_name == validate_server
                 self.assertTrue(should_succeed == result,
                                 ("Destination server name is invalid. Has '"
                                  "{name}', expected is '{exp}'").format(
-                                     name=to_name, exp=to_server['name']))
+                                     name=to_name, exp=validate_server))
         except Exception:
-            LOG.exception(("Unable to ping VM with IP address {dest} from VM "
-                           "with IP address {src}").format(dest=server_2_ip,
-                                                           src=server_1_ip))
+            LOG.exception(
+                ("Unable to ping VM with IP address {dest} from VM "
+                 "with IP address {src}").format(dest=to_server_ip,
+                                                 src=from_server_ip))
             raise
 
     def _associate_fip_and_check_l3_bgpvpn(self, should_succeed=True):
