@@ -883,6 +883,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             old_bgpvpn['routers'] = []
             old_bgpvpn['ports'] = []
             old_bgpvpn['project_id'] = old_bgpvpn['tenant_id']
+            old_bgpvpn['local_pref'] = None
             new_bgpvpn = copy.copy(old_bgpvpn)
             update = {'name': 'foo'}
             new_bgpvpn.update(update)

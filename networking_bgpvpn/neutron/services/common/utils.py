@@ -15,6 +15,7 @@
 
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
+from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
 from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib.plugins import directory
 
@@ -85,6 +86,9 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
     plugin = directory.get_plugin(bgpvpn_def.LABEL)
     if is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
         res[bgpvpn_vni_def.VNI] = bgpvpn.get(bgpvpn_vni_def.VNI)
+    if is_extension_supported(plugin, bgpvpn_rc_def.ALIAS):
+        res[bgpvpn_rc_def.LOCAL_PREF_KEY] = bgpvpn.get(
+            bgpvpn_rc_def.LOCAL_PREF_KEY)
     return filter_fields(res, fields)
 
 

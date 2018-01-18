@@ -24,7 +24,7 @@ from neutron.db import _model_query as model_query
 from neutron.db import common_db_mixin
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
-from neutron_lib.api.definitions import bgpvpn_routes_control
+from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
 from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
@@ -113,7 +113,7 @@ class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
         sa.String(length=36),
         sa.ForeignKey('bgpvpn_port_associations.id', ondelete='CASCADE'),
         nullable=False)
-    type = sa.Column(sa.Enum(*bgpvpn_routes_control.ROUTE_TYPES,
+    type = sa.Column(sa.Enum(*bgpvpn_rc_def.ROUTE_TYPES,
                              name="bgpvpn_port_assoc_route_type"),
                      nullable=False)
     local_pref = sa.Column(sa.BigInteger(),
@@ -150,6 +150,7 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
     export_targets = sa.Column(sa.String(255), nullable=True)
     route_distinguishers = sa.Column(sa.String(255), nullable=True)
     vni = sa.Column(sa.Integer, nullable=True)
+    local_pref = sa.Column(sa.BigInteger, nullable=True)
     network_associations = orm.relationship("BGPVPNNetAssociation",
                                             backref="bgpvpn",
                                             lazy='select',
@@ -262,6 +263,9 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         plugin = directory.get_plugin(bgpvpn_def.LABEL)
         if utils.is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
             res[bgpvpn_vni_def.VNI] = bgpvpn_db.get(bgpvpn_vni_def.VNI)
+        if utils.is_extension_supported(plugin, bgpvpn_rc_def.ALIAS):
+            res[bgpvpn_rc_def.LOCAL_PREF_KEY] = bgpvpn_db.get(
+                bgpvpn_rc_def.LOCAL_PREF_KEY)
 
         return self._fields(res, fields)
 
@@ -281,7 +285,8 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 import_targets=i_rt,
                 export_targets=e_rt,
                 route_distinguishers=rd,
-                vni=bgpvpn.get(bgpvpn_vni_def.VNI)
+                vni=bgpvpn.get(bgpvpn_vni_def.VNI),
+                local_pref=bgpvpn.get(bgpvpn_rc_def.LOCAL_PREF_KEY),
             )
             context.session.add(bgpvpn_db)
 
