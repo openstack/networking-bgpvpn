@@ -1,0 +1,9 @@
+---
+prelude: >
+    Deprecates old OpenContrail driver
+deprecations:
+  - |
+    The first OpenContrail Driver was not developed with production ready in
+    mind, it was more a proof of concept. We do not recommend to use it in
+    production. Instead a production ready driver is available in the
+    OpenContrail monolithic Neutron core plugin tree.

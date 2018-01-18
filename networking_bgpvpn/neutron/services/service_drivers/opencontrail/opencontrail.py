@@ -15,6 +15,7 @@
 
 import uuid
 
+from debtcollector import removals
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
@@ -34,7 +35,14 @@ OPENCONTRAIL_BGPVPN_DRIVER_NAME = 'OpenContrail'
 
 LOG = log.getLogger(__name__)
 
+MESSAGE = ("replaced by a new driver which could be found in the Contrail "
+           "Neutron monolithic core plugin tree: 'neutron_plugin_contrail."
+           "plugins.opencontrail.networking_bgpvpn.contrail."
+           "ContrailBGPVPNDriver'")
 
+
+@removals.removed_class('OpenContrailBGPVPNDriver', version='Queens',
+                        removal_version='Rocky', message=MESSAGE)
 class OpenContrailBGPVPNDriver(driver_api.BGPVPNDriverBase):
     """BGP VPN Service Driver class for OpenContrail."""
 

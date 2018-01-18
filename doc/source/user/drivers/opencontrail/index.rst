@@ -6,22 +6,17 @@ Introduction
 ------------
 
 The **OpenContrail** driver for the BGPVPN service plugin is designed to work
-jointly with the `OpenContrail SDN controller <http://www.opencontrail.org/>`__
-(`GitHub <https://github.com/Juniper/contrail-controller>`__).
-There are two versions of the driver. `Version 1`_ and `version 2`_.
+jointly with the `OpenContrail SDN controller`_ (`GitHub`_). The BGP VPN driver
+can be found in the `monolithic Neutron plugin tree`__ [#]_.
 
-.. _Version 1: https://github.com/openstack/networking-bgpvpn/tree/master/networking_bgpvpn/neutron/services/service_drivers/opencontrail
-.. _Version 2: https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn
+.. Warning::
+
+   The `old OpenContail driver`_ has been deprecated in Queens release in favor
+   of the production ready `driver`_ and plan to be completly removed in Rocky
+   release. Be careful, **no** migration path is planned.
 
 Limitations
 -----------
-
-VPN Type
-~~~~~~~~
-
-The OpenContrail driver for the BGPVPN service plugin can create only L3 VPN
-type. The L2 is not yet supported.
-
 
 Route Distinguishers
 ~~~~~~~~~~~~~~~~~~~~
@@ -29,12 +24,18 @@ Route Distinguishers
 The OpenContrail driver for the BGPVPN service plugin does not permit
 specifying `route distinguisher`_.
 
-Router Association
-~~~~~~~~~~~~~~~~~~
+Resource Association
+~~~~~~~~~~~~~~~~~~~~
 
-The OpenContrail driver for the BGPVPN service plugin does not support
-`associations with routers`_. Only `network associations`_ are available for the
-moment.
+The OpenContrail driver for the BGPVPN service plugin does not yet support
+`association with ports`_. But it supports `network associations`_ and `router
+associations`_.
+
+VPN Type
+~~~~~~~~
+
+The OpenContrail driver for the BGPVPN service plugin can create L2 & L3 VPN
+types for network associations and L3 VPN type for router association.
 
 How to use ?
 ------------
@@ -57,7 +58,7 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 
 * Here a proposed devstack ``local.conf`` file which permits to deploy
   OpenStack keystone, glance, nova, neutron/networking-bgpvpn and
-  compile/install all OpenContrail services and dependences:
+  compile/install all OpenContrail services and dependencies:
 
 .. code-block:: bash
 
@@ -90,9 +91,16 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
  enable_plugin contrail https://github.com/zioc/contrail-devstack-plugin.git
 
  enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
- NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver:default"
+ NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:neutron_plugin_contrail.plugins.opencontrail.networking_bgpvpn.contrail.ContrailBGPVPNDriver:default"
 
-.. _route distinguisher : https://developer.openstack.org/api-ref/networking/v2/#on-route-distinguishers-rds
-.. _associations with routers : https://developer.openstack.org/api-ref/networking/v2/#router-associations
-.. _network associations : https://developer.openstack.org/api-ref/networking/v2/#network-associations
-.. _devstack plugin : https://github.com/zioc/contrail-devstack-plugin
+.. [#] That driver requires OpenContrail release upper or equal to 4.0
+.. _OpenContrail SDN controller: http://www.opencontrail.org/
+.. _GitHub: https://github.com/Juniper/contrail-controller
+.. _driver: https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn
+__ driver_
+.. _old OpenContail driver: https://github.com/openstack/networking-bgpvpn/tree/stable/queens/networking_bgpvpn/neutron/services/service_drivers/opencontrail
+.. _route distinguisher: https://developer.openstack.org/api-ref/networking/v2/#on-route-distinguishers-rds
+.. _router associations: https://developer.openstack.org/api-ref/networking/v2/#router-associations
+.. _network associations: https://developer.openstack.org/api-ref/networking/v2/#network-associations
+.. _association with ports: https://developer.openstack.org/api-ref/network/v2/#port-associations
+.. _devstack plugin: https://github.com/zioc/contrail-devstack-plugin
