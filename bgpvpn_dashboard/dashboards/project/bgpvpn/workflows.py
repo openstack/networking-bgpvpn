@@ -47,7 +47,7 @@ class UpdateAssociations(workflows.MembershipAction):
         all_resources = self._get_resources(request, context, resource_type,
                                             err_msg)
 
-        resources_list = [(resource.id, resource.name)
+        resources_list = [(resource.id, resource.name_or_id)
                           for resource in all_resources]
 
         self.fields[field_name].choices = resources_list
