@@ -18,14 +18,16 @@ import mock
 
 from oslo_utils import uuidutils
 
+from neutron.extensions import l3
 from neutron.tests.unit.api.v2 import test_base
-from neutron.tests.unit.extensions import base as test_extensions_base
-from neutron_lib.api.definitions import bgpvpn_routes_control as api_def
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
+from neutron_lib.api.definitions import bgpvpn_routes_control as rc_api_def
 from webob import exc
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
 from networking_bgpvpn.neutron.extensions \
     import bgpvpn_routes_control as bgpvpn_rc
+from networking_bgpvpn.tests.unit.extensions import test_bgpvpn_rc_base
 
 _uuid = uuidutils.generate_uuid
 _get_path = test_base._get_path
@@ -33,30 +35,40 @@ BGPVPN_PREFIX = 'bgpvpn'
 BGPVPN_URI = BGPVPN_PREFIX + '/' + 'bgpvpns'
 
 
-class BgpvpnRoutesControlExtensionTestCase(
-        test_extensions_base.ExtensionTestCase):
+class TestPlugin(bgpvpn.BGPVPNPluginBase,
+                 bgpvpn_rc.BGPVPNRoutesControlPluginBase):
 
-    fmt = 'json'
+    supported_exsupported_extension_aliases = [bgpvpn_api_def.ALIAS,
+                                               rc_api_def.ALIAS]
+
+
+TEST_PLUGIN_CLASS = '%s.%s' % (TestPlugin.__module__, TestPlugin.__name__)
+
+
+class BgpvpnRoutesControlExtensionTestCase(
+        test_bgpvpn_rc_base.BGPVPNRCExtensionTestCase):
 
     def setUp(self):
         super(BgpvpnRoutesControlExtensionTestCase, self).setUp()
-        plural_mappings = {'bgpvpn': 'bgpvpns'}
-        self._setUpExtension(
-            '%s.%s' % (bgpvpn_rc.BGPVPNRoutesControlPluginBase.__module__,
-                       bgpvpn_rc.BGPVPNRoutesControlPluginBase.__name__),
-            bgpvpn.bgpvpn_api_def.LABEL,
-            api_def.RESOURCE_ATTRIBUTE_MAP,
-            bgpvpn_rc.Bgpvpn_routes_control,
+
+        self._setUpExtensions(
+            TEST_PLUGIN_CLASS,
+            bgpvpn_api_def.LABEL,
+            [l3.L3, bgpvpn.Bgpvpn, bgpvpn_rc.Bgpvpn_routes_control],
             BGPVPN_PREFIX,
-            plural_mappings=plural_mappings,
             translate_resource_name=True)
         self.instance = self.plugin.return_value
+
         self.bgpvpn_id = _uuid()
-        self.port_id = _uuid()
         self.net_id = _uuid()
         self.router_id = _uuid()
+        self.net_assoc_id = _uuid()
         self.router_assoc_id = _uuid()
+        self.port_id = _uuid()
         self.port_assoc_id = _uuid()
+
+        self.NET_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
+            '/network_associations'
         self.ROUTER_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
             '/router_associations'
         self.PORT_ASSOC_URI = BGPVPN_URI + '/' + self.bgpvpn_id + \
@@ -65,6 +77,47 @@ class BgpvpnRoutesControlExtensionTestCase(
     def _invalid_data_for_creation(self, target):
         return [None, {}, {target: None}, {target: {}}
                 ]
+
+    def test_router_association_update(self):
+        data = {
+            'router_association': {
+                'router_id': self.router_id,
+                'project_id': _uuid()
+            }
+        }
+
+        self.api.post(_get_path(self.ROUTER_ASSOC_URI, fmt=self.fmt),
+                      self.serialize(data),
+                      content_type='application/%s' % self.fmt,
+                      expect_errors=True)
+
+        update_data = {'router_association': {
+            'advertise_extra_routes': False,
+            }}
+
+        return_value = {
+            'project_id': _uuid(),
+            'advertise_extra_routes': False,
+        }
+
+        self.instance.update_bgpvpn_router_association.return_value = (
+            return_value)
+
+        res = self.api.put(_get_path(self.ROUTER_ASSOC_URI,
+                                     id=self.router_assoc_id,
+                                     fmt=self.fmt),
+                           self.serialize(update_data),
+                           content_type='application/%s' % self.fmt)
+
+        self.instance.update_bgpvpn_router_association.assert_called_with(
+            mock.ANY, self.router_assoc_id,
+            bgpvpn_id=self.bgpvpn_id, router_association=update_data
+        )
+
+        self.assertEqual(exc.HTTPOk.code, res.status_int)
+        res = self.deserialize(res)
+        self.assertIn('router_association', res)
+        self.assertEqual(return_value, res['router_association'])
 
     def _invalid_data_for_port_assoc(self):
         return [

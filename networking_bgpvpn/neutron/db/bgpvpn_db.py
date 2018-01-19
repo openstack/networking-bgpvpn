@@ -75,6 +75,8 @@ class BGPVPNRouterAssociation(model_base.BASEV2, model_base.HasId,
                           sa.ForeignKey('routers.id', ondelete='CASCADE'),
                           nullable=False)
     sa.UniqueConstraint(bgpvpn_id, router_id)
+    advertise_extra_routes = sa.Column(sa.Boolean(), nullable=False,
+                                       server_default=sa.true())
     router = orm.relationship("Router",
                               backref=orm.backref('bgpvpn_associations',
                                                   cascade='all'),
@@ -386,7 +388,10 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         res = {'id': router_assoc_db['id'],
                'tenant_id': router_assoc_db['tenant_id'],
                'bgpvpn_id': router_assoc_db['bgpvpn_id'],
-               'router_id': router_assoc_db['router_id']}
+               'router_id': router_assoc_db['router_id'],
+               'advertise_extra_routes': router_assoc_db[
+                   'advertise_extra_routes']
+               }
         return self._fields(res, fields)
 
     def _get_router_assoc(self, context, assoc_id, bgpvpn_id):
@@ -428,6 +433,13 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return self._get_collection(context, BGPVPNRouterAssociation,
                                     self._make_router_assoc_dict,
                                     filters, fields)
+
+    def update_router_assoc(self, context, assoc_id, bgpvpn_id, router_assoc):
+        with context.session.begin(subtransactions=True):
+            router_assoc_db = self._get_router_assoc(context,
+                                                     assoc_id, bgpvpn_id)
+            router_assoc_db.update(router_assoc)
+        return self._make_router_assoc_dict(router_assoc_db)
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
         LOG.info("deleting router association %(id)s for "

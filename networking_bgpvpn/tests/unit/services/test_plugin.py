@@ -319,6 +319,33 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             mock_validate.assert_called_once_with(
                 mock.ANY, router['router']['id'])
 
+    def test_bgpvpn_router_assoc_update(self):
+        with self.router(tenant_id=self._tenant_id) as router, \
+                self.bgpvpn() as bgpvpn, \
+                mock.patch.object(
+                    self.bgpvpn_plugin,
+                    '_validate_router',
+                    return_value=router['router']), \
+                self.assoc_router(bgpvpn['bgpvpn']['id'],
+                                  router['router']['id']) as router_assoc:
+
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+
+            updated = self._update('bgpvpn/bgpvpns/%s/router_associations' %
+                                   bgpvpn_id,
+                                   router_assoc['router_association']['id'],
+                                   {'router_association':
+                                       {'advertise_extra_routes': False}}
+                                   )
+            expected = {'router_association': {
+                'id': router_assoc['router_association']['id'],
+                'router_id': router['router']['id'],
+                'advertise_extra_routes': False
+            }}
+            self.add_tenant(expected['router_association'])
+
+            self.assertEqual(expected, updated)
+
     def test_associate_empty_router(self):
         with self.bgpvpn() as bgpvpn:
             id = bgpvpn['bgpvpn']['id']
@@ -1138,7 +1165,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     assoc_id = assoc['router_association']['id']
                     router_assoc = {'id': assoc_id,
                                     'router_id': router_id,
-                                    'bgpvpn_id': bgpvpn_id}
+                                    'bgpvpn_id': bgpvpn_id,
+                                    'advertise_extra_routes': True}
                     self.add_tenant(router_assoc)
                     mock_db_del.return_value = router_assoc
 

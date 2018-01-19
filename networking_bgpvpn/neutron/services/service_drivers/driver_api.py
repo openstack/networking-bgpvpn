@@ -308,6 +308,10 @@ class BGPVPNDriverRCBase(BGPVPNDriverBase):
         super(BGPVPNDriverRCBase, self).__init__(*args, **kwargs)
 
     @abc.abstractmethod
+    def update_router_assoc(self, context, assoc_id, router_association):
+        pass
+
+    @abc.abstractmethod
     def create_port_assoc(self, bgpvpn_id, port_association):
         pass
 
@@ -334,6 +338,29 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
 
     def __init__(self, *args, **xargs):
         BGPVPNDriverDBMixin.__init__(self, *args, **xargs)
+
+    def update_router_assoc(self, context, assoc_id, bgpvpn_id, router_assoc):
+        old_router_assoc = self.get_router_assoc(context, assoc_id, bgpvpn_id)
+        with context.session.begin(subtransactions=True):
+            router_assoc = self.bgpvpn_db.update_router_assoc(context,
+                                                              assoc_id,
+                                                              bgpvpn_id,
+                                                              router_assoc)
+            self.update_router_assoc_precommit(context,
+                                               old_router_assoc, router_assoc)
+        self.update_router_assoc_postcommit(context,
+                                            old_router_assoc, router_assoc)
+        return router_assoc
+
+    @abc.abstractmethod
+    def update_router_assoc_precommit(self, context,
+                                      old_router_assoc, router_assoc):
+        pass
+
+    @abc.abstractmethod
+    def update_router_assoc_postcommit(self, context,
+                                       old_router_assoc, router_assoc):
+        pass
 
     def create_port_assoc(self, context, bgpvpn_id, port_association):
         with context.session.begin(subtransactions=True):
@@ -403,6 +430,14 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
 
 class BGPVPNDriverRC(BGPVPNDriverRCDBMixin, BGPVPNDriver):
     """Base class for a DB driver supporting bgpvpn-routes-control API ext."""
+
+    def update_router_assoc_precommit(self, context,
+                                      old_router_assoc, router_assoc):
+        pass
+
+    def update_router_assoc_postcommit(self, context,
+                                       old_router_assoc, router_assoc):
+        pass
 
     def create_port_assoc_precommit(self, context, port_assoc):
         pass
