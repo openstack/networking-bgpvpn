@@ -470,6 +470,107 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[1], self.servers[4],
                               should_succeed=False, validate_server=True)
 
+    @decorators.idempotent_id('3b44b2f4-f514-4004-8623-2682bc46bb07')
+    @utils.services('compute', 'network')
+    @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    @decorators.skip_because(bug="1743574")
+    def test_bgpvpn_port_association_create_and_update(self):
+        """This test checks port association in BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Create router and connect it to network A
+        4. Create router and connect it to network B
+        5. Start up server 1 in network A
+        6. Start up server 2 in network B
+        7. Give a FIP to all servers
+        8. Configure ip forwarding on server 2
+        9. Configure alternative loopback address on server 2
+        10. Associate network A to a given L3 BGPVPN
+        11. Associate port of server 2 to a given L3 BGPVPN
+        12. Check that server 1 can ping server's 2 alternative ip
+        13. Update created before port association by routes removal
+        14. Check that server 1 cannot ping server's 2 alternative ip
+        """
+        self._create_networks_and_subnets(port_security=False)
+        self._create_l3_bgpvpn()
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_B], IP_B_S1_1]],
+                             port_security=False)
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+        self._setup_ip_forwarding(1)
+        alternative_loopback_ip = '192.168.0.1'
+        alternative_loopback_cidr = '192.168.0.0/24'
+        self._setup_ip_address(1, alternative_loopback_cidr)
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        port_id = self.ports[self.servers[1]['id']]['id']
+        port_routes = [{'type': 'prefix',
+                        'prefix': alternative_loopback_cidr}]
+        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
+                                                          port_id=port_id,
+                                                          routes=port_routes)
+        port_association = body['port_association']
+        self._check_l3_bgpvpn_by_specific_ip(
+            to_server_ip=alternative_loopback_ip)
+        self.bgpvpn_client.update_port_association(
+            self.bgpvpn['id'], port_association['id'], routes=[])
+        self._check_l3_bgpvpn_by_specific_ip(
+            should_succeed=False, to_server_ip=alternative_loopback_ip)
+
+    @decorators.idempotent_id('9c3280b5-0b32-4562-800c-0b50d9d52bfd')
+    @utils.services('compute', 'network')
+    @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    def test_bgpvpn_port_association_create_and_delete(self):
+        """This test checks port association in BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Create router and connect it to network A
+        4. Create router and connect it to network B
+        5. Start up server 1 in network A
+        6. Start up server 2 in network B
+        7. Give a FIP to all servers
+        8. Configure ip forwarding on server 2
+        9. Configure alternative loopback address on server 2
+        10. Associate network A to a given L3 BGPVPN
+        11. Associate port of server 2 to a given L3 BGPVPN
+        12. Check that server 1 can ping server's 2 alternative ip
+        13. Remove created before port association
+        14. Check that server 1 cannot ping server's 2 alternative ip
+        """
+        self._create_networks_and_subnets(port_security=False)
+        self._create_l3_bgpvpn()
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_B], IP_B_S1_1]],
+                             port_security=False)
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+        self._setup_ip_forwarding(1)
+        alternative_loopback_ip = '192.168.0.1'
+        alternative_loopback_cidr = '192.168.0.0/24'
+        self._setup_ip_address(1, alternative_loopback_cidr)
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        port_id = self.ports[self.servers[1]['id']]['id']
+        port_routes = [{'type': 'prefix',
+                        'prefix': alternative_loopback_cidr}]
+        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
+                                                          port_id=port_id,
+                                                          routes=port_routes)
+        port_association = body['port_association']
+        self._check_l3_bgpvpn_by_specific_ip(
+            to_server_ip=alternative_loopback_ip)
+        self.bgpvpn_client.delete_port_association(
+            self.bgpvpn['id'], port_association['id'])
+        self._check_l3_bgpvpn_by_specific_ip(
+            should_succeed=False, to_server_ip=alternative_loopback_ip)
+
     @decorators.idempotent_id('8478074e-22df-4234-b02b-61257b475b18')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_ping_to_unassociated_net(self):
