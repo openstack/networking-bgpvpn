@@ -41,4 +41,22 @@ resources:
             bgpvpn_id: "default_vpn"
             router_id: { get_resource: Router }
 
+    Net3:
+        type: OS::Neutron::Net
+
+    SubNet3:
+        type: OS::Neutron::Subnet
+        properties:
+           network: { get_resource: Net3 }
+           cidr: 192.168.10.0/24
+    Port:
+        type: OS::Neutron::Port
+        properties:
+           network: { get_resource: Net3 }
+    BGPVPN_port_assoc1:
+        type: OS::Neutron::BGPVPN-PORT-ASSOCIATION
+        properties:
+            bgpvpn_id: "default_vpn"
+            port_id: { get_resource: Port }
+
 

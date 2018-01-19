@@ -1,0 +1,49 @@
+description: BGPVPN networking example (tenant)
+heat_template_version: '2013-05-23'
+
+parameters:
+    bgpvpn:
+       type: string
+       description: id of BGPVPN to bind the network to
+
+    bgpvpn_bis:
+       type: string
+       description: id of BGPVPN from which to readvertise a route
+
+resources:
+    Net1:
+        type: OS::Neutron::Net
+
+    SubNet1:
+        type: OS::Neutron::Subnet
+        properties:
+           network: { get_resource: Net1 }
+           cidr: 192.168.10.0/24
+    Port1:
+        type: OS::Neutron::Port
+        properties:
+           network: { get_resource: Net1 }
+
+    Port2:
+        type: OS::Neutron::Port
+        properties:
+           network: { get_resource: Net1 }
+
+    BGPVPN_port_assoc1:
+        type: OS::Neutron::BGPVPN-PORT-ASSOCIATION
+        properties:
+            bgpvpn_id: { get_param: bgpvpn }
+            port_id: { get_resource: Port1 }
+
+    BGPVPN_port_assoc2:
+        type: OS::Neutron::BGPVPN-PORT-ASSOCIATION
+        properties:
+            bgpvpn_id: { get_param: bgpvpn }
+            port_id: { get_resource: Port2 }
+            advertise_fixed_ips: false
+            routes:
+                - type: prefix
+                  prefix: 1.1.1.1/32
+                  local_pref: 42
+                - type: bgpvpn
+                  bgpvpn_id: { get_param: bgpvpn_bis }
