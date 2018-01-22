@@ -458,6 +458,13 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertIn(with_defaults(ROUTE_C),
                           assoc['routes'])
 
+            res = self._update(
+                'bgpvpn/bgpvpns/%s/port_associations' % bgpvpn_id,
+                port_assoc['port_association']['id'],
+                {'port_association': {'routes': []}}
+            )
+            self.assertEqual(0, len(res['port_association']['routes']))
+
 
 class BgpvpnDBTestCaseWithVNI(BgpvpnDBTestCase):
 

@@ -518,6 +518,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             for route in port_assoc.pop('routes', []):
                 _add_port_assoc_route_db_from_dict(context, route, assoc_id)
             port_assoc_db.update(port_assoc)
+        context.session.refresh(port_assoc_db)
         return self._make_port_assoc_dict(port_assoc_db)
 
     def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
