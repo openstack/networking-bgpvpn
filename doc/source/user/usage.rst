@@ -24,9 +24,8 @@ Example commands to use by the tenant owning the BGPVPN to associate a Network t
 
 	openstack bgpvpn network association delete <net-assoc-uuid> myBGPVPN
 
-    For more details about BGPVPN CLI, follow this page :
-
-    <https://docs.openstack.org/python-neutronclient/latest/cli/osc/v2/networking-bgpvpn.html>
+There are more details in the `OpenStack Client (OSC) documentation
+for BGPVPN <https://docs.openstack.org/python-neutronclient/latest/cli/osc/v2/networking-bgpvpn.html>`_.
 
 Use from Horizon
 ----------------
