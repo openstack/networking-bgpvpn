@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
 from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib import context
 
@@ -49,7 +50,8 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                  "import_targets": ["64512:11", "64512:12"],
                  "export_targets": ["64512:13", "64512:14"],
                  "route_distinguishers": ["64512:15", "64512:16"],
-                 "vni": "1000"
+                 "vni": "1000",
+                 "local_pref": "777"
                  }
             )
 
@@ -82,6 +84,17 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 # bpvpn_vni extension is not loaded.
                 #
                 self.assertFalse('vni' in bgpvpn)
+
+            if utils.is_extension_supported(self.bgpvpn_plugin,
+                                            bgpvpn_rc_def.ALIAS):
+                self.assertEqual(777, bgpvpn['local_pref'])
+            else:
+                #
+                # Test should ensure local_pref attribute is not present as
+                # bpvpn-routes-control extension is not loaded.
+                #
+                self.assertFalse('local_pref' in bgpvpn)
+
             self.assertEqual([net['network']['id']], bgpvpn['networks'])
 
             assoc1 = self.plugin_db.get_net_assoc(self.ctx, assoc1['id'],
@@ -472,4 +485,13 @@ class BgpvpnDBTestCaseWithVNI(BgpvpnDBTestCase):
         test_service_provider = ('networking_bgpvpn.tests.unit.services'
                                  '.test_plugin.TestBgpvpnDriverWithVni')
         super(BgpvpnDBTestCaseWithVNI, self).setUp(
+            service_provider=test_service_provider)
+
+
+class BgpvpnDBTestCaseWithRC(BgpvpnDBTestCase):
+
+    def setUp(self):
+        test_service_provider = ('networking_bgpvpn.neutron.services.'
+                                 'service_drivers.driver_api.BGPVPNDriverRC')
+        super(BgpvpnDBTestCaseWithRC, self).setUp(
             service_provider=test_service_provider)
