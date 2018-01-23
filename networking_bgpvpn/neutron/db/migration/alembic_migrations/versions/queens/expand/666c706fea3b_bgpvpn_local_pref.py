@@ -13,7 +13,7 @@
 #    under the License.
 #
 
-"""empty message
+""" Add local_pref to bgpvpns table
 
 Revision ID: 666c706fea3b
 Revises: 39411aacf9b8
