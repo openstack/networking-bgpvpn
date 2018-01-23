@@ -19,15 +19,16 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
+from horizon import tabs
 from horizon.utils import memoized
-from horizon import views
 from horizon import workflows
 from openstack_dashboard import api
 
-import bgpvpn_dashboard.api.bgpvpn as bgpvpn_api
+from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.common import bgpvpn as bgpvpn_common
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_forms
 from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as bgpvpn_tables
+from bgpvpn_dashboard.dashboards.project.bgpvpn import tabs as bgpvpn_tabs
 from bgpvpn_dashboard.dashboards.project.bgpvpn import workflows \
     as bgpvpn_workflows
 
@@ -91,6 +92,39 @@ class EditDataView(forms.ModalFormView):
             return data
 
 
+class CreateNetworkAssociationView(forms.ModalFormView):
+    form_class = bgpvpn_forms.CreateNetworkAssociation
+    form_id = "create_network_association_form"
+    modal_header = _("Create Network Association")
+    submit_label = _("Create")
+    submit_url = 'horizon:project:bgpvpn:create-network-association'
+    success_url = reverse_lazy('horizon:project:bgpvpn:index')
+    template_name = 'project/bgpvpn/create_network_association.html'
+    page_title = _("Create Network Association")
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            CreateNetworkAssociationView, self).get_context_data(**kwargs)
+        args = (self.kwargs['bgpvpn_id'],)
+        context["bgpvpn_id"] = self.kwargs['bgpvpn_id']
+        context["submit_url"] = reverse(self.submit_url, args=args)
+        return context
+
+    def get_initial(self):
+        bgpvpn_id = self.kwargs['bgpvpn_id']
+        try:
+            # Get initial bgpvpn information
+            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
+            data = bgpvpn.to_dict()
+            data['bgpvpn_id'] = data.pop('id')
+            return data
+        except Exception:
+            exceptions.handle(
+                self.request,
+                _('Unable to retrieve BGPVPN details.'),
+                redirect=self.success_url)
+
+
 class UpdateAssociationsView(workflows.WorkflowView):
     workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
     page_title = _("Edit BGPVPN associations")
@@ -111,8 +145,9 @@ class UpdateAssociationsView(workflows.WorkflowView):
                 redirect=self.failure_url)
 
 
-class DetailProjectView(views.HorizonTemplateView):
-    template_name = 'project/bgpvpn/detail.html'
+class DetailProjectView(tabs.TabbedTableView):
+    tab_group_class = bgpvpn_tabs.BgpvpnDetailsTabs
+    template_name = 'horizon/common/_detail.html'
     page_title = "{{ bgpvpn.name }}"
     redirect_url = 'horizon:project:bgpvpn:index'
 

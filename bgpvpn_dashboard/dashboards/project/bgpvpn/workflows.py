@@ -12,12 +12,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import logging
 
 from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import forms
 from horizon import workflows
 from openstack_dashboard import api
+
+LOG = logging.getLogger(__name__)
 
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 

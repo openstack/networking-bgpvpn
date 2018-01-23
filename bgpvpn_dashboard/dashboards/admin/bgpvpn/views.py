@@ -24,6 +24,7 @@ from openstack_dashboard import api
 import bgpvpn_dashboard.api.bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import forms as bgpvpn_forms
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import tables as bgpvpn_tables
+from bgpvpn_dashboard.dashboards.admin.bgpvpn import tabs as bgpvpn_tabs
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import workflows \
     as bgpvpn_workflows
 from bgpvpn_dashboard.dashboards.project.bgpvpn import views as project_views
@@ -69,6 +70,12 @@ class EditDataView(project_views.EditDataView):
     success_url = reverse_lazy('horizon:admin:bgpvpn:index')
 
 
+class CreateNetworkAssociationView(project_views.CreateNetworkAssociationView):
+    form_class = bgpvpn_forms.CreateNetworkAssociation
+    submit_url = 'horizon:admin:bgpvpn:create-network-association'
+    success_url = reverse_lazy('horizon:admin:bgpvpn:index')
+
+
 class UpdateAssociationsView(project_views.UpdateAssociationsView):
     workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
     page_title = _("Edit BGPVPN associations")
@@ -76,5 +83,5 @@ class UpdateAssociationsView(project_views.UpdateAssociationsView):
 
 
 class DetailProjectView(project_views.DetailProjectView):
-    template_name = 'admin/bgpvpn/detail.html'
+    tab_group_class = bgpvpn_tabs.BgpvpnDetailsTabs
     redirect_url = 'horizon:admin:bgpvpn:index'

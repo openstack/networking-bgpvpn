@@ -183,37 +183,3 @@ class TestUpdateAssociationsView(helpers.APITestCase):
             self.bgpvpn_view.request, "foo-id")
         for key, val in expected_data.items():
             self.assertEqual(val, result[key])
-
-
-class TestDetailProjectView(helpers.APITestCase):
-
-    def setUp(self):
-        super(TestDetailProjectView, self).setUp()
-
-        self.view = bgpvpn_views.DetailProjectView()
-        fake_response = {'status_code': 200}
-        self.mock_request = mock.Mock(return_value=fake_response)
-        self.view.request = self.mock_request
-        self.view.kwargs = {'bgpvpn_id': 'foo-id'}
-
-        self.assertEqual('project/bgpvpn/detail.html', self.view.template_name)
-        self.assertEqual('{{ bgpvpn.name }}', self.view.page_title)
-        self.assertEqual('horizon:project:bgpvpn:index',
-                         self.view.redirect_url)
-        self.addCleanup(mock.patch.stopall)
-
-    @mock.patch.object(bgpvpn_views, 'bgpvpn_api', autospec=True)
-    def test_get_context_data(self, mock_bgpvpn_api):
-        expected_bgpvpn = bgpvpn_api.Bgpvpn({"id": "foo-id"})
-        mock_bgpvpn_api.bgpvpn_get.return_value = expected_bgpvpn
-        context = self.view.get_context_data()
-
-        mock_bgpvpn_api.bgpvpn_get.assert_called_once_with(
-            self.view.request, "foo-id")
-        self.assertIn('view', context)
-        self.assertIn('bgpvpn', context)
-        self.assertIn('url', context)
-        self.assertIsInstance(context['view'], bgpvpn_views.DetailProjectView)
-        self.assertEqual(expected_bgpvpn, context['bgpvpn'])
-        self.assertEqual(reverse('horizon:project:bgpvpn:index'),
-                         context['url'])

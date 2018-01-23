@@ -13,9 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from django.conf.urls import include
 from django.conf.urls import url
 
-import bgpvpn_dashboard.dashboards.project.bgpvpn.views as bgpvpn_views
+from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations import \
+    urls as network_associations_urls
+from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations import \
+    views as network_associations_views
+from bgpvpn_dashboard.dashboards.project.bgpvpn import views as bgpvpn_views
 
 BGPVPN = r'^(?P<bgpvpn_id>[^/]+)/%s$'
 
@@ -25,6 +30,16 @@ urlpatterns = [
     url(BGPVPN % 'update-associations',
         bgpvpn_views.UpdateAssociationsView.as_view(),
         name='update-associations'),
+    url(BGPVPN % 'create-network-association',
+        bgpvpn_views.CreateNetworkAssociationView.as_view(),
+        name='create-network-association'),
     url(r'^(?P<bgpvpn_id>[^/]+)/detail/$',
         bgpvpn_views.DetailProjectView.as_view(), name='detail'),
+    url(r'^(?P<bgpvpn_id>[^/]+)/network_assos/'
+        r'(?P<network__association_id>[^/]+)/'
+        r'detail\?tab=bgpvpns__network__associations_tab$',
+        network_associations_views.DetailView.as_view(),
+        name='network_associations_tab'),
+    url(r'^network_assos/', include(network_associations_urls,
+                                    namespace='network_assos')),
 ]

@@ -111,6 +111,20 @@ class BgpvpnApiTests(bgpvpn_test.APITestCase):
         self.mock_delete_bgpvpn.assert_called_once_with(bgpvpn.id)
 
     @test.create_mocks({
+        neutronclient: ('show_bgpvpn_network_assoc',)})
+    def test_network_association_get(self):
+        bgpvpn = self.bgpvpns.first()
+        na = self.network_associations.first()
+        ret_dict = {
+            'network_association': self.api_network_associations.first()}
+
+        self.mock_show_bgpvpn_network_assoc.return_value = ret_dict
+
+        ret_val = api.bgpvpn.network_association_get(
+            self.request, bgpvpn.id, na.id)
+        self.assertIsInstance(ret_val, api.bgpvpn.NetworkAssociation)
+
+    @test.create_mocks({
         neutronclient: ('list_bgpvpn_network_assocs',)})
     def test_network_association_list(self):
         exp_nas = self.network_associations.list()

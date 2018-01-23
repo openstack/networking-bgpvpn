@@ -68,6 +68,15 @@ def bgpvpn_delete(request, bgpvpn_id):
     neutronclient(request).delete_bgpvpn(bgpvpn_id)
 
 
+def network_association_get(request, bgpvpn_id, network_assoc_id, **kwargs):
+    LOG.debug("network_association_get(): "
+              "bgpvpn_id=%s, network_assoc_id=%s, kwargs=%s",
+              bgpvpn_id, network_assoc_id, kwargs)
+    network_association = neutronclient(request).show_bgpvpn_network_assoc(
+        bgpvpn_id, network_assoc_id).get('network_association')
+    return NetworkAssociation(network_association)
+
+
 def network_association_list(request, bgpvpn_id, **kwargs):
     LOG.debug("network_association_list(): bgpvpn_id=%s, kwargs=%s",
               bgpvpn_id, kwargs)

@@ -57,6 +57,14 @@ class UpdateRouterAssociations(tables.LinkAction):
         return "?".join([base_url, param])
 
 
+class CreateNetworkAssociation(tables.LinkAction):
+    name = "create_network_association"
+    verbose_name = _("Create Network Association")
+    url = "horizon:project:bgpvpn:create-network-association"
+    classes = ("ajax-modal",)
+    icon = "pencil"
+
+
 def get_network_url(network):
     url = reverse('horizon:project:networks:detail', args=[network.id])
     instance = '<a href=%s>%s</a>' % (url, html.escape(network.name_or_id))
@@ -94,4 +102,5 @@ class BgpvpnTable(tables.DataTable):
         verbose_name = _("BGPVPN")
         row_actions = (EditInfoBgpVpn,
                        UpdateNetworkAssociations,
-                       UpdateRouterAssociations)
+                       UpdateRouterAssociations,
+                       CreateNetworkAssociation)

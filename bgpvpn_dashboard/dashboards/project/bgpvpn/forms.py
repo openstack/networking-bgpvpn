@@ -23,6 +23,8 @@ from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
+from openstack_dashboard import api
+
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.common import bgpvpn as bgpvpn_common
 
@@ -98,3 +100,54 @@ class EditDataBgpVpn(CommonData):
     def __init__(self, request, *args, **kwargs):
         super(EditDataBgpVpn, self).__init__(request, *args, **kwargs)
         self.action = 'update'
+
+
+class CreateNetworkAssociation(forms.SelfHandlingForm):
+    bgpvpn_id = forms.CharField(widget=forms.HiddenInput())
+    network_resource = forms.ChoiceField(
+        label=_("Associate Network"),
+        widget=forms.ThemableSelectWidget(
+            data_attrs=('name', 'id'),
+            transform=lambda x: "%s" % x.name_or_id))
+
+    def __init__(self, request, *args, **kwargs):
+        super(CreateNetworkAssociation, self).__init__(
+            request, *args, **kwargs)
+
+        # when an admin user uses the project panel BGPVPN, there is no
+        # project in data because bgpvpn_get doesn't return it
+        project_id = kwargs.get('initial', {}).get("project_id", None)
+        if request.user.is_superuser and project_id:
+            tenant_id = project_id
+        else:
+            tenant_id = self.request.user.tenant_id
+
+        try:
+            networks = api.neutron.network_list_for_tenant(request, tenant_id)
+            if networks:
+                choices = [('', _("Choose a network"))] + [(n.id, n) for n in
+                                                           networks]
+                self.fields['network_resource'].choices = choices
+            else:
+                self.fields['network_resource'].choices = [('',
+                                                            _("No network"))]
+        except Exception as e:
+            exceptions.handle(
+                request, _("Unable to retrieve networks: %s") % e)
+
+    def handle(self, request, data):
+        try:
+            params = self._set_params(data)
+            bgpvpn_api.network_association_create(
+                request, data['bgpvpn_id'], **params)
+            return True
+        except Exception as e:
+            exceptions.handle(
+                request, _("Unable to associate network {} : {}").format(
+                    data["network_resource"], str(e)))
+            return False
+
+    def _set_params(self, data):
+        params = dict()
+        params['network_id'] = data['network_resource']
+        return params

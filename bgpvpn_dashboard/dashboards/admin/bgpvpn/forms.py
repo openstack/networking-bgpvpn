@@ -104,3 +104,12 @@ class EditDataBgpVpn(CommonData):
     def __init__(self, request, *args, **kwargs):
         super(EditDataBgpVpn, self).__init__(request, *args, **kwargs)
         self.action = 'update'
+
+
+class CreateNetworkAssociation(project_forms.CreateNetworkAssociation):
+    project_id = forms.CharField(widget=forms.HiddenInput())
+
+    def _set_params(self, data):
+        params = super(CreateNetworkAssociation, self)._set_params(data)
+        params['tenant_id'] = data['project_id']
+        return params
