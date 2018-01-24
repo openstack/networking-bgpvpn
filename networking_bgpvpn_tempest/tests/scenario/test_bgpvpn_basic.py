@@ -473,7 +473,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     @decorators.idempotent_id('3b44b2f4-f514-4004-8623-2682bc46bb07')
     @utils.services('compute', 'network')
     @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
-    @decorators.skip_because(bug="1743574")
     def test_bgpvpn_port_association_create_and_update(self):
         """This test checks port association in BGPVPN.
 
