@@ -403,6 +403,85 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
 
+    @decorators.idempotent_id('876b49bc-f34a-451b-ba3c-d74295838130')
+    @utils.services('compute', 'network')
+    @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    def test_bgpvpn_port_association_local_pref(self):
+        """This test checks port association in BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Start up server 1 in network A
+        4. Start up server 2 in network B
+        5. Start up server 3 in network B
+        6. Create router and connect it to network A
+        7. Create router and connect it to network B
+        8. Give a FIP to all servers
+        9. Setup dummy HTTP service on server 2 and 3
+        10. Configure ip forwarding on server 2
+        11. Configure ip forwarding on server 3
+        12. Configure alternative loopback address on server 2
+        13. Configure alternative loopback address on server 3
+        14. Associate network A to a given L3 BGPVPN
+        15. Associate port of server 2 to a given L3 BGPVPN
+            with higher local_pref value
+        16. Associate port of server 3 to a given L3 BGPVPN
+            with lower local_pref value
+        17. Check that server 1 pings server's 2 alternative ip
+        18. Update port association of server 2 to have now
+            lower local_pref value
+        19. Update port association of server 3 to have now
+            higher local_pref value
+        20. Check that server 1 pings now server's 3 alternative ip
+        """
+        self._create_networks_and_subnets(port_security=False)
+        self._create_l3_bgpvpn()
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                             [self.networks[NET_B], IP_B_S1_1],
+                             [self.networks[NET_B], IP_B_S1_2]],
+                             port_security=False)
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+        self._associate_fip(2)
+        self._setup_http_server(1)
+        self._setup_http_server(2)
+        self._setup_ip_forwarding(1)
+        self._setup_ip_forwarding(2)
+        alternative_loopback_ip = '192.168.0.1'
+        alternative_loopback_cidr = '192.168.0.0/24'
+        self._setup_ip_address(1, alternative_loopback_cidr)
+        self._setup_ip_address(2, alternative_loopback_cidr)
+        primary_port_routes = [{'type': 'prefix',
+                                'local_pref': 200,
+                                'prefix': alternative_loopback_cidr}]
+        alternate_port_routes = [{'type': 'prefix',
+                                  'local_pref': 100,
+                                  'prefix': alternative_loopback_cidr}]
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        port_id = self.ports[self.servers[1]['id']]['id']
+        body = self.bgpvpn_client.create_port_association(
+            self.bgpvpn['id'], port_id=port_id, routes=primary_port_routes)
+        port_association_1 = body['port_association']
+        port_id = self.ports[self.servers[2]['id']]['id']
+        body = self.bgpvpn_client.create_port_association(
+            self.bgpvpn['id'], port_id=port_id, routes=alternate_port_routes)
+        port_association_2 = body['port_association']
+        self._check_l3_bgpvpn_by_specific_ip(
+            to_server_ip=alternative_loopback_ip,
+            validate_server=self.servers[1]['name'])
+        self.bgpvpn_client.update_port_association(
+            self.bgpvpn['id'], port_association_1['id'],
+            routes=alternate_port_routes)
+        self.bgpvpn_client.update_port_association(
+            self.bgpvpn['id'], port_association_2['id'],
+            routes=primary_port_routes)
+        self._check_l3_bgpvpn_by_specific_ip(
+            to_server_ip=alternative_loopback_ip,
+            validate_server=self.servers[2]['name'])
+
     @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
     @utils.services('compute', 'network')
     def test_bgpvpn_tenant_separation_and_local_connectivity(self):
@@ -944,7 +1023,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _check_l3_bgpvpn_by_specific_ip(self, from_server=None,
                                         to_server_ip=None,
                                         should_succeed=True,
-                                        validate_server=None):
+                                        validate_server=None,
+                                        repeat_validate_server=10):
         from_server = from_server or self.servers[0]
         from_server_ip = self.server_fips[from_server['id']][
             'floating_ip_address']
@@ -983,13 +1063,18 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                          check_reachable)
             self.assertTrue(result, msg)
             if validate_server and result:
-                to_name = ssh_client.exec_command(
-                    "nc %s 80" % to_server_ip).strip()
-                result = to_name == validate_server
-                self.assertTrue(should_succeed == result,
-                                ("Destination server name is invalid. Has '"
-                                 "{name}', expected is '{exp}'").format(
-                                     name=to_name, exp=validate_server))
+                # repeating multiple times gives increased ods of avoiding
+                # false positives in the case where the dataplane does
+                # equal-cost multipath
+                for i in range(0, repeat_validate_server):
+                    to_name = ssh_client.exec_command(
+                        "nc %s 80" % to_server_ip).strip()
+                    result = to_name == validate_server
+                    self.assertTrue(
+                        should_succeed == result,
+                        ("Destination server name is '%s', expected is '%s'" %
+                         (to_name, validate_server)))
+                    LOG.info("nc server name check %d successful", i)
         except Exception:
             LOG.exception(
                 ("Unable to ping VM with IP address {dest} from VM "
