@@ -830,7 +830,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     @decorators.idempotent_id('fb37a546-7263-4ffe-a42c-77eca377ff1a')
     @utils.services('compute', 'network')
-    @decorators.skip_because(bug="1732070")
     def test_bgpvpn_negative_update_to_empty_rt_list(self):
         """This test checks basic BGPVPN route targets update.
 
