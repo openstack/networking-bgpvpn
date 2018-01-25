@@ -1,5 +1,4 @@
 - project:
-    name: openstack/networking-bgpvpn
     check:
       jobs:
         # TripleO jobs that deploy networking-bgpvpn.
