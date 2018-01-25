@@ -19,6 +19,8 @@ from neutron.api.rpc.callbacks import events as rpc_events
 from neutron.api.rpc.handlers import resources_rpc
 from neutron.db.models import external_net
 
+from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from neutron_lib.callbacks import resources
@@ -68,6 +70,9 @@ def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
     """BGPVPN Service Driver class for BaGPipe"""
+
+    more_supported_extension_aliases = [bgpvpn_rc_def.ALIAS,
+                                        bgpvpn_vni_def.ALIAS]
 
     def __init__(self, service_plugin):
         super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
