@@ -21,19 +21,16 @@ from networking_bgpvpn.neutron.db import head
 
 
 # Tables from other repos that we depend on but do not manage.
-
-BAGPIPE_TABLES = {
+IGNORED_TABLES_MATCH = (
     'ml2_route_target_allocations',
-}
-
-ODL_TABLE_PREFIXES = {
+    '_bagpipe_',
     'odl_',
     'opendaylight'
-}
+)
 
 # EXTERNAL_TABLES should contain all names of tables that are not related to
 # current repo.
-EXTERNAL_TABLES = set(external.TABLES) | BAGPIPE_TABLES
+EXTERNAL_TABLES = set(external.TABLES)
 VERSION_TABLE = 'alembic_version_bgpvpn'
 
 
@@ -53,8 +50,8 @@ class _TestModelsMigrationsBGPVPN(test_migrations._TestModelsMigrations):
         if type_ == 'table' and (name.startswith('alembic') or
                                  name == VERSION_TABLE or
                                  name in EXTERNAL_TABLES or
-                                 any([name.startswith(prefix)
-                                      for prefix in ODL_TABLE_PREFIXES])):
+                                 any([match in name
+                                      for match in IGNORED_TABLES_MATCH])):
             return False
         if type_ == 'index' and reflected and name.startswith("idx_autoinc_"):
             return False
