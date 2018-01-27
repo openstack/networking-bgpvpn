@@ -11,5 +11,5 @@ oslo.log>=3.36.0 # Apache-2.0
 oslo.utils>=3.33.0 # Apache-2.0
 sphinxcontrib-blockdiag>=1.5.4 # BSD
 sphinxcontrib-seqdiag>=0.8.4 # BSD
-neutron-lib>=1.12.0 # Apache-2.0
+neutron-lib>=1.13.0 # Apache-2.0
 debtcollector>=1.2.0 # Apache-2.0
