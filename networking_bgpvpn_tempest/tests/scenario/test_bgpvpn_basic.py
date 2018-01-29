@@ -453,34 +453,46 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         alternative_loopback_cidr = '192.168.0.0/24'
         self._setup_ip_address(1, alternative_loopback_cidr)
         self._setup_ip_address(2, alternative_loopback_cidr)
+
         primary_port_routes = [{'type': 'prefix',
                                 'local_pref': 200,
                                 'prefix': alternative_loopback_cidr}]
         alternate_port_routes = [{'type': 'prefix',
                                   'local_pref': 100,
                                   'prefix': alternative_loopback_cidr}]
+
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
-        port_id = self.ports[self.servers[1]['id']]['id']
+
+        port_id_1 = self.ports[self.servers[1]['id']]['id']
         body = self.bgpvpn_client.create_port_association(
-            self.bgpvpn['id'], port_id=port_id, routes=primary_port_routes)
+            self.bgpvpn['id'], port_id=port_id_1, routes=primary_port_routes)
         port_association_1 = body['port_association']
-        port_id = self.ports[self.servers[2]['id']]['id']
+
+        port_id_2 = self.ports[self.servers[2]['id']]['id']
         body = self.bgpvpn_client.create_port_association(
-            self.bgpvpn['id'], port_id=port_id, routes=alternate_port_routes)
+            self.bgpvpn['id'], port_id=port_id_2, routes=alternate_port_routes)
         port_association_2 = body['port_association']
+
+        destination_srv_1 = '%s:%s' % (self.servers[1]['name'],
+                                       self.servers[1]['id'])
+        destination_srv_2 = '%s:%s' % (self.servers[2]['name'],
+                                       self.servers[2]['id'])
+
         self._check_l3_bgpvpn_by_specific_ip(
             to_server_ip=alternative_loopback_ip,
-            validate_server=self.servers[1]['name'])
+            validate_server=destination_srv_1)
+
         self.bgpvpn_client.update_port_association(
             self.bgpvpn['id'], port_association_1['id'],
             routes=alternate_port_routes)
         self.bgpvpn_client.update_port_association(
             self.bgpvpn['id'], port_association_2['id'],
             routes=primary_port_routes)
+
         self._check_l3_bgpvpn_by_specific_ip(
             to_server_ip=alternative_loopback_ip,
-            validate_server=self.servers[2]['name'])
+            validate_server=destination_srv_2)
 
     @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
     @utils.services('compute', 'network')
@@ -570,18 +582,25 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         13. Update created before port association by routes removal
         14. Check that server 1 cannot ping server's 2 alternative ip
         """
+        alternative_loopback_ip = '192.168.0.1'
+        alternative_loopback_cidr = '192.168.0.0/24'
+
         self._create_networks_and_subnets(port_security=False)
         self._create_l3_bgpvpn()
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
-                             [self.networks[NET_B], IP_B_S1_1]],
+                              [self.networks[NET_B], IP_B_S1_1]],
                              port_security=False)
         self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
         self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip(0)
         self._associate_fip(1)
+
+        # preliminary check that no connectivity to 192.168.0.1 initially
+        # exists
+        self._check_l3_bgpvpn_by_specific_ip(
+            should_succeed=False, to_server_ip=alternative_loopback_ip)
+
         self._setup_ip_forwarding(1)
-        alternative_loopback_ip = '192.168.0.1'
-        alternative_loopback_cidr = '192.168.0.0/24'
         self._setup_ip_address(1, alternative_loopback_cidr)
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
@@ -620,18 +639,25 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         13. Remove created before port association
         14. Check that server 1 cannot ping server's 2 alternative ip
         """
+        alternative_loopback_ip = '192.168.0.1'
+        alternative_loopback_cidr = '192.168.0.0/24'
+
         self._create_networks_and_subnets(port_security=False)
         self._create_l3_bgpvpn()
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
-                             [self.networks[NET_B], IP_B_S1_1]],
+                              [self.networks[NET_B], IP_B_S1_1]],
                              port_security=False)
         self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
         self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip(0)
         self._associate_fip(1)
+
+        # preliminary check that no connectivity to 192.168.0.1 initially
+        # exists
+        self._check_l3_bgpvpn_by_specific_ip(
+            should_succeed=False, to_server_ip=alternative_loopback_ip)
+
         self._setup_ip_forwarding(1)
-        alternative_loopback_ip = '192.168.0.1'
-        alternative_loopback_cidr = '192.168.0.0/24'
         self._setup_ip_address(1, alternative_loopback_cidr)
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
@@ -987,8 +1013,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _setup_http_server(self, server_index):
         server = self.servers[server_index]
         ssh_client = self._setup_ssh_client(server)
-        ssh_client.exec_command("sudo nc -kl -p 80 -e echo '%s' &"
-                                % server['name'])
+        ssh_client.exec_command("sudo nc -kl -p 80 -e echo '%s:%s' &"
+                                % (server['name'], server['id']))
 
     def _setup_ip_forwarding(self, server_index):
         server = self.servers[server_index]
@@ -1011,14 +1037,14 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _check_l3_bgpvpn(self, from_server=None, to_server=None,
                          should_succeed=True, validate_server=False):
         to_server = to_server or self.servers[1]
-        to_server_name = None
+        destination_srv = None
         if validate_server:
-            to_server_name = to_server['name']
+            destination_srv = '%s:%s' % (to_server['name'], to_server['id'])
         destination_ip = self.server_fixed_ips[to_server['id']]
         self._check_l3_bgpvpn_by_specific_ip(from_server=from_server,
                                              to_server_ip=destination_ip,
                                              should_succeed=should_succeed,
-                                             validate_server=to_server_name)
+                                             validate_server=destination_srv)
 
     def _check_l3_bgpvpn_by_specific_ip(self, from_server=None,
                                         to_server_ip=None,
@@ -1031,16 +1057,16 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         if to_server_ip is None:
             to_server_ip = self.server_fixed_ips[self.servers[1]['id']]
         ssh_client = self._setup_ssh_client(from_server)
+        check_reachable = should_succeed or validate_server
+        msg = ""
+        if check_reachable:
+            msg = "Timed out waiting for {ip} to become reachable".format(
+                ip=to_server_ip)
+        else:
+            msg = ("Unexpected ping response from VM with IP address "
+                   "{dest} originated from VM with IP address "
+                   "{src}").format(dest=to_server_ip, src=from_server_ip)
         try:
-            check_reachable = should_succeed or validate_server
-            msg = ""
-            if check_reachable:
-                msg = "Timed out waiting for {ip} to become reachable".format(
-                    ip=to_server_ip)
-            else:
-                msg = ("Unexpected ping response from VM with IP address "
-                       "{dest} originated from VM with IP address "
-                       "{src}").format(dest=to_server_ip, src=from_server_ip)
             result = self._check_remote_connectivity(ssh_client,
                                                      to_server_ip,
                                                      check_reachable)
@@ -1061,25 +1087,35 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                 result = self._check_remote_connectivity(ssh_client,
                                                          to_server_ip,
                                                          check_reachable)
+            if not check_reachable and not result:
+                try:
+                    content = ssh_client.exec_command(
+                        "nc %s 80" % to_server_ip).strip()
+                    LOG.warning("Can connect to %s: %s", to_server_ip, content)
+                except Exception:
+                    LOG.warning("Could ping %s, but no http", to_server_ip)
+
             self.assertTrue(result, msg)
+
             if validate_server and result:
                 # repeating multiple times gives increased ods of avoiding
                 # false positives in the case where the dataplane does
                 # equal-cost multipath
                 for i in range(0, repeat_validate_server):
-                    to_name = ssh_client.exec_command(
+                    real_dest = ssh_client.exec_command(
                         "nc %s 80" % to_server_ip).strip()
-                    result = to_name == validate_server
+                    result = real_dest == validate_server
                     self.assertTrue(
                         should_succeed == result,
                         ("Destination server name is '%s', expected is '%s'" %
-                         (to_name, validate_server)))
+                         (real_dest, validate_server)))
                     LOG.info("nc server name check %d successful", i)
         except Exception:
             LOG.exception(
-                ("Unable to ping VM with IP address {dest} from VM "
-                 "with IP address {src}").format(dest=to_server_ip,
-                                                 src=from_server_ip))
+                "Error validating connectivity to %s "
+                "from VM with IP address %s: %s" % (to_server_ip,
+                                                    from_server_ip,
+                                                    msg))
             raise
 
     def _associate_fip_and_check_l3_bgpvpn(self, should_succeed=True):
