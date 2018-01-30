@@ -130,13 +130,14 @@ class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
         "BGPVPNPortAssociation",
         backref=orm.backref('port_association_routes',
                             cascade='all'),
-        lazy='select')
+        lazy='joined')
     bgpvpn = orm.relationship(
         "BGPVPN",
         backref=orm.backref("port_association_routes",
                             uselist=False,
                             lazy='select',
-                            cascade='all, delete-orphan'))
+                            cascade='all, delete-orphan'),
+        lazy='joined')
 
 
 class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
