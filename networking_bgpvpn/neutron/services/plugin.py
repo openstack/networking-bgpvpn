@@ -261,6 +261,13 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                 raise bgpvpn_rc.BGPVPNPortAssocRouteNoSuchBGPVPN(
                     bgpvpn_id=route['bgpvpn_id'])
 
+            assoc_bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
+            if route_bgpvpn['type'] != assoc_bgpvpn['type']:
+                raise bgpvpn_rc.BGPVPNPortAssocRouteBGPVPNTypeDiffer(
+                    route_bgpvpn_type=route_bgpvpn['type'],
+                    bgpvpn_type=assoc_bgpvpn['type']
+                    )
+
             assoc_tenant_id = port_association.get('project_id')
             if assoc_tenant_id is None:
                 # update, rather than create, we need to retrieve the tenant
