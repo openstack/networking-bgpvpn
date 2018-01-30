@@ -34,6 +34,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.servers_keypairs = {}
         self.servers = []
         self.server_fixed_ips = {}
+        self.networks = []
         self.ports = []
         self._create_security_group_for_test()
 
