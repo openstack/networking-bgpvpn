@@ -128,7 +128,8 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                  "tenant_id": "a-b-c-d",
                  "route_targets": [],
                  "import_targets": ["64512:22"],
-                 "route_distinguishers": []
+                 "route_distinguishers": [],
+                 "local_pref": "100"
                  })
 
             # retrieve
@@ -142,7 +143,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual(["64512:13", "64512:14"],
                              bgpvpn2['export_targets'])
             self.assertEqual([], bgpvpn2['route_distinguishers'])
-
+            self.assertEqual(100, bgpvpn2['local_pref'])
             # find bgpvpn by network_id
             bgpvpn3 = self.plugin_db.get_bgpvpns(
                 self.ctx,
