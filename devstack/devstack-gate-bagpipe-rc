@@ -23,3 +23,9 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 # helpers from neutron devstack plugin
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
 
+# Using the openvswitch firewall driver for security groups is currently
+# required to allow BGPVPN/router coexistence in single node or DVR setup
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"[[post-config|/etc/neutron/plugins/ml2/ml2_conf.ini]]"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"[securitygroup]"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"firewall_driver = openvswitch"
+
