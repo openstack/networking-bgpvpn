@@ -17,6 +17,8 @@ import abc
 import copy
 import six
 
+from neutron.db import api as db_api
+
 from networking_bgpvpn.neutron.db import bgpvpn_db
 from networking_bgpvpn.neutron.extensions \
     import bgpvpn_routes_control as bgpvpn_rc
@@ -104,7 +106,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         self.bgpvpn_db = bgpvpn_db.BGPVPNPluginDb()
 
     def create_bgpvpn(self, context, bgpvpn):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             bgpvpn = self.bgpvpn_db.create_bgpvpn(
                 context, bgpvpn)
             self.create_bgpvpn_precommit(context, bgpvpn)
@@ -119,7 +121,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
 
     def update_bgpvpn(self, context, id, bgpvpn_delta):
         old_bgpvpn = self.get_bgpvpn(context, id)
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             new_bgpvpn = copy.deepcopy(old_bgpvpn)
             new_bgpvpn.update(bgpvpn_delta)
             self.update_bgpvpn_precommit(context, old_bgpvpn, new_bgpvpn)
@@ -128,14 +130,14 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         return bgpvpn
 
     def delete_bgpvpn(self, context, id):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             bgpvpn = self.bgpvpn_db.get_bgpvpn(context, id)
             self.delete_bgpvpn_precommit(context, bgpvpn)
             self.bgpvpn_db.delete_bgpvpn(context, id)
         self.delete_bgpvpn_postcommit(context, bgpvpn)
 
     def create_net_assoc(self, context, bgpvpn_id, network_association):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             assoc = self.bgpvpn_db.create_net_assoc(context,
                                                     bgpvpn_id,
                                                     network_association)
@@ -152,7 +154,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                              filters, fields)
 
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             net_assoc = self.bgpvpn_db.get_net_assoc(context,
                                                      assoc_id,
                                                      bgpvpn_id)
@@ -164,7 +166,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
         self.delete_net_assoc_postcommit(context, net_assoc)
 
     def create_router_assoc(self, context, bgpvpn_id, router_association):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             assoc = self.bgpvpn_db.create_router_assoc(context, bgpvpn_id,
                                                        router_association)
             self.create_router_assoc_precommit(context, assoc)
@@ -180,7 +182,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase):
                                                 filters, fields)
 
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             router_assoc = self.bgpvpn_db.get_router_assoc(context,
                                                            assoc_id,
                                                            bgpvpn_id)
@@ -341,7 +343,7 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
 
     def update_router_assoc(self, context, assoc_id, bgpvpn_id, router_assoc):
         old_router_assoc = self.get_router_assoc(context, assoc_id, bgpvpn_id)
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             router_assoc = self.bgpvpn_db.update_router_assoc(context,
                                                               assoc_id,
                                                               bgpvpn_id,
@@ -363,7 +365,7 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
         pass
 
     def create_port_assoc(self, context, bgpvpn_id, port_association):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             port_assoc = self.bgpvpn_db.create_port_assoc(context, bgpvpn_id,
                                                           port_association)
             self.create_port_assoc_precommit(context, port_assoc)
@@ -388,7 +390,7 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
 
     def update_port_assoc(self, context, assoc_id, bgpvpn_id, port_assoc):
         old_port_assoc = self.get_port_assoc(context, assoc_id, bgpvpn_id)
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             port_assoc = self.bgpvpn_db.update_port_assoc(context, assoc_id,
                                                           bgpvpn_id,
                                                           port_assoc)
@@ -409,7 +411,7 @@ class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
         pass
 
     def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.using(context):
             port_assoc = self.bgpvpn_db.get_port_assoc(context,
                                                        assoc_id,
                                                        bgpvpn_id)

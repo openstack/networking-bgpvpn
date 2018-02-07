@@ -17,6 +17,7 @@ from sqlalchemy import orm
 
 from neutron.api.rpc.callbacks import events as rpc_events
 from neutron.api.rpc.handlers import resources_rpc
+from neutron.db import api as db_api
 from neutron.db.models import external_net
 
 from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
@@ -47,6 +48,7 @@ class BGPVPNExternalNetAssociation(n_exc.NeutronException):
                 "network to a BGPVPN")
 
 
+@db_api.context_manager.reader
 def network_is_external(context, net_id):
     try:
         context.session.query(external_net.ExternalNetwork).filter_by(

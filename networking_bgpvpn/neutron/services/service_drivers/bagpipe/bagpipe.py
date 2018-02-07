@@ -16,6 +16,7 @@
 from sqlalchemy import orm
 from sqlalchemy import sql
 
+from neutron.db import api as db_api
 from neutron.db.models import l3
 from neutron.db import models_v2
 from neutron.debug import debug_agent
@@ -41,23 +42,23 @@ LOG = logging.getLogger(__name__)
 
 
 @log_helpers.log_method_call
+@db_api.context_manager.reader
 def get_network_info_for_port(context, port_id, network_id):
     """Get MAC, IP and Gateway IP addresses informations for a specific port"""
     try:
-        with context.session.begin(subtransactions=True):
-            net_info = (context.session.
-                        query(models_v2.Port.mac_address,
-                              models_v2.IPAllocation.ip_address,
-                              models_v2.Subnet.cidr,
-                              models_v2.Subnet.gateway_ip).
-                        join(models_v2.IPAllocation).
-                        join(models_v2.Subnet,
-                             models_v2.IPAllocation.subnet_id ==
-                             models_v2.Subnet.id).
-                        filter(models_v2.Subnet.ip_version == 4).
-                        filter(models_v2.Port.id == port_id).one())
+        net_info = (context.session.
+                    query(models_v2.Port.mac_address,
+                          models_v2.IPAllocation.ip_address,
+                          models_v2.Subnet.cidr,
+                          models_v2.Subnet.gateway_ip).
+                    join(models_v2.IPAllocation).
+                    join(models_v2.Subnet,
+                         models_v2.IPAllocation.subnet_id ==
+                         models_v2.Subnet.id).
+                    filter(models_v2.Subnet.ip_version == 4).
+                    filter(models_v2.Port.id == port_id).one())
 
-            (mac_address, ip_address, cidr, gateway_ip) = net_info
+        (mac_address, ip_address, cidr, gateway_ip) = net_info
     except orm.exc.NoResultFound:
         return
 
@@ -78,22 +79,23 @@ def get_network_info_for_port(context, port_id, network_id):
             'gateway_mac': gateway_mac[0] if gateway_mac else None}
 
 
+@db_api.context_manager.reader
 def get_gateway_mac(context, network_id):
-    with context.session.begin(subtransactions=True):
-        gateway_mac = (
-            context.session.
-            query(models_v2.Port.mac_address).
-            filter(
-                models_v2.Port.network_id == network_id,
-                (models_v2.Port.device_owner ==
-                 const.DEVICE_OWNER_ROUTER_INTF)
-            ).
-            one_or_none()
-        )
+    gateway_mac = (
+        context.session.
+        query(models_v2.Port.mac_address).
+        filter(
+            models_v2.Port.network_id == network_id,
+            (models_v2.Port.device_owner ==
+             const.DEVICE_OWNER_ROUTER_INTF)
+        ).
+        one_or_none()
+    )
 
-        return gateway_mac[0] if gateway_mac else None
+    return gateway_mac[0] if gateway_mac else None
 
 
+@db_api.context_manager.reader
 def get_network_ports(context, network_id):
     # NOTE(tmorin): currents callers don't look at detailed results
     # but only test if at least one result exist => can be optimized
@@ -103,6 +105,7 @@ def get_network_ports(context, network_id):
                    models_v2.Port.admin_state_up == sql.true()).all())
 
 
+@db_api.context_manager.reader
 def get_router_ports(context, router_id):
     return (
         context.session.query(models_v2.Port).
@@ -113,6 +116,7 @@ def get_router_ports(context, router_id):
     )
 
 
+@db_api.context_manager.reader
 def get_router_bgpvpn_assocs(context, router_id):
     return (
         context.session.query(bgpvpn_db.BGPVPNRouterAssociation).
@@ -122,6 +126,7 @@ def get_router_bgpvpn_assocs(context, router_id):
     )
 
 
+@db_api.context_manager.reader
 def get_network_bgpvpn_assocs(context, net_id):
     return (
         context.session.query(bgpvpn_db.BGPVPNNetAssociation).
@@ -131,6 +136,7 @@ def get_network_bgpvpn_assocs(context, net_id):
     )
 
 
+@db_api.context_manager.reader
 def get_bgpvpns_of_router_assocs_by_network(context, net_id):
     return (
         context.session.query(bgpvpn_db.BGPVPN).
@@ -144,6 +150,7 @@ def get_bgpvpns_of_router_assocs_by_network(context, net_id):
     )
 
 
+@db_api.context_manager.reader
 def get_networks_for_router(context, router_id):
     ports = get_router_ports(context, router_id)
     if ports:
@@ -330,6 +337,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
         return bgpvpn_network_info
 
+    @db_api.context_manager.reader
     def retrieve_bgpvpns_of_router_assocs_by_network(self, context,
                                                      network_id):
         return [self.bgpvpn_db._make_bgpvpn_dict(bgpvpn) for bgpvpn in
