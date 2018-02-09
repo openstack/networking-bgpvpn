@@ -6,6 +6,7 @@
    :maxdepth: 1
 
    unreleased
+   queens
    mitaka
    pike
    ocata
