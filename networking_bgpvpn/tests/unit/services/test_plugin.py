@@ -764,6 +764,35 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 "bgpvpn specified in route does not belong to the tenant",
                 str(res.body))
 
+    def test_bgpvpn_port_assoc_update_bgpvpn_route_wrong_type(self):
+        with self.network() as net, \
+                self.subnet(network={'network': net['network']}) as subnet, \
+                self.port(subnet={'subnet': subnet['subnet']}) as port, \
+                self.bgpvpn(type='l2') as bgpvpn_l2, \
+                self.bgpvpn(type='l3') as bgpvpn_l3, \
+                self.assoc_port(bgpvpn_l2['bgpvpn']['id'],
+                                port['port']['id']) as port_assoc:
+
+            bgpvpn_id = bgpvpn_l2['bgpvpn']['id']
+
+            req = self.new_update_request(
+                'bgpvpn/bgpvpns/%s/port_associations' % bgpvpn_id,
+                {'port_association': {
+                    'routes': [{
+                        'type': 'bgpvpn',
+                        'bgpvpn_id': bgpvpn_l3['bgpvpn']['id']
+                        }]
+                    }
+                 },
+                port_assoc['port_association']['id']
+            )
+
+            res = req.get_response(self.ext_api)
+
+            self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
+            self.assertIn("differing from type of associated BGPVPN",
+                          str(res.body))
+
 
 class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 

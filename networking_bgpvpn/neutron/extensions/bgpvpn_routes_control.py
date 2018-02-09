@@ -54,6 +54,11 @@ class BGPVPNPortAssocRouteWrongBGPVPNTenant(n_exc.BadRequest):
                 "(%(bgpvpn_id)s)")
 
 
+class BGPVPNPortAssocRouteBGPVPNTypeDiffer(n_exc.BadRequest):
+    message = _("bgpvpn specified in route is of type %(route_bgpvpn_type)s, "
+                "differing from type of associated BGPVPN %(bgpvpn_type)s)")
+
+
 class Bgpvpn_routes_control(api_extensions.APIExtensionDescriptor):
 
     api_definition = api_def
