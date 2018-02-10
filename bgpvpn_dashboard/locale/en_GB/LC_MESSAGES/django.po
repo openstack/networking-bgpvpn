@@ -1,0 +1,277 @@
+# Andi Chandler <andi@gowling.com>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: networking-bgpvpn VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2018-02-09 20:18+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-02-09 11:29+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid ""
+"A single BGP Route Target or a comma-separated list of BGP Route Target. "
+"Example: 64512:1 or 64512:1,64512:2,64512:3"
+msgstr ""
+"A single BGP Route Target or a comma-separated list of BGP Route Target. "
+"Example: 64512:1 or 64512:1,64512:2,64512:3"
+
+msgid "All Networks"
+msgstr "All Networks"
+
+msgid "All Routers"
+msgstr "All Routers"
+
+msgid "Associated Network"
+msgstr "Associated Network"
+
+msgid "Associated Networks"
+msgstr "Associated Networks"
+
+msgid "Associated Router"
+msgstr "Associated Router"
+
+msgid "Associated Routers"
+msgstr "Associated Routers"
+
+msgid "Associations type is not supported"
+msgstr "Associations type is not supported"
+
+msgid "BGP VPNs"
+msgstr "BGP VPNs"
+
+msgid "BGPVPN"
+msgstr "BGPVPN"
+
+#, python-format
+msgid "BGPVPN %s was successfully created."
+msgstr "BGPVPN %s was successfully created."
+
+#, python-format
+msgid "BGPVPN %s was successfully updated."
+msgstr "BGPVPN %s was successfully updated."
+
+msgid "BGPVPN Details"
+msgstr "BGPVPN Details"
+
+msgid "BGPVPN ID"
+msgstr "BGPVPN ID"
+
+msgid "BGPVPN Interconnections"
+msgstr "BGPVPN Interconnections"
+
+msgid "BGPVPN Name"
+msgstr "BGPVPN Name"
+
+msgid ""
+"Bug, inconsistency between neutron-lib and networking-bgpvpn for RTRD regex"
+msgstr ""
+"Bug, inconsistency between neutron-lib and networking-bgpvpn for RTRD regex"
+
+msgid "Create BGPVPN"
+msgstr "Create BGPVPN"
+
+msgid "Create a new BGP VPN for any project as you need."
+msgstr "Create a new BGP VPN for any project as you need."
+
+msgid "Delete BGPVPN"
+msgid_plural "Delete BGPVPNs"
+msgstr[0] "Delete BGPVPN"
+msgstr[1] "Delete BGPVPNs"
+
+msgid "Deleted BGPVPN"
+msgid_plural "Deleted BGPVPNs"
+msgstr[0] "Deleted BGPVPN"
+msgstr[1] "Deleted BGPVPNs"
+
+msgid "Description:"
+msgstr "Description:"
+
+msgid "Edit BGPVPN"
+msgstr "Edit BGPVPN"
+
+msgid "Edit BGPVPN associations"
+msgstr "Edit BGPVPN associations"
+
+msgid "Export Targets"
+msgstr "Export Targets"
+
+msgid "Export targets"
+msgstr "Export targets"
+
+msgid "Export targets is not valid"
+msgstr "Export targets is not valid"
+
+#, python-format
+msgid "Failed to create BGPVPN %s"
+msgstr "Failed to create BGPVPN %s"
+
+#, python-format
+msgid "Failed to delete BGPVPN %s"
+msgstr "Failed to delete BGPVPN %s"
+
+#, python-format
+msgid "Failed to update BGPVPN %s"
+msgstr "Failed to update BGPVPN %s"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Import Targets"
+msgstr "Import Targets"
+
+msgid "Import targets"
+msgstr "Import targets"
+
+msgid "Import targets is not valid"
+msgstr "Import targets is not valid"
+
+#, python-format
+msgid "Modified BGPVPN associations \"%s\"."
+msgstr "Modified BGPVPN associations \"%s\"."
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Network Associations"
+msgstr "Network Associations"
+
+msgid "Networks"
+msgstr "Networks"
+
+msgid "No network found."
+msgstr "No network found."
+
+msgid "No network selected."
+msgstr "No network selected."
+
+msgid "No router found."
+msgstr "No router found."
+
+msgid "No router selected."
+msgstr "No router selected."
+
+msgid "Project"
+msgstr "Project"
+
+msgid "Project ID"
+msgstr "Project ID"
+
+#, python-format
+msgid "Resource type not supported: %s"
+msgstr "Resource type not supported: %s"
+
+msgid "Route Targets"
+msgstr "Route Targets"
+
+msgid "Route targets"
+msgstr "Route targets"
+
+msgid "Route targets is not valid"
+msgstr "Route targets is not valid"
+
+msgid "Router Associations"
+msgstr "Router Associations"
+
+msgid "Routers"
+msgstr "Routers"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Select a project"
+msgstr "Select a project"
+
+msgid "Select the networks to be associated."
+msgstr "Select the networks to be associated."
+
+msgid "Select the routers to be associated."
+msgstr "Select the routers to be associated."
+
+msgid "Selected Networks"
+msgstr "Selected Networks"
+
+msgid "Selected Routers"
+msgstr "Selected Routers"
+
+msgid "Something went wrong when retrieving the list of associations"
+msgstr "Something went wrong when retrieving the list of associations"
+
+#, python-format
+msgid "Something went wrong with BGPVPN %s"
+msgstr "Something went wrong with BGPVPN %s"
+
+msgid "The type of VPN  and the technology behind it."
+msgstr "The type of VPN  and the technology behind it."
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Unable to associate network {}: {}"
+msgstr "Unable to associate network {}: {}"
+
+#, python-format
+msgid "Unable to associate resource %s"
+msgstr "Unable to associate resource %s"
+
+msgid "Unable to associate router {}: {}"
+msgstr "Unable to associate router {}: {}"
+
+msgid "Unable to disassociate network"
+msgstr "Unable to disassociate network"
+
+msgid "Unable to disassociate router"
+msgstr "Unable to disassociate router"
+
+#, python-format
+msgid "Unable to modify BGPVPN associations \"%s\"."
+msgstr "Unable to modify BGPVPN associations \"%s\"."
+
+msgid "Unable to retrieve BGPVPN details."
+msgstr "Unable to retrieve BGPVPN details."
+
+#, python-format
+msgid "Unable to retrieve information about the tenant %s"
+msgstr "Unable to retrieve information about the tenant %s"
+
+msgid "Unable to retrieve list of networks. Please try again later."
+msgstr "Unable to retrieve list of networks. Please try again later."
+
+msgid "Unable to retrieve list of routers. Please try again later."
+msgstr "Unable to retrieve list of routers. Please try again later."
+
+msgid "Unable to retrieve network associations"
+msgstr "Unable to retrieve network associations"
+
+msgid "Unable to retrieve router associations"
+msgstr "Unable to retrieve router associations"
+
+#, python-format
+msgid "Unsupported action type: %s"
+msgstr "Unsupported action type: %s"
+
+msgid "Update BGPVPN"
+msgstr "Update BGPVPN"
+
+msgid "Update Change"
+msgstr "Update Change"
+
+msgid "Update Network Associations"
+msgstr "Update Network Associations"
+
+msgid "Update Router Associations"
+msgstr "Update Router Associations"
+
+msgid "You may update the editable properties of your BGP VPN here."
+msgstr "You may update the editable properties of your BGP VPN here."
+
+msgid "l2"
+msgstr "l2"
+
+msgid "l3"
+msgstr "l3"
