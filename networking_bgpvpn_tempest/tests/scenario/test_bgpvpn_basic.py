@@ -13,6 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import netaddr
+import os
+
 from oslo_log import log as logging
 from tempest.common import compute
 from tempest.common import utils
@@ -33,20 +36,43 @@ NET_A = 'A'
 NET_A_BIS = 'A-Bis'
 NET_B = 'B'
 NET_C = 'C'
-NET_A_S1 = '10.101.11.0/24'
-NET_A_S2 = '10.101.12.0/24'
-NET_B_S1 = '10.102.21.0/24'
-NET_B_S2 = '10.102.22.0/24'
-NET_C_S1 = '10.103.31.0/24'
-IP_A_S1_1 = '10.101.11.10'
-IP_B_S1_1 = '10.102.21.20'
-IP_C_S1_1 = '10.103.31.30'
-IP_A_S1_2 = '10.101.11.30'
-IP_B_S1_2 = '10.102.21.40'
-IP_A_S1_3 = '10.101.11.50'
-IP_B_S1_3 = '10.102.21.60'
-IP_A_S2_1 = '10.101.12.50'
-IP_B_S2_1 = '10.102.22.60'
+
+if "SUBNETPOOL_PREFIX_V4" in os.environ:
+    subnet_base = netaddr.IPNetwork(os.environ['SUBNETPOOL_PREFIX_V4'])
+    if subnet_base.prefixlen > 21:
+        raise Exception("if SUBNETPOOL_PREFIX_V4 is set, it needs to offer "
+                        "space for at least 8 /24 subnets")
+else:
+    subnet_base = netaddr.IPNetwork("10.100.0.0/16")
+
+
+def assign_24(idx):
+    # how many addresses in a /24:
+    range_size = 2 ** (32 - 24)
+    return netaddr.cidr_merge(
+        subnet_base[range_size * idx:range_size * (idx + 1)]
+        )[0]
+
+
+S1A = assign_24(1)
+S2A = assign_24(2)
+S1B = assign_24(4)
+S2B = assign_24(6)
+S1C = assign_24(6)
+NET_A_S1 = str(S1A)
+NET_A_S2 = str(S2A)
+NET_B_S1 = str(S1B)
+NET_B_S2 = str(S2B)
+NET_C_S1 = str(S1C)
+IP_A_S1_1 = str(S1A[10])
+IP_B_S1_1 = str(S1B[20])
+IP_C_S1_1 = str(S1C[30])
+IP_A_S1_2 = str(S1A[30])
+IP_B_S1_2 = str(S1B[40])
+IP_A_S1_3 = str(S1A[50])
+IP_B_S1_3 = str(S1B[60])
+IP_A_S2_1 = str(S2A[50])
+IP_B_S2_1 = str(S2B[60])
 IP_A_BIS_S1_1 = IP_A_S1_1
 IP_A_BIS_S1_2 = IP_A_S1_2
 IP_A_BIS_S1_3 = IP_A_S1_3
@@ -452,17 +478,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._setup_http_server(2)
         self._setup_ip_forwarding(1)
         self._setup_ip_forwarding(2)
-        alternative_loopback_ip = '192.168.0.1'
-        alternative_loopback_cidr = '192.168.0.0/24'
-        self._setup_ip_address(1, alternative_loopback_cidr)
-        self._setup_ip_address(2, alternative_loopback_cidr)
+        self._setup_ip_address(1, IP_C_S1_1)
+        self._setup_ip_address(2, IP_C_S1_1)
 
         primary_port_routes = [{'type': 'prefix',
                                 'local_pref': 200,
-                                'prefix': alternative_loopback_cidr}]
+                                'prefix': NET_C_S1}]
         alternate_port_routes = [{'type': 'prefix',
                                   'local_pref': 100,
-                                  'prefix': alternative_loopback_cidr}]
+                                  'prefix': NET_C_S1}]
 
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
@@ -483,7 +507,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                        self.servers[2]['id'])
 
         self._check_l3_bgpvpn_by_specific_ip(
-            to_server_ip=alternative_loopback_ip,
+            to_server_ip=IP_C_S1_1,
             validate_server=destination_srv_1)
 
         self.bgpvpn_client.update_port_association(
@@ -494,7 +518,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             routes=primary_port_routes)
 
         self._check_l3_bgpvpn_by_specific_ip(
-            to_server_ip=alternative_loopback_ip,
+            to_server_ip=IP_C_S1_1,
             validate_server=destination_srv_2)
 
     @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
@@ -585,9 +609,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         13. Update created before port association by routes removal
         14. Check that server 1 cannot ping server's 2 alternative ip
         """
-        alternative_loopback_ip = '192.168.0.1'
-        alternative_loopback_cidr = '192.168.0.0/24'
-
         self._create_networks_and_subnets(port_security=False)
         self._create_l3_bgpvpn()
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
@@ -601,25 +622,25 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         # preliminary check that no connectivity to 192.168.0.1 initially
         # exists
         self._check_l3_bgpvpn_by_specific_ip(
-            should_succeed=False, to_server_ip=alternative_loopback_ip)
+            should_succeed=False, to_server_ip=IP_C_S1_1)
 
         self._setup_ip_forwarding(1)
-        self._setup_ip_address(1, alternative_loopback_cidr)
+        self._setup_ip_address(1, IP_C_S1_1)
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         port_id = self.ports[self.servers[1]['id']]['id']
         port_routes = [{'type': 'prefix',
-                        'prefix': alternative_loopback_cidr}]
+                        'prefix': NET_C_S1}]
         body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
                                                           port_id=port_id,
                                                           routes=port_routes)
         port_association = body['port_association']
         self._check_l3_bgpvpn_by_specific_ip(
-            to_server_ip=alternative_loopback_ip)
+            to_server_ip=IP_C_S1_1)
         self.bgpvpn_client.update_port_association(
             self.bgpvpn['id'], port_association['id'], routes=[])
         self._check_l3_bgpvpn_by_specific_ip(
-            should_succeed=False, to_server_ip=alternative_loopback_ip)
+            should_succeed=False, to_server_ip=IP_C_S1_1)
 
     @decorators.idempotent_id('9c3280b5-0b32-4562-800c-0b50d9d52bfd')
     @utils.services('compute', 'network')
@@ -642,9 +663,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         13. Remove created before port association
         14. Check that server 1 cannot ping server's 2 alternative ip
         """
-        alternative_loopback_ip = '192.168.0.1'
-        alternative_loopback_cidr = '192.168.0.0/24'
-
         self._create_networks_and_subnets(port_security=False)
         self._create_l3_bgpvpn()
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
@@ -658,25 +676,25 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         # preliminary check that no connectivity to 192.168.0.1 initially
         # exists
         self._check_l3_bgpvpn_by_specific_ip(
-            should_succeed=False, to_server_ip=alternative_loopback_ip)
+            should_succeed=False, to_server_ip=IP_C_S1_1)
 
         self._setup_ip_forwarding(1)
-        self._setup_ip_address(1, alternative_loopback_cidr)
+        self._setup_ip_address(1, IP_C_S1_1)
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         port_id = self.ports[self.servers[1]['id']]['id']
         port_routes = [{'type': 'prefix',
-                        'prefix': alternative_loopback_cidr}]
+                        'prefix': NET_C_S1}]
         body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
                                                           port_id=port_id,
                                                           routes=port_routes)
         port_association = body['port_association']
         self._check_l3_bgpvpn_by_specific_ip(
-            to_server_ip=alternative_loopback_ip)
+            to_server_ip=IP_C_S1_1)
         self.bgpvpn_client.delete_port_association(
             self.bgpvpn['id'], port_association['id'])
         self._check_l3_bgpvpn_by_specific_ip(
-            should_succeed=False, to_server_ip=alternative_loopback_ip)
+            should_succeed=False, to_server_ip=IP_C_S1_1)
 
     @decorators.idempotent_id('73f629fa-fdae-40fc-8a7e-da3aedcf797a')
     @utils.services('compute', 'network')
