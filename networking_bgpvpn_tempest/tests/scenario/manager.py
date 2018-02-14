@@ -574,7 +574,7 @@ class NetworkScenarioTest(ScenarioTest):
             raise
 
     def _check_remote_connectivity(self, source, dest, should_succeed=True,
-                                   nic=None, loop_for_duration=None):
+                                   nic=None):
         """check ping server via source ssh connection
 
         :param source: RemoteClient: an ssh connection from which to ping
@@ -586,21 +586,16 @@ class NetworkScenarioTest(ScenarioTest):
         """
         def ping_remote():
             try:
-                source.ping_host(dest, nic=nic, count=5)
+                source.ping_host(dest, nic=nic)
             except lib_exc.SSHExecCommandFailed:
                 LOG.warning('Failed to ping IP: %s via a ssh connection '
                             'from: %s.', dest, source.ssh_client.host)
                 return not should_succeed
             return should_succeed
 
-        loop_for_duration = loop_for_duration or CONF.validation.ping_timeout
-
-        # sleep for 70s, because 60s is the default expiry time
-        # for ARP entry ; a stale ARP entry to the gateway being
-        # sometimes what causes the pings to fail
         return test_utils.call_until_true(ping_remote,
-                                          loop_for_duration,
-                                          70)
+                                          CONF.validation.ping_timeout,
+                                          1)
 
     def _create_security_group(self, security_group_rules_client=None,
                                tenant_id=None,

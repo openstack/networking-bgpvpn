@@ -1122,11 +1122,6 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         ssh_client.exec_command(("sudo ip addr add {cidr} "
                                 "dev {dev}").format(cidr=cidr, dev=device))
 
-    def _log_gw_arp_info(self, ssh_client, gateway_ip):
-        output = ssh_client.exec_command('arp -n %s' % gateway_ip)
-        LOG.warning("Ping origin server GW ARP info:")
-        LOG.warning(output)
-
     def _check_l3_bgpvpn(self, from_server=None, to_server=None,
                          should_succeed=True, validate_server=False):
         to_server = to_server or self.servers[1]
@@ -1163,23 +1158,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             result = self._check_remote_connectivity(ssh_client,
                                                      to_server_ip,
                                                      check_reachable)
-            if check_reachable and not result:
-                allocation = self.ports[from_server['id']]['fixed_ips'][0]
-                subnet_id = allocation['subnet_id']
-                gateway_ip = ''
-                for net_name in self.subnets:
-                    for subnet in self.subnets[net_name]:
-                        if subnet_id == subnet['id']:
-                            gateway_ip = subnet['gateway_ip']
-                            break
-                self._log_gw_arp_info(ssh_client, gateway_ip)
-                ssh_client.exec_command('sudo arp -d %s' % gateway_ip)
-                LOG.warning("Ping origin server GW ARP cleared")
-                ssh_client.ping_host(gateway_ip)
-                self._log_gw_arp_info(ssh_client, gateway_ip)
-                result = self._check_remote_connectivity(ssh_client,
-                                                         to_server_ip,
-                                                         check_reachable)
+            # if a negative connectivity check was unsuccessful (unexpected
+            # ping reply) then try to know more:
             if not check_reachable and not result:
                 try:
                     content = ssh_client.exec_command(
@@ -1191,7 +1171,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             self.assertTrue(result, msg)
 
             if validate_server and result:
-                # repeating multiple times gives increased ods of avoiding
+                # repeating multiple times gives increased odds of avoiding
                 # false positives in the case where the dataplane does
                 # equal-cost multipath
                 for i in range(0, repeat_validate_server):
