@@ -51,7 +51,7 @@ differ from ``/etc/neutron`` in your setup):
 .. code-block:: ini
 
    [service_providers]
-   service_provider = BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default
+   service_provider = BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default
    #service_provider= BGPVPN:Dummy:networking_bgpvpn.neutron.services.service_drivers.driver_api.BGPVPNDriver:default
 
 A given driver may require additional packages to work; the driver section
