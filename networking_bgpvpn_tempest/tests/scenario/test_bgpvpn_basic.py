@@ -32,12 +32,15 @@ RT2 = '64512:2'
 NET_A = 'A'
 NET_A_BIS = 'A-Bis'
 NET_B = 'B'
+NET_C = 'C'
 NET_A_S1 = '10.101.11.0/24'
 NET_A_S2 = '10.101.12.0/24'
 NET_B_S1 = '10.102.21.0/24'
 NET_B_S2 = '10.102.22.0/24'
+NET_C_S1 = '10.103.31.0/24'
 IP_A_S1_1 = '10.101.11.10'
 IP_B_S1_1 = '10.102.21.20'
+IP_C_S1_1 = '10.103.31.30'
 IP_A_S1_2 = '10.101.11.30'
 IP_B_S1_2 = '10.102.21.40'
 IP_A_S1_3 = '10.101.11.50'
@@ -675,6 +678,97 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn_by_specific_ip(
             should_succeed=False, to_server_ip=alternative_loopback_ip)
 
+    @decorators.idempotent_id('73f629fa-fdae-40fc-8a7e-da3aedcf797a')
+    @utils.services('compute', 'network')
+    @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    def test_bgpvpn_port_association_bgpvpn_route(self):
+        """Test port association routes of type 'bgpvpn'
+
+        In this test we use a Port Association with a 'bgpvpn' route
+        to have VM 1 in BGPVPN X reach a VM 3 in BGPVPN Y via the Port
+        of a VM 2, and vice-versa. For X->Y traffic, one Port Association
+        associates the port of VM 2 to BGPVPN X, with a route of type 'bgpvpn'
+        redistributing routes from BGPVPN Y. For Y->X traffic, another Port
+        Association associates the port of VM 2 to BGPVPN Y, with a route of
+        type 'bgpvpn' redistributing routes from BGPVPN X.
+
+        We confirm that VM 1 can join VM 3, and we confirm that the traffic
+        actually goes through VM 2, by turning ip_forwaring off then on in VM2.
+        """
+        # create networks A, B and C with their respective subnets
+        self._create_networks_and_subnets(port_security=False)
+
+        # Create L3 BGPVPN X (will interconnect A and B)
+        bgpvpn_x = self._create_l3_bgpvpn(name="test-vpn-x", rts=[RT1])
+        # Create L3 BGPVPN Y (will interconnect B and C)
+        bgpvpn_y = self._create_l3_bgpvpn(name="test-vpn-y", rts=[RT2])
+
+        # create the three VMs
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                              [self.networks[NET_B], IP_B_S1_1],
+                              [self.networks[NET_C], IP_C_S1_1]],
+                             port_security=False)
+        vm1, vm2, vm3 = self.servers
+
+        # Create one router for each of network A, B, C and give floating
+        # IPs to servers 1, 2, 3
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_C][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+        self._associate_fip(2)
+
+        # disable IP forwarding on VM2
+        self._setup_ip_forwarding(0)
+
+        # connect network A to BGPVPN X
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_x['id'], self.networks[NET_A]['id'])
+
+        # connect network C to BGPVPN Y
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_y['id'], self.networks[NET_C]['id'])
+
+        # create port association for X->Y traffic
+        self.bgpvpn_client.create_port_association(
+            bgpvpn_x['id'],
+            port_id=self.ports[vm2['id']]['id'],
+            routes=[{'type': 'bgpvpn',
+                     'bgpvpn_id': bgpvpn_y['id']}])
+
+        # create port association for Y->X traffic
+        body = self.bgpvpn_client.create_port_association(
+            bgpvpn_y['id'],
+            port_id=self.ports[vm2['id']]['id'],
+            routes=[{'type': 'bgpvpn',
+                     'bgpvpn_id': bgpvpn_x['id']}])
+        port_association = body['port_association']
+
+        # check that we don't have connectivity
+        # (because destination is supposed to be reachable via VM2, which
+        # still has ip_forwarding disabled)
+        self._check_l3_bgpvpn_by_specific_ip(from_server=vm1,
+                                             to_server_ip=IP_C_S1_1,
+                                             should_succeed=False)
+
+        # enable IP forwarding on VM2
+        self._setup_ip_forwarding(1)
+
+        # VM1 should now be able to join VM2
+        self._check_l3_bgpvpn_by_specific_ip(from_server=vm1,
+                                             to_server_ip=IP_C_S1_1,
+                                             should_succeed=True)
+
+        # remove port association 1
+        self.bgpvpn_client.delete_port_association(self.bgpvpn['id'],
+                                                   port_association['id'])
+
+        # check that connectivity is actually interrupted
+        self._check_l3_bgpvpn_by_specific_ip(from_server=vm1,
+                                             to_server_ip=IP_C_S1_1,
+                                             should_succeed=False)
+
     @decorators.idempotent_id('8478074e-22df-4234-b02b-61257b475b18')
     @utils.services('compute', 'network')
     def test_bgpvpn_negative_ping_to_unassociated_net(self):
@@ -860,9 +954,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _create_networks_and_subnets(self, names=None, subnet_cidrs=None,
                                      port_security=True):
         if not names:
-            names = [NET_A, NET_B]
+            names = [NET_A, NET_B, NET_C]
         if not subnet_cidrs:
-            subnet_cidrs = [[NET_A_S1], [NET_B_S1]]
+            subnet_cidrs = [[NET_A_S1], [NET_B_S1], [NET_C_S1]]
         for (name, subnet_cidrs) in zip(names, subnet_cidrs):
             network = self._create_network(
                 namestart=name, port_security_enabled=port_security)
