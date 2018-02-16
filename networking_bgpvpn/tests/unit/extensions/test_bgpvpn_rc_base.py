@@ -23,7 +23,6 @@ import webtest
 from neutron_lib import fixture
 
 from neutron.api import extensions
-from neutron.api.v2 import attributes
 from neutron import manager
 from neutron import quota
 from neutron.tests.unit.api import test_extensions
@@ -102,9 +101,6 @@ class BGPVPNRCExtensionTestCase(test_extensions_base.ExtensionTestCase):
         for extension_class in extension_classes:
             ext = extension_class()
             ext_mgr.add_extension(ext)
-
-        # NOTE(tmorin): maybe use attributes directly from neutron_lib ?
-        ext_mgr.extend_resources("2.0", attributes.RESOURCE_ATTRIBUTE_MAP)
         ####################################################################
 
         self.ext_mdw = test_extensions.setup_extensions_middleware(ext_mgr)
