@@ -42,7 +42,7 @@ BGP-based VPNs allow a network operator to offer a VPN service to a VPN
 customer, delivering isolating connectivity between multiple sites of this
 customer.
 
-Contrarily to for instance IPSec or SSL-based VPNs, these VPNs are not
+Unlike IPSec or SSL-based VPNs, for instance, these VPNs are not
 typically built over the Internet, are most often not encrypted, and their
 creation is not at the hand of the end-user.
 

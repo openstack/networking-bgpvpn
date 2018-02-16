@@ -4,25 +4,27 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-==================
-OVS/BaGPipe driver
-==================
+================================
+OVS/linuxbridge driver (bagpipe)
+================================
 
 Introduction
 ------------
 
 The **BaGPipe** driver for the BGPVPN service plugin is designed to work jointly with the openvswitch
-ML2 mechanism driver.
+and linuxbridge ML2 mechanism drivers.
 
 It relies on the use of the bagpipe-bgp BGP VPN implementation on compute nodes
-and the MPLS implementation in OpenVSwitch.
+and the MPLS implementation in OpenVSwitch and or linuxbridge.
 
 Architecture overview
 ---------------------
 
-The bagpipe driver for the BGPVPN service plugin interacts with the openvswitch agent on each
+The bagpipe driver for the BGPVPN service plugin interacts with the Neutron agent on each
 compute node, which is extended to support new RPCs to trigger the local configuration on compute
 nodes of BGP VPN instances and of their MPLS dataplane.
+
+Example with the OpenVSwitch mechanism driver and agent:
 
 .. blockdiag:: overview.blockdiag
 
@@ -108,15 +110,15 @@ In devstack
 
 * on compute nodes:
 
-  * the compute node Neutron agent is the Neutron openvswitch agent, with the ``bagpipe_bgpvpn`` agent extension:
+  * the compute node Neutron agent is the Neutron openvswitch or linuxbridge agent, with the ``bagpipe_bgpvpn`` agent extension:
 
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there):
 
       .. code-block:: ini
 
          enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
-         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/pike
          # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/queens
+         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/pike
 
     * the ``bagpipe_bgpvpn`` agent extension is automatically added to the agent configuration by the devstack plugin
 
@@ -128,8 +130,8 @@ In devstack
 
        enable_service b-bgp
 
-       BAGPIPE_DATAPLANE_DRIVER_IPVPN=mpls_ovs_dataplane.MPLSOVSDataplaneDriver
-       # BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs # simpler config available > after Ocata
+       BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs
+       BAGPIPE_DATAPLANE_DRIVER_EVPN=ovs
 
        # IP of your route-reflector or BGP router, or fakeRR
        # BAGPIPE_BGP_PEERS defaults to $SERVICE_HOST, which will point to the controller in a
