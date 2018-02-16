@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The `bgpvpn-routes-control` API extension is introduced, allowing control
+    of BGPVPN routing with a finer grain, including API-defined static routes
+    pointing to Neutron ports, or BGPVPN route leaking via Neutron ports.

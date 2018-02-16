@@ -1,0 +1,6 @@
+---
+other:
+  - |
+    The BGPVPN reference driver `bagpipe`, for use with Neutron linuxbridge
+    or OVS reference drivers, has adopted OVO-based RPCs. A v2 driver is provided
+    to avoid the production of old-style RPCs.

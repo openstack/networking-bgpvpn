@@ -1,6 +1,4 @@
 ---
-prelude: >
-    Deprecates old OpenContrail driver
 deprecations:
   - |
     The first OpenContrail Driver was not developed with production ready in
