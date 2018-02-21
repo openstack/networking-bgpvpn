@@ -2,4 +2,4 @@
 features:
   - |
     BGPVPNs of type L2 are now supported with Neutron ML2 reference
-    drivers (linuxbridge, OVS work in progress).
+    drivers (OVS and linuxbridge).
