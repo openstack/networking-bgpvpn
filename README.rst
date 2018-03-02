@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/networking-bgpvpn.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/tc/badges/networking-bgpvpn.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -26,7 +26,7 @@ may be "plugged in" while offering the same tenant facing API. A reference
 implementation based on an Open Source BGP implementation is also provided.
 
 * Free software: Apache license
-* Source: http://git.openstack.org/cgit/openstack/networking-bgpvpn
-* Bugs: http://bugs.launchpad.net/bgpvpn
+* Source: https://git.openstack.org/cgit/openstack/networking-bgpvpn
+* Bugs: https://bugs.launchpad.net/bgpvpn
 * Doc: https://docs.openstack.org/networking-bgpvpn/latest/
 
