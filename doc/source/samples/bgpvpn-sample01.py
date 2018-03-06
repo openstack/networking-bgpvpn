@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
 from neutronclient.v2_0 import client
 import os
 import sys
@@ -31,7 +33,9 @@ def get_keystone_creds():
         d['username'] = os.environ['OS_USERNAME']
         d['password'] = os.environ['OS_PASSWORD']
         d['auth_url'] = os.environ['OS_AUTH_URL']
-        d['tenant_name'] = os.environ['OS_TENANT_NAME']
+        d['project_name'] = os.environ['OS_PROJECT_NAME']
+        d['project_domain_id'] = os.environ['OS_PROJECT_DOMAIN_ID']
+        d['user_domain_id'] = os.environ['OS_USER_DOMAIN_ID']
     except KeyError:
         print("ERROR: Stack environment variables type "
               "OS_* are not properly set")
@@ -44,9 +48,13 @@ def main():
     # Call function that imports (dev)stack vars
     creds = get_keystone_creds()
 
+    # Authentication
+    auth = v3.Password(**creds)
+    sess = session.Session(auth=auth)
+
     # Neutron object
     # It dynamically loads the BGPVPN API
-    neutron = client.Client(**creds)
+    neutron = client.Client(session=sess)
 
     try:
         # Network object creation. This dummy network will be used to bind the
