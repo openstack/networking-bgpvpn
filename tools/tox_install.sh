@@ -59,8 +59,6 @@ set -e
 install_cmd="pip install -c$1"
 shift
 
-install_project neutron
-install_project horizon
 install_project networking-bagpipe
 install_project networking-odl 4.0.0
 

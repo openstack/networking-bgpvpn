@@ -14,8 +14,11 @@ sphinxcontrib-seqdiag>=0.8.4 # BSD
 neutron-lib>=1.13.0 # Apache-2.0
 debtcollector>=1.2.0 # Apache-2.0
 
+# OpenStack CI will install the following projects from git
+# if they are in the required-projects list for a job:
+neutron>=12.0.0  # Apache-2.0
+horizon>=13.0.0  # Apache-2.0
+
 # dependencies managed in tools/tox_install.sh for master branch:
-# - openstack/neutron
-# - openstack/horizon
 # - openstack/networking-bagpipe
 # - openstack/networking-odl
