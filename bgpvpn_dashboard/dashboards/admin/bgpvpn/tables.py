@@ -76,6 +76,10 @@ class CreateNetworkAssociation(project_tables.CreateNetworkAssociation):
     url = "horizon:admin:bgpvpn:create-network-association"
 
 
+class CreateRouterAssociation(project_tables.CreateRouterAssociation):
+    url = "horizon:admin:bgpvpn:create-router-association"
+
+
 def get_route_targets(bgpvpn):
     return ', '.join(rt for rt in bgpvpn.route_targets)
 
@@ -114,6 +118,7 @@ class BgpvpnTable(project_tables.BgpvpnTable):
                        UpdateNetworkAssociations,
                        UpdateRouterAssociations,
                        CreateNetworkAssociation,
+                       CreateRouterAssociation,
                        DeleteBgpvpn)
         columns = ("tenant_id", "name", "type", "route_targets",
                    "import_targets", "export_targets", "networks", "routers")

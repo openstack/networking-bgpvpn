@@ -1,0 +1,14 @@
+{% load i18n sizeformat %}
+
+<div class="detail">
+  <dl class="dl-horizontal">
+    <dt title="{% trans 'ID' %}">{% trans "Association ID" %}</dt>
+    <dd data-display="{{ router_association.id }}">{{router_association.id|default:_("None") }}</dd>
+    <dt title="{% trans 'Router Name' %}">{% trans "Router Name" %}</dt>
+    <dd data-display="{{ router_association.router_name|default:_('None') }}">{{ router_association.router_name|default:_("None") }}</dd>
+    <dt title="{% trans 'Router ID' %}">{% trans "Router ID" %}</dt>
+    <dd><a href="{{ router_association.router_url }}">{{ router_association.router_id|default:_("None") }}</a></dd>
+    <dt title="{% trans 'Advertise Extra Routes' %}">{% trans "Advertise Extra Routes" %}</dt>
+    <dd data-display="{{ router_association.advertise_extra_routes }}">{{router_association.advertise_extra_routes }}</dd>
+  </dl>
+</div>

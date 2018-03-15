@@ -20,6 +20,10 @@ from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations import \
     urls as network_associations_urls
 from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations import \
     views as network_associations_views
+from bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations import \
+    urls as router_associations_urls
+from bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations import \
+    views as router_associations_views
 from bgpvpn_dashboard.dashboards.project.bgpvpn import views as bgpvpn_views
 
 BGPVPN = r'^(?P<bgpvpn_id>[^/]+)/%s$'
@@ -33,6 +37,9 @@ urlpatterns = [
     url(BGPVPN % 'create-network-association',
         bgpvpn_views.CreateNetworkAssociationView.as_view(),
         name='create-network-association'),
+    url(BGPVPN % 'create-router-association',
+        bgpvpn_views.CreateRouterAssociationView.as_view(),
+        name='create-router-association'),
     url(r'^(?P<bgpvpn_id>[^/]+)/detail/$',
         bgpvpn_views.DetailProjectView.as_view(), name='detail'),
     url(r'^(?P<bgpvpn_id>[^/]+)/network_assos/'
@@ -40,6 +47,16 @@ urlpatterns = [
         r'detail\?tab=bgpvpns__network__associations_tab$',
         network_associations_views.DetailView.as_view(),
         name='network_associations_tab'),
+    url(r'^(?P<bgpvpn_id>[^/]+)/router_assos/(?P<router_association_id>[^/]+)/'
+        r'detail\?tab=bgpvpns__router_associations_tab$',
+        router_associations_views.DetailView.as_view(),
+        name='router_associations_tab'),
+    url(r'^(?P<bgpvpn_id>[^/]+)/router_assos/(?P<router_association_id>[^/]+)/'
+        r'update$',
+        router_associations_views.UpdateRouterAssociationsView.as_view(),
+        name='update-router-association'),
     url(r'^network_assos/', include(network_associations_urls,
                                     namespace='network_assos')),
+    url(r'^router_assos/', include(router_associations_urls,
+                                   namespace='router_assos')),
 ]

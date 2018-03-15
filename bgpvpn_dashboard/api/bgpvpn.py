@@ -103,6 +103,15 @@ def network_association_delete(request, resource_id, bgpvpn_id):
     neutronclient(request).delete_bgpvpn_network_assoc(bgpvpn_id, resource_id)
 
 
+def router_association_get(request, bgpvpn_id, router_assoc_id, **kwargs):
+    LOG.debug("router_association_get(): "
+              "bgpvpn_id=%s, router_assoc_id=%s, kwargs=%s",
+              bgpvpn_id, router_assoc_id, kwargs)
+    router_association = neutronclient(request).show_bgpvpn_router_assoc(
+        bgpvpn_id, router_assoc_id).get('router_association')
+    return RouterAssociation(router_association)
+
+
 def router_association_list(request, bgpvpn_id, **kwargs):
     LOG.debug("router_association_list(): bgpvpn_id=%s, kwargs=%s",
               bgpvpn_id, kwargs)
@@ -119,6 +128,17 @@ def router_association_create(request, bgpvpn_id, **kwargs):
     body = {'router_association': kwargs}
     router_associations = neutronclient(request).create_bgpvpn_router_assoc(
         bgpvpn_id, body=body).get('router_association')
+    return RouterAssociation(router_associations)
+
+
+def router_association_update(request, bgpvpn_id, router_association_id,
+                              **kwargs):
+    LOG.debug("router_association_update(): bgpvpnid=%s "
+              "router_association_id=%s params=%s", bgpvpn_id,
+              router_association_id, kwargs)
+    body = {'router_association': kwargs}
+    router_associations = neutronclient(request).update_bgpvpn_router_assoc(
+        bgpvpn_id, router_association_id, body=body).get('router_association')
     return RouterAssociation(router_associations)
 
 

@@ -166,6 +166,20 @@ class BgpvpnApiTests(bgpvpn_test.APITestCase):
             bgpvpn.id, na.id)
 
     @test.create_mocks({
+        neutronclient: ('show_bgpvpn_router_assoc',)})
+    def test_router_association_get(self):
+        bgpvpn = self.bgpvpns.first()
+        na = self.router_associations.first()
+        ret_dict = {
+            'router_association': self.api_router_associations.first()}
+
+        self.mock_show_bgpvpn_router_assoc.return_value = ret_dict
+
+        ret_val = api.bgpvpn.router_association_get(
+            self.request, bgpvpn.id, na.id)
+        self.assertIsInstance(ret_val, api.bgpvpn.RouterAssociation)
+
+    @test.create_mocks({
         neutronclient: ('list_bgpvpn_router_assocs',)})
     def test_router_association_list(self):
         exp_nas = self.router_associations.list()

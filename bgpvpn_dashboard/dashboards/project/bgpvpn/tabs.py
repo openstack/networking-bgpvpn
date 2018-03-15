@@ -22,6 +22,8 @@ from horizon import tabs
 
 from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations \
     import tabs as network_tabs
+from bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations \
+    import tabs as router_tabs
 
 
 class OverviewTab(tabs.Tab):
@@ -53,5 +55,6 @@ class OverviewTab(tabs.Tab):
 class BgpvpnDetailsTabs(tabs.DetailTabsGroup):
     slug = "bgpvpn_tabs"
     tabs = (OverviewTab,
-            network_tabs.NetworkAssociationsTab,)
+            network_tabs.NetworkAssociationsTab,
+            router_tabs.RouterAssociationsTab)
     sticky = True

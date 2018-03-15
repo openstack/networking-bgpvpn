@@ -76,6 +76,11 @@ class CreateNetworkAssociationView(project_views.CreateNetworkAssociationView):
     success_url = reverse_lazy('horizon:admin:bgpvpn:index')
 
 
+class CreateRouterAssociationView(project_views.CreateRouterAssociationView):
+    workflow_class = bgpvpn_workflows.RouterAssociation
+    failure_url = reverse_lazy("horizon:admin:bgpvpn:index")
+
+
 class UpdateAssociationsView(project_views.UpdateAssociationsView):
     workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
     page_title = _("Edit BGPVPN associations")

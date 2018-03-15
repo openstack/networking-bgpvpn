@@ -92,7 +92,23 @@ class EditDataView(forms.ModalFormView):
             return data
 
 
-class CreateNetworkAssociationView(forms.ModalFormView):
+class GetBgpvpnMixin(object):
+    def get_initial(self):
+        bgpvpn_id = self.kwargs['bgpvpn_id']
+        try:
+            # Get initial bgpvpn information
+            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
+            data = bgpvpn.to_dict()
+            data['bgpvpn_id'] = data.pop('id')
+            return data
+        except Exception:
+            exceptions.handle(
+                self.request,
+                _('Unable to retrieve BGPVPN details.'),
+                redirect=self.success_url)
+
+
+class CreateNetworkAssociationView(GetBgpvpnMixin, forms.ModalFormView):
     form_class = bgpvpn_forms.CreateNetworkAssociation
     form_id = "create_network_association_form"
     modal_header = _("Create Network Association")
@@ -110,39 +126,17 @@ class CreateNetworkAssociationView(forms.ModalFormView):
         context["submit_url"] = reverse(self.submit_url, args=args)
         return context
 
-    def get_initial(self):
-        bgpvpn_id = self.kwargs['bgpvpn_id']
-        try:
-            # Get initial bgpvpn information
-            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
-            data = bgpvpn.to_dict()
-            data['bgpvpn_id'] = data.pop('id')
-            return data
-        except Exception:
-            exceptions.handle(
-                self.request,
-                _('Unable to retrieve BGPVPN details.'),
-                redirect=self.success_url)
 
-
-class UpdateAssociationsView(workflows.WorkflowView):
+class UpdateAssociationsView(GetBgpvpnMixin, workflows.WorkflowView):
     workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
     page_title = _("Edit BGPVPN associations")
     failure_url = reverse_lazy("horizon:project:bgpvpn:index")
 
-    def get_initial(self):
-        bgpvpn_id = self.kwargs['bgpvpn_id']
-        try:
-            # Get initial bgpvpn information
-            bgpvpn = bgpvpn_api.bgpvpn_get(self.request, bgpvpn_id)
-            data = bgpvpn.to_dict()
-            data['bgpvpn_id'] = data.pop('id')
-            return data
-        except Exception:
-            exceptions.handle(
-                self.request,
-                _('Unable to retrieve BGPVPN details.'),
-                redirect=self.failure_url)
+
+class CreateRouterAssociationView(GetBgpvpnMixin, workflows.WorkflowView):
+    workflow_class = bgpvpn_workflows.RouterAssociation
+    page_title = _("Create Router associations")
+    failure_url = reverse_lazy("horizon:project:bgpvpn:index")
 
 
 class DetailProjectView(tabs.TabbedTableView):

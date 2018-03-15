@@ -13,18 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from bgpvpn_dashboard.dashboards.project.bgpvpn.network_associations \
-    import tabs as network_tabs
-from bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations \
-    import tabs as router_tabs
-from bgpvpn_dashboard.dashboards.project.bgpvpn import tabs as project_tabs
+from django.conf.urls import url
 
+import bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations.views \
+    as bgpvpn_router_associations_views
 
-class OverviewTab(project_tabs.OverviewTab):
-    template_name = "admin/bgpvpn/_detail_overview.html"
+ROUTER_ASSO = r'^(?P<bgpvpn_id>[^/]+)/router_assos/' \
+              r'(?P<router_association_id>[^/]+)/%s$'
 
-
-class BgpvpnDetailsTabs(project_tabs.BgpvpnDetailsTabs):
-    tabs = (OverviewTab,
-            network_tabs.NetworkAssociationsTab,
-            router_tabs.RouterAssociationsTab)
+urlpatterns = [
+    url(ROUTER_ASSO % 'detail',
+        bgpvpn_router_associations_views.DetailView.as_view(), name='detail'),
+]

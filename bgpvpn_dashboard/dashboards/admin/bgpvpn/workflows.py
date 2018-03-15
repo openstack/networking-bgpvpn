@@ -39,3 +39,13 @@ class UpdateBgpVpnAssociations(project_workflows.UpdateBgpVpnAssociations):
                                                         resource)
         params['tenant_id'] = data['tenant_id']
         return params
+
+
+class RouterAssociation(project_workflows.RouterAssociation):
+    success_url = "horizon:admin:bgpvpn:index"
+
+    def _set_params(self, data, association_type, resource):
+        params = super(RouterAssociation, self)._set_params(
+            data, association_type, resource)
+        params['tenant_id'] = data['tenant_id']
+        return params
