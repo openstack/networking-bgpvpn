@@ -21,12 +21,23 @@ carrier provided WANs using these standard protocols. An additional purpose
 of this project is to enable the use of these technologies within the Neutron
 networking environment.
 
-A vendor-neutral API and data model are provided such that multiple backends
-may be "plugged in" while offering the same tenant facing API. A reference
-implementation based on an Open Source BGP implementation is also provided.
+A vendor-neutral API and data model are provided such that multiple SDN
+controllers may be used as backends, while offering the same tenant facing API.
+A reference implementation working along with Neutron reference drivers is
+also provided.
 
 * Free software: Apache license
 * Source: https://git.openstack.org/cgit/openstack/networking-bgpvpn
 * Bugs: https://bugs.launchpad.net/bgpvpn
 * Doc: https://docs.openstack.org/networking-bgpvpn/latest/
 
+===================
+Introduction videos
+===================
+
+The following videos are filmed presentations of talks given during the
+Barcelona OpenStack Summit (Oct' 2016). Although they do not cover the work
+done since, they can be a good introduction to the project:
+
+* https://www.youtube.com/watch?v=kGW5R8mtmRg
+* https://www.youtube.com/watch?v=LCDeR7MwTzE
