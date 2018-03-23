@@ -96,22 +96,13 @@ def get_router_url(router):
     return instance
 
 
-class BgpvpnTable(tables.DataTable):
-    tenant_id = tables.Column("tenant_name", verbose_name=_("Project"))
-    name = tables.Column("name_or_id",
-                         verbose_name=_("Name"),
-                         link=("horizon:admin:bgpvpn:detail"))
-    type = tables.Column("type", verbose_name=_("Type"))
+class BgpvpnTable(project_tables.BgpvpnTable):
     route_targets = tables.Column(get_route_targets,
                                   verbose_name=_("Route Targets"))
     import_targets = tables.Column(get_import_targets,
                                    verbose_name=_("Import Targets"))
     export_targets = tables.Column(get_export_targets,
                                    verbose_name=_("Export Targets"))
-    networks = project_tables.NetworksColumn("networks",
-                                             verbose_name=_("Networks"))
-    routers = project_tables.RoutersColumn("routers",
-                                           verbose_name=_("Routers"))
 
     class Meta(object):
         table_actions = (CreateBgpVpn, DeleteBgpvpn)
@@ -119,3 +110,5 @@ class BgpvpnTable(tables.DataTable):
                        UpdateNetworkAssociations,
                        UpdateRouterAssociations,
                        DeleteBgpvpn)
+        columns = ("tenant_id", "name", "type", "route_targets",
+                   "import_targets", "export_targets", "networks", "routers")
