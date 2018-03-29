@@ -170,6 +170,7 @@ def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
                    'exc': e})
 
 
+@registry.has_registry_receivers
 class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
     """BGPVPN Service Driver class for BaGPipe"""
@@ -178,18 +179,6 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
         super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
 
         self.agent_rpc = rpc_client.BGPVPNAgentNotifyApi()
-
-        registry.subscribe(self.registry_port_updated,
-                           resources.PORT,
-                           events.AFTER_UPDATE)
-
-        registry.subscribe(self.registry_port_deleted,
-                           resources.PORT,
-                           events.AFTER_DELETE)
-
-        registry.subscribe(self.registry_router_interface_deleted,
-                           resources.ROUTER_INTERFACE,
-                           events.AFTER_DELETE)
 
     def _format_bgpvpn(self, context, bgpvpn, network_id):
         """JSON-format BGPVPN
@@ -512,6 +501,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
                          'bgpvpn_id': router_assoc['bgpvpn_id']}
             self.delete_net_assoc_postcommit(context, net_assoc)
 
+    @registry.receives(resources.PORT, [events.AFTER_UPDATE])
     @log_helpers.log_method_call
     def registry_port_updated(self, resource, event, trigger, **kwargs):
         try:
@@ -524,6 +514,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
             _log_callback_processing_exception(resource, event, trigger,
                                                kwargs, e)
 
+    @registry.receives(resources.PORT, [events.AFTER_DELETE])
     @log_helpers.log_method_call
     def registry_port_deleted(self, resource, event, trigger, **kwargs):
         try:
@@ -535,12 +526,9 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
             _log_callback_processing_exception(resource, event, trigger,
                                                kwargs, e)
 
-    @log_helpers.log_method_call
-    def registry_router_interface_before_delete(self, resource, event, trigger,
-                                                **kwargs):
-        # we don't do anything for this event, contrarily to parent class
-        pass
-
+    # contrary to mother class, no need to subscribe to router interface
+    # before-delete, because after delete, we still can generate RPCs
+    @registry.receives(resources.ROUTER_INTERFACE, [events.AFTER_DELETE])
     @log_helpers.log_method_call
     def registry_router_interface_deleted(self, resource, event, trigger,
                                           **kwargs):
