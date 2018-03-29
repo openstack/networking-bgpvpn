@@ -58,7 +58,7 @@ class BgpvpnVniExtensionTestCase(test_extensions_base.ExtensionTestCase):
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self._setUpExtension(
             BGPVPN_PLUGIN_BASE_NAME,
-            bgpvpn_def.LABEL,
+            bgpvpn_def.ALIAS,
             None,
             BgpvpnVniTestExtensionManager(),
             BGPVPN_PREFIX,

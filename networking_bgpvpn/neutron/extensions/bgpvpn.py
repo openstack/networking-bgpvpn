@@ -107,10 +107,10 @@ class Bgpvpn(api_extensions.APIExtensionDescriptor):
         resources = resource_helper.build_resource_info(
             plural_mappings,
             bgpvpn_api_def.RESOURCE_ATTRIBUTE_MAP,
-            bgpvpn_api_def.LABEL,
+            bgpvpn_api_def.ALIAS,
             register_quota=True,
             translate_name=True)
-        plugin = directory.get_plugin(bgpvpn_api_def.LABEL)
+        plugin = directory.get_plugin(bgpvpn_api_def.ALIAS)
         for collection_name in bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP:
             # Special handling needed for sub-resources with 'y' ending
             # (e.g. proxies -> proxy)
@@ -159,7 +159,7 @@ class BGPVPNPluginBase(libbase.ServicePluginBase):
     supported_extension_aliases = [bgpvpn_api_def.ALIAS]
 
     def get_plugin_type(self):
-        return bgpvpn_api_def.LABEL
+        return bgpvpn_api_def.ALIAS
 
     def get_plugin_description(self):
         return 'BGP VPN Interconnection service plugin'

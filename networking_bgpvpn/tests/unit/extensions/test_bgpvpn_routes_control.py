@@ -53,7 +53,7 @@ class BgpvpnRoutesControlExtensionTestCase(
 
         self._setUpExtensions(
             TEST_PLUGIN_CLASS,
-            bgpvpn_api_def.LABEL,
+            bgpvpn_api_def.ALIAS,
             [l3.L3, bgpvpn.Bgpvpn, bgpvpn_rc.Bgpvpn_routes_control],
             BGPVPN_PREFIX,
             translate_resource_name=True)

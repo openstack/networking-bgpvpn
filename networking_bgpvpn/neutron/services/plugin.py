@@ -39,6 +39,10 @@ from networking_bgpvpn.neutron.services.common import constants
 
 LOG = log.getLogger(__name__)
 
+# ("BGPVPN" is the string to match as the first part of the
+# service_provider configuration: "BGPVPN:Dummy:networking_bgpvpn ...")
+SERVICE_PROVIDER_TYPE = "BGPVPN"
+
 
 class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                    bgpvpn_rc.BGPVPNRoutesControlPluginBase):
@@ -50,12 +54,12 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         # service_provider definitions:
         service_type_manager = st_db.ServiceTypeManager.get_instance()
         service_type_manager.add_provider_configuration(
-            bgpvpn_def.LABEL,
+            SERVICE_PROVIDER_TYPE,
             pconf.ProviderConfiguration('networking_bgpvpn'))
 
         # Load the default driver
-        drivers, default_provider = service_base.load_drivers(bgpvpn_def.LABEL,
-                                                              self)
+        drivers, default_provider = service_base.load_drivers(
+            SERVICE_PROVIDER_TYPE, self)
         LOG.info("BGP VPN Service Plugin using Service Driver: %s",
                  default_provider)
         self.driver = drivers[default_provider]
@@ -158,7 +162,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                     raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
 
     def get_plugin_type(self):
-        return bgpvpn_def.LABEL
+        return bgpvpn_def.ALIAS
 
     def get_plugin_description(self):
         return "Neutron BGPVPN Service Plugin"

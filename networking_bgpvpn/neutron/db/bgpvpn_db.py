@@ -265,7 +265,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                 utils.rtrd_str2list(bgpvpn_db['export_targets'])
         }
 
-        plugin = directory.get_plugin(bgpvpn_def.LABEL)
+        plugin = directory.get_plugin(bgpvpn_def.ALIAS)
         if utils.is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
             res[bgpvpn_vni_def.VNI] = bgpvpn_db.get(bgpvpn_vni_def.VNI)
         if utils.is_extension_supported(plugin, bgpvpn_rc_def.ALIAS):

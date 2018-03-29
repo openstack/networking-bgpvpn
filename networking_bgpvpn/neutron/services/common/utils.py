@@ -83,7 +83,7 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
         'routers': bgpvpn.get('routers', []),
         'ports': bgpvpn.get('ports', []),
     }
-    plugin = directory.get_plugin(bgpvpn_def.LABEL)
+    plugin = directory.get_plugin(bgpvpn_def.ALIAS)
     if is_extension_supported(plugin, bgpvpn_vni_def.ALIAS):
         res[bgpvpn_vni_def.VNI] = bgpvpn.get(bgpvpn_vni_def.VNI)
     if is_extension_supported(plugin, bgpvpn_rc_def.ALIAS):

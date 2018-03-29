@@ -67,7 +67,7 @@ class Bgpvpn_routes_control(api_extensions.APIExtensionDescriptor):
     def get_resources(cls):
         """Returns Ext Resources."""
         # the plugin we link this extension with is the 'bgpvpn' plugin:
-        plugin = directory.get_plugin(bgpvpn_api.LABEL)
+        plugin = directory.get_plugin(bgpvpn_api.ALIAS)
 
         # The port association is the only new (sub-)resource
         # introduced by the bgpvpn-routes-control extension

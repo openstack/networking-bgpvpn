@@ -39,7 +39,7 @@ class BgpvpnExtensionTestCaseBase(test_extensions_base.ExtensionTestCase):
         self._setUpExtension(
             '%s.%s' % (bgpvpn.BGPVPNPluginBase.__module__,
                        bgpvpn.BGPVPNPluginBase.__name__),
-            bgpvpn_api_def.LABEL,
+            bgpvpn_api_def.ALIAS,
             None,
             bgpvpn.Bgpvpn,
             BGPVPN_PREFIX,
