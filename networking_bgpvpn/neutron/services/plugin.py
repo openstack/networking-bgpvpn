@@ -44,6 +44,7 @@ LOG = log.getLogger(__name__)
 SERVICE_PROVIDER_TYPE = "BGPVPN"
 
 
+@registry.has_registry_receivers
 class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                    bgpvpn_rc.BGPVPNRoutesControlPluginBase):
 
@@ -68,9 +69,6 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
             LOG.warning("Multiple drivers configured for BGPVPN, although"
                         "running multiple drivers in parallel is not yet"
                         "supported")
-        registry.subscribe(self._notify_adding_interface_to_router,
-                           resources.ROUTER_INTERFACE,
-                           events.BEFORE_CREATE)
 
     @property
     def supported_extension_aliases(self):
@@ -78,6 +76,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         exts += self.driver.more_supported_extension_aliases
         return exts
 
+    @registry.receives(resources.ROUTER_INTERFACE, [events.BEFORE_CREATE])
     def _notify_adding_interface_to_router(self, resource, event, trigger,
                                            **kwargs):
         context = kwargs.get('context')
