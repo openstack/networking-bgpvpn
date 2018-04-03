@@ -158,9 +158,6 @@ class BGPVPNPluginBase(libbase.ServicePluginBase):
     path_prefix = "/" + bgpvpn_api_def.ALIAS
     supported_extension_aliases = [bgpvpn_api_def.ALIAS]
 
-    def get_plugin_name(self):
-        return bgpvpn_api_def.LABEL
-
     def get_plugin_type(self):
         return bgpvpn_api_def.LABEL
 
