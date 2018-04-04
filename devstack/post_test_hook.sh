@@ -32,6 +32,12 @@ dsvm-bagpipe-functional*|dsvm-functional*)
     sudo -H -u $GATE_STACK_USER tox -e ${venv}
     testr_exit_code=$?
     set -e
+
+    # move and zip tox logs into log directory
+    sudo mv $NETWORKING_BGPVPN_DIR/.tox/$venv/log /opt/stack/logs/tox
+    sudo -H -u $GATE_STACK_USER chmod o+rw -R /opt/stack/logs/tox/
+    gzip -9 /opt/stack/logs/tox/*.log
+
     # Collect and parse results
     generate_testr_results
     exit $testr_exit_code

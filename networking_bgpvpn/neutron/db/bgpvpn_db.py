@@ -23,6 +23,7 @@ from sqlalchemy.orm import exc
 from neutron.db import _model_query as model_query
 from neutron.db import api as db_api
 from neutron.db import common_db_mixin
+from neutron.db import standard_attr
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
@@ -46,7 +47,8 @@ class HasProjectNotNullable(model_base.HasProject):
                            nullable=False)
 
 
-class BGPVPNNetAssociation(model_base.BASEV2, model_base.HasId,
+class BGPVPNNetAssociation(standard_attr.HasStandardAttributes,
+                           model_base.BASEV2, model_base.HasId,
                            HasProjectNotNullable):
     """Represents the association between a bgpvpn and a network."""
     __tablename__ = 'bgpvpn_network_associations'
@@ -63,8 +65,15 @@ class BGPVPNNetAssociation(model_base.BASEV2, model_base.HasId,
                                                    cascade='all'),
                                lazy='joined',)
 
+    # standard attributes support:
+    api_collections = []
+    api_sub_resources = [bgpvpn_def.NETWORK_ASSOCIATIONS]
+    collection_resource_map = {bgpvpn_def.NETWORK_ASSOCIATIONS:
+                               bgpvpn_def.NETWORK_ASSOCIATION}
 
-class BGPVPNRouterAssociation(model_base.BASEV2, model_base.HasId,
+
+class BGPVPNRouterAssociation(standard_attr.HasStandardAttributes,
+                              model_base.BASEV2, model_base.HasId,
                               HasProjectNotNullable):
     """Represents the association between a bgpvpn and a router."""
     __tablename__ = 'bgpvpn_router_associations'
@@ -83,8 +92,15 @@ class BGPVPNRouterAssociation(model_base.BASEV2, model_base.HasId,
                                                   cascade='all'),
                               lazy='joined',)
 
+    # standard attributes support:
+    api_collections = []
+    api_sub_resources = [bgpvpn_def.ROUTER_ASSOCIATIONS]
+    collection_resource_map = {bgpvpn_def.ROUTER_ASSOCIATIONS:
+                               bgpvpn_def.ROUTER_ASSOCIATION}
 
-class BGPVPNPortAssociation(model_base.BASEV2, model_base.HasId,
+
+class BGPVPNPortAssociation(standard_attr.HasStandardAttributes,
+                            model_base.BASEV2, model_base.HasId,
                             HasProjectNotNullable):
     """Represents the association between a bgpvpn and a port."""
     __tablename__ = 'bgpvpn_port_associations'
@@ -104,6 +120,12 @@ class BGPVPNPortAssociation(model_base.BASEV2, model_base.HasId,
                             lazy='joined',)
     routes = orm.relationship("BGPVPNPortAssociationRoute",
                               backref="bgpvpn_port_associations")
+
+    # standard attributes support:
+    api_collections = []
+    api_sub_resources = [bgpvpn_rc_def.PORT_ASSOCIATIONS]
+    collection_resource_map = {bgpvpn_rc_def.PORT_ASSOCIATIONS:
+                               bgpvpn_rc_def.PORT_ASSOCIATION}
 
 
 class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
@@ -141,7 +163,8 @@ class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
         lazy='joined')
 
 
-class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
+class BGPVPN(standard_attr.HasStandardAttributes, model_base.BASEV2,
+             model_base.HasId, model_base.HasProject):
     """Represents a BGPVPN Object."""
     name = sa.Column(sa.String(255))
     type = sa.Column(sa.Enum("l2", "l3",
@@ -165,6 +188,11 @@ class BGPVPN(model_base.BASEV2, model_base.HasId, model_base.HasProject):
                                          backref="bgpvpn",
                                          lazy='select',
                                          cascade='all, delete-orphan')
+
+    # standard attributes support:
+    api_collections = [bgpvpn_def.COLLECTION_NAME]
+    collection_resource_map = {bgpvpn_def.COLLECTION_NAME:
+                               bgpvpn_def.RESOURCE_NAME}
 
 
 def _list_bgpvpns_result_filter_hook(query, filters):
