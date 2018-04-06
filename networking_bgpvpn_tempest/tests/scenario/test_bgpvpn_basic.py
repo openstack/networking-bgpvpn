@@ -725,12 +725,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """Test port association routes of type 'bgpvpn'
 
         In this test we use a Port Association with a 'bgpvpn' route
-        to have VM 1 in BGPVPN X reach a VM 3 in BGPVPN Y via the Port
-        of a VM 2, and vice-versa. For X->Y traffic, one Port Association
-        associates the port of VM 2 to BGPVPN X, with a route of type 'bgpvpn'
-        redistributing routes from BGPVPN Y. For Y->X traffic, another Port
-        Association associates the port of VM 2 to BGPVPN Y, with a route of
-        type 'bgpvpn' redistributing routes from BGPVPN X.
+        to have VM 1 in network A, reach a VM 3 in network C via the Port
+        of a VM 2 (on network B), and vice-versa. For A->C traffic, one Port
+        Association associates the port of VM 2 to a BGPVPN, with a route of
+        type 'bgpvpn' redistributing routes from network  C. For C->A traffic,
+        another Port Association associates the port of VM 2 to a BGPVPN, with
+        a route of type 'bgpvpn' redistributing routes from network A.
+
+        The use of RT in this test is a bit complex, and would be much
+        simpler if we were using a VM with two interfaces.
 
         We confirm that VM 1 can join VM 3, and we confirm that the traffic
         actually goes through VM 2, by turning ip_forwaring off then on in VM2.
@@ -738,10 +741,30 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         # create networks A, B and C with their respective subnets
         self._create_networks_and_subnets(port_security=False)
 
-        # Create L3 BGPVPN X (will interconnect A and B)
-        bgpvpn_x = self._create_l3_bgpvpn(name="test-vpn-x", rts=[self.RT1])
-        # Create L3 BGPVPN Y (will interconnect B and C)
-        bgpvpn_y = self._create_l3_bgpvpn(name="test-vpn-y", rts=[self.RT2])
+        RT_to_A = self.RT1
+        RT_from_A = self.RT2
+        RT_to_C = self.RT3
+        RT_from_C = self.RT4
+
+        # Create L3 BGPVPN for network A
+        bgpvpn_a = self._create_l3_bgpvpn(name="test-vpn-a",
+                                          import_rts=[RT_to_A],
+                                          export_rts=[RT_from_A])
+
+        # Create L3 BGPVPN for network C
+        bgpvpn_c = self._create_l3_bgpvpn(name="test-vpn-c",
+                                          import_rts=[RT_to_C],
+                                          export_rts=[RT_from_C])
+
+        # Create L3 BGPVPN for network B
+        bgpvpn_b = self._create_l3_bgpvpn(name="test-vpn-b",
+                                          import_rts=[RT_from_C, RT_from_A])
+
+        # BGPVPNs to only export into A and C
+        bgpvpn_to_a = self._create_l3_bgpvpn(name="test-vpn-to-a",
+                                             export_rts=[RT_to_A])
+        bgpvpn_to_c = self._create_l3_bgpvpn(name="test-vpn-to-c",
+                                             export_rts=[RT_to_C])
 
         # create the three VMs
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
@@ -762,27 +785,37 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         # disable IP forwarding on VM2
         self._setup_ip_forwarding(0)
 
-        # connect network A to BGPVPN X
+        # connect network A to its BGPVPN
         self.bgpvpn_client.create_network_association(
-            bgpvpn_x['id'], self.networks[NET_A]['id'])
+            bgpvpn_a['id'], self.networks[NET_A]['id'])
 
-        # connect network C to BGPVPN Y
+        # connect network B to its BGPVPN
         self.bgpvpn_client.create_network_association(
-            bgpvpn_y['id'], self.networks[NET_C]['id'])
+            bgpvpn_b['id'], self.networks[NET_B]['id'])
 
-        # create port association for X->Y traffic
+        # connect network C to its BGPVPN
+        self.bgpvpn_client.create_network_association(
+            bgpvpn_c['id'], self.networks[NET_C]['id'])
+
+        # create port associations for A->C traffic
+        # (leak routes imported by BGPVPN B -- which happen to include the
+        # routes net C -- into net A)
         self.bgpvpn_client.create_port_association(
-            bgpvpn_x['id'],
+            bgpvpn_to_a['id'],
             port_id=self.ports[vm2['id']]['id'],
             routes=[{'type': 'bgpvpn',
-                     'bgpvpn_id': bgpvpn_y['id']}])
+                     'bgpvpn_id': bgpvpn_b['id']},
+                    ])
 
-        # create port association for Y->X traffic
+        # create port associations for C->A traffic
+        # (leak routes imported by BGPVPN B -- which happen to include the
+        # routes from net A -- into net C)
         body = self.bgpvpn_client.create_port_association(
-            bgpvpn_y['id'],
+            bgpvpn_to_c['id'],
             port_id=self.ports[vm2['id']]['id'],
             routes=[{'type': 'bgpvpn',
-                     'bgpvpn_id': bgpvpn_x['id']}])
+                     'bgpvpn_id': bgpvpn_a['id']}])
+
         port_association = body['port_association']
 
         # check that we don't have connectivity
@@ -1106,7 +1139,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     def _create_l3_bgpvpn(self, name='test-l3-bgpvpn', rts=None,
                           import_rts=None, export_rts=None):
-        if rts is None:
+        if rts is None and import_rts is None and export_rts is None:
             rts = [self.RT1]
         import_rts = import_rts or []
         export_rts = export_rts or []
