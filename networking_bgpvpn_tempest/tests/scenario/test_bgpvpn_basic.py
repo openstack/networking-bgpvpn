@@ -28,10 +28,10 @@ from tempest.lib import decorators
 from networking_bgpvpn_tempest.tests import base
 from networking_bgpvpn_tempest.tests.scenario import manager
 
+from oslo_concurrency import lockutils
+
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
-RT1 = '64512:1'
-RT2 = '64512:2'
 NET_A = 'A'
 NET_A_BIS = 'A-Bis'
 NET_B = 'B'
@@ -80,6 +80,18 @@ IP_A_BIS_S2_1 = IP_A_S2_1
 
 
 class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestBGPVPNBasic, cls).setUpClass()
+        cls._rt_index = 0
+
+    @classmethod
+    @lockutils.synchronized('bgpvpn')
+    def new_rt(cls):
+        cls._rt_index += 1
+        return "64512:%d" % cls._rt_index
+
     def setUp(self):
         super(TestBGPVPNBasic, self).setUp()
         self.servers_keypairs = {}
@@ -90,6 +102,10 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.subnets = {}
         self.server_fips = {}
         self._create_security_group_for_test()
+        self.RT1 = self.new_rt()
+        self.RT2 = self.new_rt()
+        self.RT3 = self.new_rt()
+        self.RT4 = self.new_rt()
 
     @decorators.idempotent_id('afdd6cad-871a-4343-b97b-6319c76c815d')
     @utils.services('compute', 'network')
@@ -263,12 +279,14 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_servers()
-        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_l3_bgpvpn(rts=[self.RT1], import_rts=[],
+                               export_rts=[])
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
-        self._update_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._update_l3_bgpvpn(rts=[], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._check_l3_bgpvpn(should_succeed=False)
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
     @decorators.idempotent_id('bf417cad-0bc4-446a-b367-850aa619ca4f')
@@ -291,12 +309,13 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_servers()
-        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[RT1], export_rts=[RT2])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._check_l3_bgpvpn()
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
     @decorators.idempotent_id('08d4f40e-3cec-485b-9da2-76e67fbd9881')
@@ -322,14 +341,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_servers()
         self.router = self._create_router_and_associate_fip(
             0, self.subnets[NET_A][0])
-        self._create_l3_bgpvpn(rts=[], export_rts=[RT1], import_rts=[RT2])
+        self._create_l3_bgpvpn(rts=[], export_rts=[self.RT1],
+                               import_rts=[self.RT2])
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         self._check_l3_bgpvpn(should_succeed=False)
         self.bgpvpn_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_B]['id'])
         self._check_l3_bgpvpn(should_succeed=False)
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
     @decorators.idempotent_id('c8bfd695-f731-47a6-86e3-3dfa492e08e0')
@@ -360,7 +380,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         20. Check that server 2 still can ping server 4
         """
         self._create_networks_and_subnets()
-        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._create_l3_bgpvpn(rts=[], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
                              [self.networks[NET_B], IP_B_S1_1],
                              [self.networks[NET_A], IP_A_S1_2],
@@ -377,7 +398,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             1, self.subnets[NET_B][0])
         self._check_l3_bgpvpn(should_succeed=False)
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
@@ -410,7 +431,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         20. Check that server 4 still can ping server 2
         """
         self._create_networks_and_subnets()
-        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._create_l3_bgpvpn(rts=[], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
                              [self.networks[NET_B], IP_B_S1_1],
                              [self.networks[NET_A], IP_A_S1_2],
@@ -427,7 +449,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                                      router_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
-        self._update_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
@@ -528,8 +550,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         1. Create networks A with subnet S1 and S2
         2. Create networks A-Bis with subnet S1 and S2 (like for network A)
-        3. Create L3 BGPVPN for network A with RT1
-        4. Create L3 BGPVPN for network A-Bis with RT2
+        3. Create L3 BGPVPN for network A with self.RT1
+        4. Create L3 BGPVPN for network A-Bis with self.RT2
         5. Associate network A to a given L3 BGPVPN
         6. Associate network A-Bis to a given L3 BGPVPN
         7. Start up server 1 in network A and subnet S1
@@ -552,9 +574,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                           [[NET_A_S1, NET_A_S2],
                                            [NET_A_S1, NET_A_S2]])
         bgpvpn_a = self._create_l3_bgpvpn(name='test-l3-bgpvpn-a',
-                                          rts=[RT1])
+                                          rts=[self.RT1])
         bgpvpn_a_bis = self._create_l3_bgpvpn(name='test-l3-bgpvpn-a-bis',
-                                              rts=[RT2])
+                                              rts=[self.RT2])
         self.bgpvpn_client.create_network_association(
             bgpvpn_a['id'], self.networks[NET_A]['id'])
         self.bgpvpn_client.create_network_association(
@@ -717,9 +739,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets(port_security=False)
 
         # Create L3 BGPVPN X (will interconnect A and B)
-        bgpvpn_x = self._create_l3_bgpvpn(name="test-vpn-x", rts=[RT1])
+        bgpvpn_x = self._create_l3_bgpvpn(name="test-vpn-x", rts=[self.RT1])
         # Create L3 BGPVPN Y (will interconnect B and C)
-        bgpvpn_y = self._create_l3_bgpvpn(name="test-vpn-y", rts=[RT2])
+        bgpvpn_y = self._create_l3_bgpvpn(name="test-vpn-y", rts=[self.RT2])
 
         # create the three VMs
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
@@ -824,7 +846,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         8. Check that server 1 cannot ping server 2
         """
         self._create_networks_and_subnets()
-        self._create_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._create_l3_bgpvpn(rts=[], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._associate_all_nets_to_bgpvpn()
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
@@ -933,11 +956,12 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         10. Check that server 1 cannot ping server 2
         """
         self._create_networks_and_subnets()
-        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._create_servers()
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
-        self._update_l3_bgpvpn(rts=[], import_rts=[RT1], export_rts=[RT2])
+        self._update_l3_bgpvpn(rts=[], import_rts=[self.RT1],
+                               export_rts=[self.RT2])
         self._check_l3_bgpvpn(should_succeed=False)
 
     @decorators.idempotent_id('fb37a546-7263-4ffe-a42c-77eca377ff1a')
@@ -958,7 +982,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         10. Check that server 1 cannot ping server 2
         """
         self._create_networks_and_subnets()
-        self._create_l3_bgpvpn(rts=[RT1], import_rts=[], export_rts=[])
+        self._create_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._create_servers()
         self._associate_all_nets_to_bgpvpn()
         self._associate_fip_and_check_l3_bgpvpn()
@@ -1083,7 +1107,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _create_l3_bgpvpn(self, name='test-l3-bgpvpn', rts=None,
                           import_rts=None, export_rts=None):
         if rts is None:
-            rts = [RT1]
+            rts = [self.RT1]
         import_rts = import_rts or []
         export_rts = export_rts or []
         self.bgpvpn = self.create_bgpvpn(
@@ -1096,7 +1120,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                           bgpvpn=None):
         bgpvpn = bgpvpn or self.bgpvpn
         if rts is None:
-            rts = [RT1]
+            rts = [self.RT1]
         import_rts = import_rts or []
         export_rts = export_rts or []
         LOG.debug('Updating targets in BGPVPN %s', bgpvpn['id'])
