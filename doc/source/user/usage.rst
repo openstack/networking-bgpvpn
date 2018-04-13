@@ -40,8 +40,23 @@ See :doc:`heat`.
 Use from Python
 ---------------
 
-The BGPVPN API is dynamically loaded by Neutron. There is the same behaviour with the Python lib "neutronclient" use.
-This allows to programmatically handle BGPVPN resources as well as Network association resources and Router association resources.
+The python ``neutroclient`` library includes support for the BGPVPN API
+extensions since Ocata release.
+
+.. note::
+
+   For older releases, the dynamic extension of ``neutronclient`` provided
+   in ``networking-bgpvpn`` is available.  In that case, the methods to
+   list, get, create, delete and update network associations and router
+   associations are different from what is documented here:
+
+   * different name: ``list_network_associations`` instead of
+     `list_bgpvpn_network_assocs``, and same change for all the methods
+
+   * order of parameters: BGPVPN UUID as first parameter, association UUID as
+     second parameter
+
+   These old methods are deprecated.
 
 Methods
 ~~~~~~~
@@ -59,46 +74,59 @@ BGPVPN Resources
  2. Dictionary of BGPVPN attributes to be updated", "Dictionary of  BGPVPN attributes"
 	"delete_bgpvpn()", "Delete a given BGPVPN resource of which the UUID is provided as input.", "1. UUID of the said BGPVPN", "Boolean"
 
-
 Network Association Resources
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. csv-table:: API methods for Network association resources
  :header: Method Name,Description,Input parameter(s),Output
 
-	"list_network_associations()", "Get the list of defined NETWORK ASSOCIATION resources for a given BGPVPN. An optional list of NETWORK ASSOCIATION parameters can be used as filter.", "1. UUID of the BGPVPN
- 2. Use \**kwargs as filter, e.g. list_network_associations( BGPVPN UUID, param1=val1, param2=val2,...) (Optional)", "List of dictionaries of NETWORK ASSOCIATION attributes, one of each related to a given BGPVPN"
-	"create_network_association()", "Create a NETWORK ASSOCIATION resource for a given BGPVPN.
+	"list_bgpvpn_network_assocs()", "Get the list of defined NETWORK ASSOCIATION resources for a given BGPVPN. An optional list of NETWORK ASSOCIATION parameters can be used as filter.", "1. UUID of the BGPVPN
+ 2. Use \**kwargs as filter, e.g. list_bgpvpn_network_assocs( BGPVPN UUID, param1=val1, param2=val2,...) (Optional)", "List of dictionaries of NETWORK ASSOCIATION attributes, one of each related to a given BGPVPN"
+	"create_bgpvpn_network_assoc()", "Create a NETWORK ASSOCIATION resource for a given BGPVPN.
  Network UUID must be defined, provided in a NETWORK ASSOCIATION resource as input parameter.", "1. UUID of the said BGPVPN
  2. Dictionary of NETWORK ASSOCIATION parameters", "Dictionary of NETWORK ASSOCIATION attributes"
-	"show_network_association()", "Get all parameters for a given NETWORK ASSOCIATION.", "1. UUID of the NETWORK ASSOCIATION resource
- 2. UUID of the BGPVPN resource", "Dictionary of NETWORK ASSOCIATION parameters"
-	"update_network_association()", "Update the parameters of the NETWORK ASSOCIATION resource provided as input.", "1. UUID of the NETWORK ASSOCIATION resource
- 2. UUID of the BGPVPN resource
- 3.  Dictionary of NETWORK ASSOCIATION parameters", "Dictionary of NETWORK ASSOCIATION parameters"
-	"delete_network_association()", "Delete a given NETWORK ASSOCIATION resource of which the UUID is provided as input.", "1. UUID of the NETWORK ASSOCIATION resource
- 2. UUID of the BGPVPN resource", "Boolean"
-
+	"show_bgpvpn_network_assoc()", "Get all parameters for a given NETWORK ASSOCIATION.", "1. UUID of the BGPVPN resource
+ 2. UUID of the NETWORK ASSOCIATION resource", "Dictionary of NETWORK ASSOCIATION parameters"
+	"update_bgpvpn_network_assoc()", "Update the parameters of the NETWORK ASSOCIATION resource provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the NETWORK ASSOCIATION resource, 3.  Dictionary of NETWORK ASSOCIATION parameters", "Dictionary of NETWORK ASSOCIATION parameters"
+	"delete_bgpvpn_network_assoc()", "Delete a given NETWORK ASSOCIATION resource of which the UUID is provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the NETWORK ASSOCIATION resource", "Boolean"
 
 Router Association Resources
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. csv-table:: API methods for Router associations
+.. csv-table:: API methods for Router association resources
  :header: Method Name,Description,Input parameter(s),Output
 
-	"list_router_associations()", "Get the list of defined ROUTER ASSOCIATION resources for a given BGPVPN. An optional list of ROUTER ASSOCIATION parameters can be used as filter", "1. UUID of the BGPVPN
- 2. Use \**kwargs as filter, e.g. list_router_associations( BGPVPN UUID, param1=val1, param2=val2,...) (Optional)", "List of dictionaries of ROUTER ASSOCIATION attributes, one of each related to a given BGPVPN"
-	"create_router_association()", "Create a ROUTER ASSOCIATION resource for a given BGPVPN UUID.
+	"list_bgpvpn_router_assocs()", "Get the list of defined ROUTER ASSOCIATION resources for a given BGPVPN. An optional list of ROUTER ASSOCIATION parameters can be used as filter.", "1. UUID of the BGPVPN
+ 2. Use \**kwargs as filter, e.g. list_bgpvpn_router_assocs( BGPVPN UUID, param1=val1, param2=val2,...) (Optional)", "List of dictionaries of ROUTER ASSOCIATION attributes, one of each related to a given BGPVPN"
+	"create_bgpvpn_router_assoc()", "Create a ROUTER ASSOCIATION resource for a given BGPVPN.
  Router UUID must be defined, provided in a ROUTER ASSOCIATION resource as input parameter.", "1. UUID of the said BGPVPN
- 2. Dictionary of ROUTER ASSOCIATION parameters (Optional)", "Dictionary of ROUTER ASSOCIATION parameters"
-	"show_router_association()", "Get all parameters for a given ROUTER ASSOCIATION.", "1. UUID of the ROUTER ASSOCIATION resource
- 2. UUID of the BGPVPN resource", "Dictionary of ROUTER ASSOCIATION parameters"
-	"update_router_association()", "Update the parameters of the ROUTER ASSOCIATION resource provided as input.", "1. UUID of the ROUTER ASSOCIATION resource
- 2. UUID of the BGPVPN resource
- 3. Dictionary of ROUTER ASSOCIATION parameters", "Dictionary of ROUTER ASSOCIATION parameters"
-	"delete_router_association()", "Delete a given ROUTER ASSOCIATION resource.", "1. UUID of the ROUTER ASSOCIATION resource
- 2. UUID of the BGPVPN resource", "Boolean"
+ 2. Dictionary of ROUTER ASSOCIATION parameters", "Dictionary of ROUTER ASSOCIATION attributes"
+	"show_bgpvpn_router_assoc()", "Get all parameters for a given ROUTER ASSOCIATION.", "1. UUID of the BGPVPN resource
+ 2. UUID of the ROUTER ASSOCIATION resource", "Dictionary of ROUTER ASSOCIATION parameters"
+	"update_bgpvpn_router_assoc()", "Update the parameters of the ROUTER ASSOCIATION resource provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the ROUTER ASSOCIATION resource, 3.  Dictionary of ROUTER ASSOCIATION parameters", "Dictionary of ROUTER ASSOCIATION parameters"
+	"delete_bgpvpn_router_assoc()", "Delete a given ROUTER ASSOCIATION resource of which the UUID is provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the ROUTER ASSOCIATION resource", "Boolean"
 
+Port Association Resources
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. csv-table:: API methods for Port association resources
+ :header: Method Name,Description,Input parameter(s),Output
+
+	"list_bgpvpn_port_assocs()", "Get the list of defined PORT ASSOCIATION resources for a given BGPVPN. An optional list of PORT ASSOCIATION parameters can be used as filter.", "1. UUID of the BGPVPN
+ 2. Use \**kwargs as filter, e.g. list_bgpvpn_port_assocs( BGPVPN UUID, param1=val1, param2=val2,...) (Optional)", "List of dictionaries of PORT ASSOCIATION attributes, one of each related to a given BGPVPN"
+	"create_bgpvpn_port_assoc()", "Create a PORT ASSOCIATION resource for a given BGPVPN.
+ Port UUID must be defined, provided in a PORT ASSOCIATION resource as input parameter.", "1. UUID of the said BGPVPN
+ 2. Dictionary of PORT ASSOCIATION parameters", "Dictionary of PORT ASSOCIATION attributes"
+	"show_bgpvpn_port_assoc()", "Get all parameters for a given PORT ASSOCIATION.", "1. UUID of the BGPVPN resource
+ 2. UUID of the PORT ASSOCIATION resource", "Dictionary of PORT ASSOCIATION parameters"
+	"update_bgpvpn_port_assoc()", "Update the parameters of the PORT ASSOCIATION resource provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the PORT ASSOCIATION resource, 3.  Dictionary of PORT ASSOCIATION parameters", "Dictionary of PORT ASSOCIATION parameters"
+	"delete_bgpvpn_port_assoc()", "Delete a given PORT ASSOCIATION resource of which the UUID is provided as input.", "1. UUID of the BGPVPN resource
+ 2. UUID of the PORT ASSOCIATION resource", "Boolean"
 
 Examples
 ~~~~~~~~

@@ -113,7 +113,7 @@ def main():
               bgpvpn_net_assoc_obj['network_association']['id'])
         # List all NETWORK ASSOCIATION object filtered on the network created
         # above
-        list_bgpvpn_net_assoc_obj = neutron.list_network_associations(
+        list_bgpvpn_net_assoc_obj = neutron.list_bgpvpn_network_assocs(
             bgpvpn_obj['bgpvpn']['id'],
             network_id=net_obj['network']['id'])
         print("List of NETWORK ASSOCIATION objects using network_id"
@@ -125,7 +125,7 @@ def main():
         print("\nDeletion of all created objects")
         # First declared associations related of the created BGPVPN object in
         # this example
-        neutron.delete_network_association(
+        neutron.delete_bgpvpn_network_assoc(
             bgpvpn_net_assoc_obj['network_association']['id'],
             bgpvpn_obj['bgpvpn']['id'])
         # Then the BGPVPN object
