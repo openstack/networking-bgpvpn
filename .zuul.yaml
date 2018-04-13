@@ -13,7 +13,15 @@
             voting: false
         - tripleo-ci-centos-7-scenario004-multinode-oooq-container:
             voting: false
-        - openstack-tox-lower-constraints
+        - openstack-tox-lower-constraints:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
     gate:
       jobs:
-        - openstack-tox-lower-constraints
+         - openstack-tox-lower-constraints:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
