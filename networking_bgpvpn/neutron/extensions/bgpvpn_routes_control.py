@@ -94,17 +94,6 @@ class Bgpvpn_routes_control(api_extensions.APIExtensionDescriptor):
 
         return [port_association_resource]
 
-    # TODO(boden): remove with use of I8ae11633962a48de6e8559b85447b8c8c753d705
-    @classmethod
-    def get_extended_resources(cls, version):
-        if version == "2.0":
-            return dict(
-                list(api_def.RESOURCE_ATTRIBUTE_MAP.items()) +
-                list(api_def.SUB_RESOURCE_ATTRIBUTE_MAP.items())
-            )
-        else:
-            return {}
-
     @classmethod
     def get_plugin_interface(cls):
         return BGPVPNRoutesControlPluginBase
