@@ -219,8 +219,8 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
 
     def handle_delete(self):
         try:
-            self.neutron().delete_network_association(
-                self.resource_id, self.properties['bgpvpn_id'])
+            self.neutron().delete_bgpvpn_network_assoc(
+                self.properties['bgpvpn_id'], self.resource_id)
         except Exception as ex:
             self.client_plugin().ignore_not_found(ex)
         else:
@@ -234,8 +234,8 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
                 return
 
     def _show_resource(self):
-        return self.neutron().show_network_association(
-            self.resource_id, self.properties['bgpvpn_id'])
+        return self.neutron().show_bgpvpn_network_assoc(
+            self.properties['bgpvpn_id'], self.resource_id)
 
 
 class BGPVPNRouterAssoc(neutron.NeutronResource):
@@ -307,8 +307,8 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
 
     def handle_delete(self):
         try:
-            self.neutron().delete_router_association(
-                self.resource_id, self.properties['bgpvpn_id'])
+            self.neutron().delete_bgpvpn_router_assoc(
+                self.properties['bgpvpn_id'], self.resource_id)
         except Exception as ex:
             self.client_plugin().ignore_not_found(ex)
         else:
@@ -322,8 +322,8 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
                 return
 
     def _show_resource(self):
-        return self.neutron().show_router_association(
-            self.resource_id, self.properties['bgpvpn_id'])
+        return self.neutron().show_bgpvpn_router_assoc(
+            self.properties['bgpvpn_id'], self.resource_id)
 
 
 def resource_mapping():
