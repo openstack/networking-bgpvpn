@@ -31,9 +31,6 @@ BGPVPN = r'^(?P<bgpvpn_id>[^/]+)/%s$'
 urlpatterns = [
     url(r'^$', bgpvpn_views.IndexView.as_view(), name='index'),
     url(BGPVPN % 'edit', bgpvpn_views.EditDataView.as_view(), name='edit'),
-    url(BGPVPN % 'update-associations',
-        bgpvpn_views.UpdateAssociationsView.as_view(),
-        name='update-associations'),
     url(BGPVPN % 'create-network-association',
         bgpvpn_views.CreateNetworkAssociationView.as_view(),
         name='create-network-association'),

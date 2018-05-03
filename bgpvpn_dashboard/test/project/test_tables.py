@@ -21,48 +21,6 @@ from django.utils.translation import ugettext_lazy as _
 from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as bgpvpn_tables
 
 
-class TestUpdateNetworkAssociations(test.TestCase):
-
-    def setUp(self):
-        super(TestUpdateNetworkAssociations, self).setUp()
-        self.update_net_assocs = bgpvpn_tables.UpdateNetworkAssociations()
-
-        self.assertEqual('horizon:project:bgpvpn:update-associations',
-                         self.update_net_assocs.url)
-
-    @mock.patch.object(bgpvpn_tables, 'reverse')
-    def test_get_link_url(self, mock_reverse):
-        mock_reverse.return_value = 'foo_reverse_url'
-        mock_bgpvpn = mock.Mock(id='foo-id')
-
-        result = self.update_net_assocs.get_link_url(mock_bgpvpn)
-
-        mock_reverse.assert_called_once_with(
-            'horizon:project:bgpvpn:update-associations', args=['foo-id'])
-        self.assertEqual('foo_reverse_url?step=update_bgpvpn_network', result)
-
-
-class TestUpdateRouterAssociations(test.TestCase):
-
-    def setUp(self):
-        super(TestUpdateRouterAssociations, self).setUp()
-        self.update_net_assocs = bgpvpn_tables.UpdateRouterAssociations()
-
-        self.assertEqual('horizon:project:bgpvpn:update-associations',
-                         self.update_net_assocs.url)
-
-    @mock.patch.object(bgpvpn_tables, 'reverse')
-    def test_get_link_url(self, mock_reverse):
-        mock_reverse.return_value = 'foo_reverse_url'
-        mock_bgpvpn = mock.Mock(id='foo-id')
-
-        result = self.update_net_assocs.get_link_url(mock_bgpvpn)
-
-        mock_reverse.assert_called_once_with(
-            'horizon:project:bgpvpn:update-associations', args=['foo-id'])
-        self.assertEqual('foo_reverse_url?step=update_bgpvpn_router', result)
-
-
 class TestFunctionGet(test.TestCase):
 
     @mock.patch.object(bgpvpn_tables, 'reverse')

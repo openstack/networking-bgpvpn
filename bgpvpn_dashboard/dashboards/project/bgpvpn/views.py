@@ -127,12 +127,6 @@ class CreateNetworkAssociationView(GetBgpvpnMixin, forms.ModalFormView):
         return context
 
 
-class UpdateAssociationsView(GetBgpvpnMixin, workflows.WorkflowView):
-    workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
-    page_title = _("Edit BGPVPN associations")
-    failure_url = reverse_lazy("horizon:project:bgpvpn:index")
-
-
 class CreateRouterAssociationView(GetBgpvpnMixin, workflows.WorkflowView):
     workflow_class = bgpvpn_workflows.RouterAssociation
     page_title = _("Create Router associations")

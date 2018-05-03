@@ -64,14 +64,6 @@ class EditInfoBgpVpn(project_tables.EditInfoBgpVpn):
     url = "horizon:admin:bgpvpn:edit"
 
 
-class UpdateNetworkAssociations(project_tables.UpdateNetworkAssociations):
-    url = "horizon:admin:bgpvpn:update-associations"
-
-
-class UpdateRouterAssociations(project_tables.UpdateRouterAssociations):
-    url = "horizon:admin:bgpvpn:update-associations"
-
-
 class CreateNetworkAssociation(project_tables.CreateNetworkAssociation):
     url = "horizon:admin:bgpvpn:create-network-association"
 
@@ -115,8 +107,6 @@ class BgpvpnTable(project_tables.BgpvpnTable):
     class Meta(object):
         table_actions = (CreateBgpVpn, DeleteBgpvpn)
         row_actions = (EditInfoBgpVpn,
-                       UpdateNetworkAssociations,
-                       UpdateRouterAssociations,
                        CreateNetworkAssociation,
                        CreateRouterAssociation,
                        DeleteBgpvpn)
