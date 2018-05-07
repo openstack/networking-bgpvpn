@@ -1,4 +1,4 @@
 # This file is hooked from https://github.com/openstack-infra/project-config/blob/master/jenkins/jobs/networking-bgpvpn.yaml
 
-export OVERRIDE_ENABLED_SERVICES=q-svc,q-agt,q-dhcp,q-l3,key,mysql,rabbit
+export OVERRIDE_ENABLED_SERVICES=neutron-api,neutron-agent,neutron-dhcp,neutron-l3,key,mysql,rabbit
 

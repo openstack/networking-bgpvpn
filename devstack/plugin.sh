@@ -10,42 +10,44 @@ if [[ "$1" == "source" ]]; then
 elif [[ "$1" == "stack" && "$2" == "install" ]]; then
     echo_summary "Installing networking-bgpvpn"
     setup_develop $NETWORKING_BGPVPN_DIR
-elif [[ "$1" == "stack" && "$2" == "pre-install" ]]; then
-    echo_summary "Enabling networking-bgpvpn service plugin"
-    _neutron_service_plugin_class_add bgpvpn
-    if [[ "$Q_AGENT" == "bagpipe-openvswitch" ]]; then
-        echo "networking-bagpipe: you don't need to set Q_AGENT=bagpipe-openvswitch anymore"
-        Q_AGENT=openvswitch``
-    fi
-elif [[ "$1" == "stack" && "$2" == "test-config" ]]; then
-    if is_service_enabled tempest; then
-        echo_summary "Enabling bgpvpn in $TEMPEST_CONFIG"
-    fi
 elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
-    if is_service_enabled q-svc; then
+    if is_service_enabled neutron-api || is_service_enabled q-svc; then
         echo_summary "Configuring networking-bgpvpn"
+        neutron_service_plugin_class_add bgpvpn
         mkdir -v -p $NEUTRON_CONF_DIR/policy.d && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/policy.d/bgpvpn.conf $NEUTRON_CONF_DIR/policy.d
         mkdir -v -p $(dirname $NETWORKING_BGPVPN_CONF) && cp -v $NETWORKING_BGPVPN_DIR/etc/neutron/networking_bgpvpn.conf $NETWORKING_BGPVPN_CONF
         inicomment $NETWORKING_BGPVPN_CONF service_providers service_provider
         iniadd $NETWORKING_BGPVPN_CONF service_providers service_provider $NETWORKING_BGPVPN_DRIVER
         neutron_server_config_add $NETWORKING_BGPVPN_CONF
     fi
-    if is_service_enabled q-agt && is_service_enabled b-bgp ; then
+    if (is_service_enabled neutron-agent || is_service_enabled q-agt) && (is_service_enabled b-bgp || is_service_enabled neutron-bagpipe-bgp); then
         echo_summary "Configuring agent for bagpipe bgpvpn"
         source $NEUTRON_DIR/devstack/lib/l2_agent
-
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
         configure_l2_agent
-        if [[ "$Q_AGENT" == "openvswitch" ]]; then
-            # l2pop and arp_responder are required for bagpipe driver
-            iniset /$Q_PLUGIN_CONF_FILE agent l2_population True
-            iniset /$Q_PLUGIN_CONF_FILE agent arp_responder True
-        elif [[ "$Q_AGENT" == "linuxbridge" ]]; then
-            # l2pop is required for EVPN/VXLAN bagpipe driver
-            iniset /$Q_PLUGIN_CONF_FILE vxlan l2_population True
+        if is_neutron_legacy_enabled; then
+            if [[ "$Q_AGENT" == "openvswitch" ]]; then
+                # l2pop and arp_responder are required for bagpipe driver
+                iniset /$Q_PLUGIN_CONF_FILE agent l2_population True
+                iniset /$Q_PLUGIN_CONF_FILE agent arp_responder True
+            elif [[ "$Q_AGENT" == "linuxbridge" ]]; then
+                # l2pop is required for EVPN/VXLAN bagpipe driver
+                iniset /$Q_PLUGIN_CONF_FILE vxlan l2_population True
+            else
+                die $LINENO "unsupported agent for networking-bagpipe: $Q_AGENT"
+            fi
         else
-            die $LINENO "unsupported agent for networking-bagpipe: $Q_AGENT"
-	fi
+            if [[ "$NEUTRON_AGENT" == "openvswitch" ]]; then
+                # l2pop and arp_responder are required for bagpipe driver
+                iniset $NEUTRON_CORE_PLUGIN_CONF agent l2_population True
+                iniset $NEUTRON_CORE_PLUGIN_CONF agent arp_responder True
+            elif [[ "$NEUTRON_AGENT" == "linuxbridge" ]]; then
+                # l2pop is required for EVPN/VXLAN bagpipe driver
+                iniset $NEUTRON_CORE_PLUGIN_CONF vxlan l2_population True
+            else
+                die $LINENO "unsupported agent for networking-bagpipe: $NEUTRON_AGENT"
+            fi
+        fi
     fi
     if is_service_enabled h-eng; then
         echo_summary "Enabling bgpvpn in $HEAT_CONF"
