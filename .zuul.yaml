@@ -18,10 +18,16 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
+        - horizon-openstack-tox-py35dj20:
+            required-projects:
+              - openstack/horizon
     gate:
       jobs:
-         - openstack-tox-lower-constraints:
+        - openstack-tox-lower-constraints:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
+              - openstack/horizon
+        - horizon-openstack-tox-py35dj20:
+            required-projects:
               - openstack/horizon

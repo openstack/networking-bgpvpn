@@ -55,8 +55,8 @@ urlpatterns = [
         r'update$',
         router_associations_views.UpdateRouterAssociationsView.as_view(),
         name='update-router-association'),
-    url(r'^network_assos/', include(network_associations_urls,
-                                    namespace='network_assos')),
-    url(r'^router_assos/', include(router_associations_urls,
-                                   namespace='router_assos')),
+    url(r'^network_assos/',
+        include((network_associations_urls, 'network_assos'))),
+    url(r'^router_assos/',
+        include((router_associations_urls, 'router_assos'))),
 ]

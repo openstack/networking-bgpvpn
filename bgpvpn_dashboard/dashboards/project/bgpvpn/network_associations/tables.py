@@ -14,8 +14,8 @@
 #    under the License.
 import logging
 
-from django.core.urlresolvers import reverse
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse
+from django.urls import reverse_lazy
 from django.utils import safestring
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext_lazy
