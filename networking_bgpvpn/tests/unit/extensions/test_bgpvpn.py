@@ -18,11 +18,13 @@ import mock
 
 from oslo_utils import uuidutils
 
+from neutron.api import extensions
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
 from webob import exc
 
+from networking_bgpvpn.neutron import extensions as bgpvpn_extensions
 from networking_bgpvpn.neutron.extensions import bgpvpn
 
 _uuid = uuidutils.generate_uuid
@@ -34,6 +36,12 @@ BGPVPN_URI = BGPVPN_PREFIX + '/' + 'bgpvpns'
 class BgpvpnExtensionTestCaseBase(test_extensions_base.ExtensionTestCase):
 
     def setUp(self):
+        # NOTE(tmorin): this is already done in
+        # networking_bgpvpn.neutron.extensions.bgpvpn at module loading time,
+        # but for some reason I don't understand this is overriden later, which
+        # is why we re-force this here:
+        extensions.append_api_extensions_path(bgpvpn_extensions.__path__)
+
         super(BgpvpnExtensionTestCaseBase, self).setUp()
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self._setUpExtension(
