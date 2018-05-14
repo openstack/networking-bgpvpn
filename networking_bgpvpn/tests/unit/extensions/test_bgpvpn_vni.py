@@ -56,10 +56,9 @@ class BgpvpnVniExtensionTestCase(test_extensions_base.ExtensionTestCase):
     def setUp(self):
         super(BgpvpnVniExtensionTestCase, self).setUp()
         plural_mappings = {'bgpvpn': 'bgpvpns'}
-        self._setUpExtension(
+        self.setup_extension(
             BGPVPN_PLUGIN_BASE_NAME,
             bgpvpn_def.ALIAS,
-            None,
             BgpvpnVniTestExtensionManager(),
             BGPVPN_PREFIX,
             plural_mappings=plural_mappings,
