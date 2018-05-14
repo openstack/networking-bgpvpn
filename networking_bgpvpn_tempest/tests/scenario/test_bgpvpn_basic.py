@@ -15,6 +15,7 @@
 
 import netaddr
 import os
+import random
 
 from oslo_log import log as logging
 from tempest.common import compute
@@ -642,6 +643,81 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn_by_specific_ip(
             should_succeed=False, to_server_ip=IP_C_S1_1)
 
+    @decorators.idempotent_id('d92a8a18-c4d0-40d5-8592-713d7dae7d25')
+    @utils.services('compute', 'network')
+    @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    def test_port_association_many_bgpvpn_routes(self):
+        """This test checks port association in BGPVPN.
+
+        1. Create networks A and B with their respective subnets
+        2. Create L3 BGPVPN
+        3. Create router and connect it to network A
+        4. Create router and connect it to network B
+        5. Start up server 1 in network A
+        6. Start up server 2 in network B
+        7. Give a FIP to all servers
+        8. Configure ip forwarding on server 2
+        9. Configure alternative loopback address on server 2
+        10. Associate network A to a given L3 BGPVPN
+        11. Associate port of server 2 to a given L3 BGPVPN
+        12. Check that server 1 can ping server's 2 alternative ip
+        13. Update created before port association by routes removal
+        14. Check that server 1 cannot ping server's 2 alternative ip
+        """
+        AMOUNT_LOOPBACKS = 90
+        START_IP_LOOPBACKS = 31
+        SAMPLE_SIZE = 10
+        LOOPBACKS = [str(ip) for ip in
+                     S1C[START_IP_LOOPBACKS:
+                     START_IP_LOOPBACKS + AMOUNT_LOOPBACKS]]
+        SUB_LOOPBACKS = [LOOPBACKS[0], LOOPBACKS[-1]]
+
+        self._create_networks_and_subnets(port_security=False)
+        self._create_l3_bgpvpn()
+        self._create_servers([[self.networks[NET_A], IP_A_S1_1],
+                              [self.networks[NET_B], IP_B_S1_1]],
+                             port_security=False)
+        self._create_fip_router(subnet_id=self.subnets[NET_A][0]['id'])
+        self._create_fip_router(subnet_id=self.subnets[NET_B][0]['id'])
+        self._associate_fip(0)
+        self._associate_fip(1)
+
+        for ip in SUB_LOOPBACKS:
+            LOG.debug("Preliminary check that no connectivity exist")
+            self._check_l3_bgpvpn_by_specific_ip(
+                should_succeed=False, to_server_ip=ip)
+
+        self._setup_ip_forwarding(1)
+
+        self._setup_range_ip_address(1, LOOPBACKS)
+
+        self.bgpvpn_client.create_network_association(
+            self.bgpvpn['id'], self.networks[NET_A]['id'])
+        port_id = self.ports[self.servers[1]['id']]['id']
+        port_routes = [{'type': 'prefix',
+                        'prefix': ip + "/32"}
+                       for ip in LOOPBACKS]
+
+        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
+                                                          port_id=port_id,
+                                                          routes=port_routes)
+        port_association = body['port_association']
+
+        for ip in random.sample(LOOPBACKS, SAMPLE_SIZE):
+            LOG.debug("Check that server 1 can "
+                      + "ping server 2 alternative ip " + ip)
+            self._check_l3_bgpvpn_by_specific_ip(
+                to_server_ip=ip)
+
+        self.bgpvpn_client.update_port_association(
+            self.bgpvpn['id'], port_association['id'], routes=[])
+
+        for ip in SUB_LOOPBACKS:
+            LOG.debug("Check that server 1 cannot "
+                      + "ping server 2 alternative ip")
+            self._check_l3_bgpvpn_by_specific_ip(
+                should_succeed=False, to_server_ip=ip)
+
     @decorators.idempotent_id('9c3280b5-0b32-4562-800c-0b50d9d52bfd')
     @utils.services('compute', 'network')
     @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
@@ -1133,12 +1209,19 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         ssh_client.exec_command("sudo sysctl -w net.ipv4.ip_forward=1")
 
     def _setup_ip_address(self, server_index, cidr, device=None):
+        self._setup_range_ip_address(server_index, [cidr], device=None)
+
+    def _setup_range_ip_address(self, server_index, cidrs, device=None):
+        MAX_CIDRS = 50
         if device is None:
             device = 'lo'
         server = self.servers[server_index]
         ssh_client = self._setup_ssh_client(server)
-        ssh_client.exec_command(("sudo ip addr add {cidr} "
-                                "dev {dev}").format(cidr=cidr, dev=device))
+        for i in range(0, len(cidrs), MAX_CIDRS):
+            ips = ' '.join(cidrs[i:i + MAX_CIDRS])
+            ssh_client.exec_command(
+                ("for ip in {ips}; do sudo ip addr add $ip "
+                 "dev {dev}; done").format(ips=ips, dev=device))
 
     def _check_l3_bgpvpn(self, from_server=None, to_server=None,
                          should_succeed=True, validate_server=False):
