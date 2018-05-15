@@ -69,6 +69,7 @@ def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
                    'exc': e})
 
 
+@registry.has_registry_receivers
 class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
     """BGPVPN Service Driver class for BaGPipe"""
@@ -78,16 +79,6 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
     def __init__(self, service_plugin):
         super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
-
-        registry.subscribe(self.registry_router_interface_created,
-                           resources.ROUTER_INTERFACE,
-                           events.AFTER_CREATE)
-
-        # need to subscribe to router interface *before*_delete,
-        # because after, we can't build the OVO objects from the DB anymore
-        registry.subscribe(self.registry_router_interface_before_delete,
-                           resources.ROUTER_INTERFACE,
-                           events.BEFORE_DELETE)
 
         self._push_rpc = resources_rpc.ResourcesPushRpcApi()
 
@@ -233,6 +224,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
 
         self._push_associations(context, associations, rpc_events.UPDATED)
 
+    @registry.receives(resources.ROUTER_INTERFACE, [events.AFTER_CREATE])
     @log_helpers.log_method_call
     def registry_router_interface_created(self, resource, event, trigger,
                                           **kwargs):
@@ -245,9 +237,12 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
             _log_callback_processing_exception(resource, event, trigger,
                                                kwargs, e)
 
+    # need to subscribe to router interface *before*_delete
+    # because after delete, we can't build the OVO objects from the DB anymore
+    @registry.receives(resources.ROUTER_INTERFACE, [events.BEFORE_DELETE])
     @log_helpers.log_method_call
-    def registry_router_interface_before_delete(self, resource, event, trigger,
-                                                **kwargs):
+    def registry_router_interface_deleted(self, resource, event, trigger,
+                                          **kwargs):
         try:
             context = kwargs['context']
             # for router_interface after_delete, in stable/newton, the
