@@ -14,8 +14,8 @@
 
 import mock
 
-from django.core.urlresolvers import reverse
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse
+from django.urls import reverse_lazy
 
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_form
