@@ -13,7 +13,7 @@
 #    under the License.
 #
 
-"""empty message
+"""Add tables for port associations
 
 Revision ID: 9a6664f3b8d4
 Revises: 0ab4049986b8

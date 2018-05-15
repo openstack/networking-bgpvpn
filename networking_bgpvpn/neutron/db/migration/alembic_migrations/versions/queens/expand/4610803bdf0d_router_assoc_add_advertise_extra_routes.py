@@ -13,7 +13,7 @@
 #    under the License.
 #
 
-"""empty message
+"""Add 'extra-routes' to router association table
 
 Revision ID: 4610803bdf0d
 Revises: 9a6664f3b8d4
