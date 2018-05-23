@@ -209,7 +209,7 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
         bgpvpn_id = self.client_plugin().find_resourceid_by_name_or_id(
             'bgpvpn', self.props['bgpvpn_id'])
 
-        net_assoc = self.neutron().create_network_association(
+        net_assoc = self.neutron().create_bgpvpn_network_assoc(
             bgpvpn_id,
             {'network_association': body})
         self.resource_id_set(net_assoc['network_association']['id'])
@@ -297,7 +297,7 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
         bgpvpn_id = self.client_plugin().find_resourceid_by_name_or_id(
             'bgpvpn', self.props['bgpvpn_id'])
 
-        router_assoc = self.neutron().create_router_association(
+        router_assoc = self.neutron().create_bgpvpn_router_assoc(
             bgpvpn_id,
             {'router_association': body})
         self.resource_id_set(router_assoc['router_association']['id'])

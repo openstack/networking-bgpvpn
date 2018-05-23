@@ -103,7 +103,7 @@ def main():
         # Creation of a BGPVPN Network association.
         print("\nBGPVPN Network Association object handling.")
         # Creation of a Network Association bound on the created BGPVPN object
-        bgpvpn_net_assoc_obj = neutron.create_network_association(
+        bgpvpn_net_assoc_obj = neutron.create_bgpvpn_network_assoc(
             bgpvpn_obj['bgpvpn']['id'],
             {'network_association':
                 {'network_id':
