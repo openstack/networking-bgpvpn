@@ -5,18 +5,19 @@ set -xe
 NETWORKING_BGPVPN_DIR="$BASE/new/networking-bgpvpn"
 LOGS=/opt/stack/logs
 GATE_STACK_USER=stack
+SCRIPTS_DIR="/usr/os-testr-env/bin/"
 
 typetest=${1:-"unknown"}
 
 function generate_testr_results {
     sudo -H -u $GATE_STACK_USER chmod o+rw .
-    sudo -H -u $GATE_STACK_USER chmod o+rw -R .testrepository
-    if [ -f ".testrepository/0" ]; then
-        .tox/$venv/bin/subunit-1to2 < .testrepository/0  > ./testrepository.subunit
-        .tox/$venv/bin/subunit2html ./testrepository.subunit ./testr_results.html
-        gzip ./testrepository.subunit   
-        gzip ./testr_results.html
-        sudo mv ./testrepository.subunit.gz testr_results.html.gz $LOGS
+    sudo -H -u $GATE_STACK_USER chmod o+rw -R .stestr
+    if [ -f ".stestr/0" ] ; then
+        .tox/$venv/bin/subunit-1to2 < .stestr/0 > ./stestr.subunit
+        $SCRIPTS_DIR/subunit2html ./stestr.subunit testr_results.html
+        gzip -9 ./stestr.subunit
+        gzip -9 ./testr_results.html
+        sudo mv *.gz $LOGS
     fi
 }
 

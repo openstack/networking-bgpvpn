@@ -64,5 +64,10 @@ install_project horizon
 install_project networking-bagpipe
 install_project networking-odl 4.0.0
 
+if [ -z "$*" ]; then
+    echo "No packages to be installed."
+    exit 0
+fi
+
 $install_cmd -U $*
 exit $?
