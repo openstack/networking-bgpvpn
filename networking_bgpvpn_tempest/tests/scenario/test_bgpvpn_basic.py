@@ -19,10 +19,10 @@ from tempest.common import waiters
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
-from tempest.scenario import manager
 from tempest import test
 
 from networking_bgpvpn_tempest.tests import base
+from networking_bgpvpn_tempest.tests.scenario import manager
 
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
@@ -34,6 +34,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.servers_keypairs = {}
         self.servers = []
         self.server_fixed_ips = {}
+        self.networks = []
+        self.subnets = []
         self.ports = []
         self._create_security_group_for_test()
 

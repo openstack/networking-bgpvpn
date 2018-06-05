@@ -4,8 +4,6 @@
 _XTRACE_NETWORKING_BGPVPN=$(set +o | grep xtrace)
 set -o xtrace
 
-source $NEUTRON_DIR/devstack/lib/l2_agent
-
 if [[ "$1" == "source" ]]; then
     # no-op
     :
@@ -34,6 +32,8 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     fi
     if is_service_enabled q-agt && is_service_enabled b-bgp && [[ "$Q_AGENT" == "openvswitch" ]]; then
         echo_summary "Configuring OVS agent for bagpipe"
+        source $NEUTRON_DIR/devstack/plugin.sh
+        source $NEUTRON_DIR/devstack/lib/l2_agent
 
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
         configure_l2_agent

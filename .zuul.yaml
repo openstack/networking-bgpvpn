@@ -1,0 +1,31 @@
+- project:
+    check:
+      jobs:
+        - openstack-tox-pep8:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py27:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py35:
+            required-projects: openstack/networking-odl
+        - build-openstack-sphinx-docs:
+            required-projects: openstack/networking-odl
+        - openstack-tox-cover:
+            required-projects: openstack/networking-odl
+    gate:
+      jobs:
+        - openstack-tox-pep8:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py27:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py35:
+            required-projects: openstack/networking-odl
+        - build-openstack-sphinx-docs:
+            required-projects: openstack/networking-odl
+        - openstack-tox-cover:
+            required-projects: openstack/networking-odl
+    periodic-stable:
+      jobs:
+        - build-openstack-sphinx-docs:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py27:
+            required-projects: openstack/networking-odl
