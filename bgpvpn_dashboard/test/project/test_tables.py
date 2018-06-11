@@ -14,14 +14,14 @@
 #    under the License.
 
 import mock
-import testtools
 
+from django import test
 from django.utils.translation import ugettext_lazy as _
 
 from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as bgpvpn_tables
 
 
-class TestUpdateNetworkAssociations(testtools.TestCase):
+class TestUpdateNetworkAssociations(test.TestCase):
 
     def setUp(self):
         super(TestUpdateNetworkAssociations, self).setUp()
@@ -42,7 +42,7 @@ class TestUpdateNetworkAssociations(testtools.TestCase):
         self.assertEqual('foo_reverse_url?step=update_bgpvpn_network', result)
 
 
-class TestUpdateRouterAssociations(testtools.TestCase):
+class TestUpdateRouterAssociations(test.TestCase):
 
     def setUp(self):
         super(TestUpdateRouterAssociations, self).setUp()
@@ -63,7 +63,7 @@ class TestUpdateRouterAssociations(testtools.TestCase):
         self.assertEqual('foo_reverse_url?step=update_bgpvpn_router', result)
 
 
-class TestFunctionGet(testtools.TestCase):
+class TestFunctionGet(test.TestCase):
 
     @mock.patch.object(bgpvpn_tables, 'reverse')
     def test_get_network_url(self, mock_reverse):
@@ -84,7 +84,7 @@ class TestFunctionGet(testtools.TestCase):
         self.assertEqual('<a href=foo_reverse_url>foo</a>', result)
 
 
-class TestNetworksColumn(testtools.TestCase):
+class TestNetworksColumn(test.TestCase):
 
     def setUp(self):
         super(TestNetworksColumn, self).setUp()
@@ -103,7 +103,7 @@ class TestNetworksColumn(testtools.TestCase):
         self.assertEqual(result_expected, result)
 
 
-class TestRoutersColumn(testtools.TestCase):
+class TestRoutersColumn(test.TestCase):
 
     def setUp(self):
         super(TestRoutersColumn, self).setUp()

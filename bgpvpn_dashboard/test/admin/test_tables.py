@@ -13,13 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from django import test
 import mock
-import testtools
 
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import tables as bgpvpn_tables
 
 
-class TestDeleteBgpvpns(testtools.TestCase):
+class TestDeleteBgpvpns(test.TestCase):
     @mock.patch.object(bgpvpn_tables, 'bgpvpn_api')
     def test_delete(self, mock_bgpvpn_api):
         mock_request = mock.Mock()
