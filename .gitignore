@@ -23,9 +23,11 @@ pip-log.txt
 
 # Unit test / coverage reports
 .coverage
+cover/
 .tox
 nosetests.xml
 .testrepository
+.stestr/
 .venv
 bgpvpn_dashboard/test/.secret_key_store
 *.lock
