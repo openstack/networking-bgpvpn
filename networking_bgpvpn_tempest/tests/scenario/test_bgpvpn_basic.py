@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import functools
 import netaddr
 import os
 import random
@@ -30,6 +31,23 @@ from networking_bgpvpn_tempest.tests import base
 from networking_bgpvpn_tempest.tests.scenario import manager
 
 from oslo_concurrency import lockutils
+
+
+# TODO(tmorin): move to neutron-lib
+# code copied from neutron repository - neutron/tests/base.py
+def unstable_test(reason):
+    def decor(f):
+        @functools.wraps(f)
+        def inner(self, *args, **kwargs):
+            try:
+                return f(self, *args, **kwargs)
+            except Exception as e:
+                msg = ("%s was marked as unstable because of %s, "
+                       "failure was: %s") % (self.id(), reason, e)
+                raise self.skipTest(msg)
+        return inner
+    return decor
+
 
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
@@ -668,6 +686,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     @decorators.idempotent_id('d92a8a18-c4d0-40d5-8592-713d7dae7d25')
     @utils.services('compute', 'network')
     @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
+    @unstable_test("bug 1780205")
     def test_port_association_many_bgpvpn_routes(self):
         """This test checks port association in BGPVPN.
 
@@ -727,7 +746,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         for ip in random.sample(LOOPBACKS, SAMPLE_SIZE):
             LOG.debug("Check that server 1 can "
-                      + "ping server 2 alternative ip " + ip)
+                      "ping server 2 alternative ip %s" % ip)
             self._check_l3_bgpvpn_by_specific_ip(
                 to_server_ip=ip)
 
@@ -735,8 +754,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             self.bgpvpn['id'], port_association['id'], routes=[])
 
         for ip in SUB_LOOPBACKS:
-            LOG.debug("Check that server 1 cannot "
-                      + "ping server 2 alternative ip")
+            LOG.debug("Check that server 1 can't "
+                      "ping server 2 alternative ip %s" % ip)
             self._check_l3_bgpvpn_by_specific_ip(
                 should_succeed=False, to_server_ip=ip)
 
