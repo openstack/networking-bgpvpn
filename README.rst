@@ -30,6 +30,7 @@ also provided.
 * Source: https://git.openstack.org/cgit/openstack/networking-bgpvpn
 * Bugs: https://bugs.launchpad.net/bgpvpn
 * Doc: https://docs.openstack.org/networking-bgpvpn/latest/
+* Release notes: https://docs.openstack.org/releasenotes/networking-bgpvpn/
 
 ===================
 Introduction videos
