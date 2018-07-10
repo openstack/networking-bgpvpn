@@ -38,8 +38,8 @@ class BgpvpnExtensionTestCaseBase(test_extensions_base.ExtensionTestCase):
     def setUp(self):
         # NOTE(tmorin): this is already done in
         # networking_bgpvpn.neutron.extensions.bgpvpn at module loading time,
-        # but for some reason I don't understand this is overriden later, which
-        # is why we re-force this here:
+        # but for some reason I don't understand this is overridden later,
+        # which is why we re-force this here:
         extensions.append_api_extensions_path(bgpvpn_extensions.__path__)
 
         super(BgpvpnExtensionTestCaseBase, self).setUp()
