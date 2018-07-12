@@ -26,6 +26,8 @@ class BGPVPN(neutron.NeutronResource):
 
     """
 
+    required_service_extension = 'bgpvpn'
+
     PROPERTIES = (
         NAME, TYPE, DESCRIPTION, ROUTE_DISTINGUISHERS,
         IMPORT_TARGETS, EXPORT_TARGETS, ROUTE_TARGETS,
@@ -156,6 +158,8 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
 
     """
 
+    required_service_extension = 'bgpvpn'
+
     PROPERTIES = (
         BGPVPN_ID, NETWORK_ID
     ) = (
@@ -243,6 +247,8 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
     """A resource for BGPVPNRouterAssoc in neutron.
 
     """
+
+    required_service_extension = 'bgpvpn'
 
     PROPERTIES = (
         BGPVPN_ID, ROUTER_ID
