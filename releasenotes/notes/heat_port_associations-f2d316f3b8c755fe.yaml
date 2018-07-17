@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The Heat plugin for the BGPVPN interconnection API extension now supports
+    BGPVPN Port Association resources.

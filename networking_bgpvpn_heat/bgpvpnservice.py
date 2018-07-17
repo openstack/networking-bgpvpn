@@ -332,9 +332,179 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
             self.properties['bgpvpn_id'], self.resource_id)
 
 
+class BGPVPNPortAssoc(neutron.NeutronResource):
+
+    """A resource for BGPVPNPortAssoc in neutron.
+
+    """
+
+    required_service_extension = 'bgpvpn-routes-control'
+
+    PROPERTIES = (
+        BGPVPN_ID, PORT_ID, ADVERTISE_FIXED_IPS, ROUTES,
+    ) = (
+        'bgpvpn_id', 'port_id', 'advertise_fixed_ips', 'routes',
+    )
+
+    ATTRIBUTES = (
+        SHOW, STATUS
+    ) = (
+        'show', 'status'
+    )
+
+    _ROUTE_DICT_KEYS = (
+        TYPE, PREFIX, FROM_BGPVPN, LOCAL_PREF,
+    ) = (
+        'type', 'prefix', 'bgpvpn_id', 'local_pref'
+    )
+
+    _ROUTE_TYPE_VALUES = (
+        PREFIX, BGPVPN
+    ) = (
+        PREFIX, 'bgpvpn'
+    )
+
+    properties_schema = {
+        BGPVPN_ID: properties.Schema(
+            properties.Schema.STRING,
+            _('name or ID of the BGPVPN.'),
+            required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.bgpvpn')
+            ],
+        ),
+        PORT_ID: properties.Schema(
+            properties.Schema.STRING,
+            _('Port which shall be associated with the BGPVPN.'),
+            required=True,
+            constraints=[
+                constraints.CustomConstraint('neutron.port')
+            ]
+        ),
+        ADVERTISE_FIXED_IPS: properties.Schema(
+            properties.Schema.BOOLEAN,
+            _('whether or not the fixed IPs of he port will be advertised '
+              'into the BGPVPN.'),
+        ),
+        ROUTES: properties.Schema(
+            properties.Schema.LIST,
+            _('Defines routes to advertise into the BGPVPN, and for which '
+              'this port will be the nexthop'),
+            schema=properties.Schema(
+                properties.Schema.MAP,
+                schema={
+                    TYPE: properties.Schema(
+                        properties.Schema.STRING,
+                        description=_('Type of the route.'),
+                        constraints=[
+                            constraints.AllowedValues(_ROUTE_TYPE_VALUES)
+                        ],
+                        required=True
+                    ),
+                    PREFIX: properties.Schema(
+                        properties.Schema.STRING,
+                        description=_('Prefix to readvertise.'),
+                        constraints=[
+                            constraints.CustomConstraint('net_cidr')
+                        ]
+                    ),
+                    FROM_BGPVPN: properties.Schema(
+                        properties.Schema.STRING,
+                        description=_('BGPVPN from which to readvertise routes'
+                                      '(any route carrying an RT among '
+                                      'route_targets or import_targets '
+                                      'of this BGPVPN, will be readvertised).'
+                                      ),
+                        constraints=[
+                            constraints.CustomConstraint('neutron.bgpvpn')
+                        ]
+                    ),
+                    LOCAL_PREF: properties.Schema(
+                        properties.Schema.INTEGER,
+                        description=_('Value of the BGP LOCAL_PREF for the '
+                                      'routes.'),
+                        constraints=[
+                            constraints.Range(0, 2 ** 32 - 1),
+                        ],
+                    )
+                }
+            )
+        )
+    }
+
+    attributes_schema = {
+        STATUS: attributes.Schema(
+            _('Status of bgpvpn.'),
+        ),
+        SHOW: attributes.Schema(
+            _('All attributes.')
+        ),
+    }
+
+    def validate(self):
+        super(BGPVPNPortAssoc, self).validate()
+
+    def handle_create(self):
+        self.props = self.prepare_properties(self.properties,
+                                             self.physical_resource_name())
+
+        # clean-up/preparethe routes
+        for route in self.props.get('routes', []):
+            # remove local-pref if unset, to let Neutron set a default
+            if (self.LOCAL_PREF in route and route[self.LOCAL_PREF] is None):
+                del route[self.LOCAL_PREF]
+
+            if route[self.TYPE] == self.PREFIX:
+                # routes of type 'prefix' should not have a bgpvpn_id attribute
+                del route[self.FROM_BGPVPN]
+            elif route[self.TYPE] == self.BGPVPN:
+                # routes of type 'bgpvpn' should not have a 'prefix' attribute
+                del route[self.PREFIX]
+                # need to lookup the BGPVPN by name or id
+                route[self.FROM_BGPVPN] = (
+                    self.client_plugin().find_resourceid_by_name_or_id(
+                        'bgpvpn', route[self.FROM_BGPVPN])
+                )
+
+        body = self.props.copy()
+        body.pop('bgpvpn_id')
+
+        bgpvpn_id = self.client_plugin().find_resourceid_by_name_or_id(
+            'bgpvpn', self.props['bgpvpn_id'])
+
+        port_assoc = self.neutron().create_bgpvpn_port_assoc(
+            bgpvpn_id,
+            {'port_association': body})
+        self.resource_id_set(port_assoc['port_association']['id'])
+
+    def handle_update(self, json_snippet, tmpl_diff, prop_diff):
+        raise NotImplementedError()
+
+    def handle_delete(self):
+        try:
+            self.neutron().delete_bgpvpn_port_assoc(
+                self.properties['bgpvpn_id'], self.resource_id)
+        except Exception as ex:
+            self.client_plugin().ignore_not_found(ex)
+        else:
+            return True
+
+    def _confirm_delete(self):
+        while True:
+            try:
+                self._show_resource()
+            except exception.NotFound:
+                return
+
+    def _show_resource(self):
+        return self.neutron().show_port_association(
+            self.resource_id, self.properties['bgpvpn_id'])
+
+
 def resource_mapping():
     return {
         'OS::Neutron::BGPVPN': BGPVPN,
         'OS::Neutron::BGPVPN-NET-ASSOCIATION': BGPVPNNetAssoc,
         'OS::Neutron::BGPVPN-ROUTER-ASSOCIATION': BGPVPNRouterAssoc,
+        'OS::Neutron::BGPVPN-PORT-ASSOCIATION': BGPVPNPortAssoc,
     }
