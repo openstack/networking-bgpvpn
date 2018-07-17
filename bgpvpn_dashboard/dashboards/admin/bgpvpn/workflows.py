@@ -17,30 +17,6 @@ from bgpvpn_dashboard.dashboards.project.bgpvpn import workflows \
     as project_workflows
 
 
-class UpdateBgpVpnRouters(project_workflows.UpdateBgpVpnRouters):
-    action_class = project_workflows.UpdateBgpVpnRoutersAction
-    depends_on = ("bgpvpn_id", "tenant_id", "name")
-
-
-class UpdateBgpVpnNetworks(project_workflows.UpdateBgpVpnNetworks):
-    action_class = project_workflows.UpdateBgpVpnNetworksAction
-    depends_on = ("bgpvpn_id", "tenant_id", "name")
-
-
-class UpdateBgpVpnAssociations(project_workflows.UpdateBgpVpnAssociations):
-    success_url = "horizon:admin:bgpvpn:index"
-    default_steps = (UpdateBgpVpnNetworks,
-                     UpdateBgpVpnRouters)
-
-    def _set_params(self, data, association_type, resource):
-        params = super(
-            UpdateBgpVpnAssociations, self)._set_params(data,
-                                                        association_type,
-                                                        resource)
-        params['tenant_id'] = data['tenant_id']
-        return params
-
-
 class RouterAssociation(project_workflows.RouterAssociation):
     success_url = "horizon:admin:bgpvpn:index"
 

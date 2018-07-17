@@ -29,34 +29,6 @@ class EditInfoBgpVpn(tables.LinkAction):
     icon = "pencil"
 
 
-class UpdateNetworkAssociations(tables.LinkAction):
-    name = "update_network_associations"
-    verbose_name = _("Update Network Associations")
-    url = "horizon:project:bgpvpn:update-associations"
-    classes = ("ajax-modal",)
-    icon = "pencil"
-
-    def get_link_url(self, bgpvpn):
-        step = 'update_bgpvpn_network'
-        base_url = reverse(self.url, args=[bgpvpn.id])
-        param = urlencode({"step": step})
-        return "?".join([base_url, param])
-
-
-class UpdateRouterAssociations(tables.LinkAction):
-    name = "update_router_associations"
-    verbose_name = _("Update Router Associations")
-    url = "horizon:project:bgpvpn:update-associations"
-    classes = ("ajax-modal",)
-    icon = "pencil"
-
-    def get_link_url(self, bgpvpn):
-        step = 'update_bgpvpn_router'
-        base_url = reverse(self.url, args=[bgpvpn.id])
-        param = urlencode({"step": step})
-        return "?".join([base_url, param])
-
-
 class CreateNetworkAssociation(tables.LinkAction):
     name = "create_network_association"
     verbose_name = _("Create Network Association")
@@ -115,7 +87,5 @@ class BgpvpnTable(tables.DataTable):
         name = "bgpvpns"
         verbose_name = _("BGPVPN")
         row_actions = (EditInfoBgpVpn,
-                       UpdateNetworkAssociations,
-                       UpdateRouterAssociations,
                        CreateNetworkAssociation,
                        CreateRouterAssociation)

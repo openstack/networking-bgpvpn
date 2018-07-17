@@ -21,8 +21,7 @@ from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_form
 from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as bgpvpn_tables
 from bgpvpn_dashboard.dashboards.project.bgpvpn import views as bgpvpn_views
-from bgpvpn_dashboard.dashboards.project.bgpvpn import workflows as \
-    bgpvpn_workflows
+
 from openstack_dashboard.test import helpers
 
 
@@ -150,36 +149,3 @@ class TestEditDataView(helpers.APITestCase):
         expected_result = "65400:1,65401:1"
         result = self.bgpvpn_view._join_rts(route_targets_list)
         self.assertEqual(expected_result, result)
-
-
-class TestUpdateAssociationsView(helpers.APITestCase):
-
-    def setUp(self):
-        super(TestUpdateAssociationsView, self).setUp()
-        self.bgpvpn_view = bgpvpn_views.UpdateAssociationsView()
-        fake_response = {'status_code': 200}
-        self.mock_request = mock.Mock(return_value=fake_response, META=[])
-        self.bgpvpn_view.request = self.mock_request
-        self.bgpvpn_view.kwargs = {'bgpvpn_id': 'foo-id'}
-
-        self.assertEqual(bgpvpn_workflows.UpdateBgpVpnAssociations,
-                         self.bgpvpn_view.workflow_class)
-        self.assertEqual(reverse_lazy("horizon:project:bgpvpn:index"),
-                         self.bgpvpn_view.failure_url)
-
-    @mock.patch.object(bgpvpn_views, 'bgpvpn_api', autospec=True)
-    def test_get_initial(self, mock_bgpvpn_api):
-        bgpvpn_data = {"name": "foo-name",
-                       "id": "foo-id",
-                       "type": "l3"}
-        expected_data = {"name": "foo-name",
-                         "bgpvpn_id": "foo-id",
-                         "type": "l3"}
-        mock_bgpvpn_api.bgpvpn_get.return_value = bgpvpn_api.Bgpvpn(
-            bgpvpn_data)
-        result = self.bgpvpn_view.get_initial()
-
-        mock_bgpvpn_api.bgpvpn_get.assert_called_once_with(
-            self.bgpvpn_view.request, "foo-id")
-        for key, val in expected_data.items():
-            self.assertEqual(val, result[key])

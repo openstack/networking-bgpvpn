@@ -81,12 +81,6 @@ class CreateRouterAssociationView(project_views.CreateRouterAssociationView):
     failure_url = reverse_lazy("horizon:admin:bgpvpn:index")
 
 
-class UpdateAssociationsView(project_views.UpdateAssociationsView):
-    workflow_class = bgpvpn_workflows.UpdateBgpVpnAssociations
-    page_title = _("Edit BGPVPN associations")
-    failure_url = reverse_lazy("horizon:admin:bgpvpn:index")
-
-
 class DetailProjectView(project_views.DetailProjectView):
     tab_group_class = bgpvpn_tabs.BgpvpnDetailsTabs
     redirect_url = 'horizon:admin:bgpvpn:index'
