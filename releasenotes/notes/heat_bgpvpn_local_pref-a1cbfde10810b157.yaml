@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The the 'local_pref' attribute of a Heat BGPVPN resource
+    can now be controlled in a Heat template.

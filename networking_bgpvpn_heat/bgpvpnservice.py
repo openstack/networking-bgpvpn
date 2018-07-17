@@ -31,12 +31,12 @@ class BGPVPN(neutron.NeutronResource):
     PROPERTIES = (
         NAME, TYPE, DESCRIPTION, ROUTE_DISTINGUISHERS,
         IMPORT_TARGETS, EXPORT_TARGETS, ROUTE_TARGETS,
-        TENANT_ID
+        TENANT_ID, LOCAL_PREF
     ) = (
         'name', 'type', 'description',
         'route_distinguishers', 'import_targets',
         'export_targets', 'route_targets',
-        'tenant_id'
+        'tenant_id', 'local_pref'
     )
 
     ATTRIBUTES = (
@@ -97,6 +97,14 @@ class BGPVPN(neutron.NeutronResource):
             required=False,
             # TODO(tmorin): add a pattern constraint
         ),
+        LOCAL_PREF: properties.Schema(
+            properties.Schema.INTEGER,
+            description=_('Default value of the BGP LOCAL_PREF for the '
+                          'route advertisement to this BGPVPN.'),
+            constraints=[
+                constraints.Range(0, 2 ** 32 - 1),
+            ],
+        )
     }
 
     attributes_schema = {
@@ -115,6 +123,10 @@ class BGPVPN(neutron.NeutronResource):
         props = self.prepare_properties(
             self.properties,
             self.physical_resource_name())
+
+        # remove local-pref if unset, to let Neutron set a default
+        if (self.LOCAL_PREF in props and props[self.LOCAL_PREF] is None):
+            del props[self.LOCAL_PREF]
 
         if 'tenant_id' in props:
             tenant_id = self.client_plugin('keystone').get_project_id(
