@@ -6,6 +6,7 @@
    :maxdepth: 1
 
    unreleased
+   rocky
    queens
    mitaka
    pike
