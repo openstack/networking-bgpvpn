@@ -35,3 +35,9 @@
             required-projects: openstack/networking-odl
         - openstack-tox-cover:
             required-projects: openstack/networking-odl
+    periodic-stable:
+      jobs:
+        - build-openstack-sphinx-docs:
+            required-projects: openstack/networking-odl
+        - openstack-tox-py27:
+            required-projects: openstack/networking-odl
