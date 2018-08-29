@@ -1,4 +1,11 @@
 - project:
+    templates:
+      - openstack-python-jobs-neutron
+      - openstack-python35-jobs-neutron
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
+      - periodic-stable-jobs-neutron
+      - check-requirements
     check:
       jobs:
         # TripleO jobs that deploy networking-bgpvpn.
@@ -19,6 +26,32 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - horizon-openstack-tox-python3-django111
+        - build-openstack-sphinx-docs:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-pep8:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py27:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py35:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^setup.cfg$
+        - openstack-tox-cover:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-networking-bgpvpn-dsvm-functional
     gate:
       jobs:
         - openstack-tox-lower-constraints:
@@ -27,3 +60,41 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - horizon-openstack-tox-python3-django111
+        - build-openstack-sphinx-docs:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-pep8:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py27:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py35:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^setup.cfg$
+        - openstack-tox-cover:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-networking-bgpvpn-dsvm-functional
+    experimental:
+      jobs:
+        - legacy-networking-bgpvpn-dsvm-install
+        - legacy-networking-bgpvpn-bagpipe-dsvm-install
+        - legacy-networking-bgpvpn-bagpipe-dsvm-functional
+    post:
+      jobs:
+        - publish-openstack-python-branch-tarball:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - publish-openstack-sphinx-docs
