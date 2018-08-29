@@ -1,31 +1,101 @@
 - project:
+    templates:
+      - openstack-python-jobs-neutron
+      - openstack-python35-jobs-neutron
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
+      - periodic-stable-jobs-neutron
+      - check-requirements
     check:
       jobs:
         - openstack-tox-pep8:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py35:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - build-openstack-sphinx-docs:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-cover:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^setup.cfg$
+        - legacy-networking-bgpvpn-dsvm-functional
     gate:
       jobs:
         - openstack-tox-pep8:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py35:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - build-openstack-sphinx-docs:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-cover:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^setup.cfg$
+        - legacy-networking-bgpvpn-dsvm-functional
+    post:
+      jobs:
+        - publish-openstack-python-branch-tarball:
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - publish-openstack-sphinx-docs:
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
     periodic-stable:
       jobs:
         - build-openstack-sphinx-docs:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
-            required-projects: openstack/networking-odl
+            required-projects:
+              - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
+    experimental:
+      jobs:
+        - legacy-networking-bgpvpn-dsvm-install
+        - legacy-networking-bgpvpn-bagpipe-dsvm-install
+        - legacy-networking-bgpvpn-bagpipe-dsvm-functional
