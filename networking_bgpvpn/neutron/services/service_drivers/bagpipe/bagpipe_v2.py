@@ -242,19 +242,20 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
     @registry.receives(resources.ROUTER_INTERFACE, [events.BEFORE_DELETE])
     @log_helpers.log_method_call
     def registry_router_interface_deleted(self, resource, event, trigger,
-                                          **kwargs):
+                                          payload=None):
         try:
-            context = kwargs['context']
+            context = payload.context
             # for router_interface after_delete, in stable/newton, the
             # callback does not include the router_id directly, but we find
             # it in the port device_id
-            router_id = kwargs['router_id']
-            subnet_id = kwargs['subnet_id']
+            router_id = payload.resource_id
+            subnet_id = payload.metadata['subnet_id']
             # find the network for this subnet
             network_id = directory.get_plugin().get_subnet(
                 context, subnet_id)['network_id']
             self.notify_router_interface_deleted(
                 context, router_id, network_id)
         except Exception as e:
-            _log_callback_processing_exception(resource, event, trigger,
-                                               kwargs, e)
+            _log_callback_processing_exception(
+                resource, event, trigger,
+                {'subnet_id': subnet_id, 'router_id': router_id}, e)
