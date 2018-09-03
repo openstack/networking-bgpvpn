@@ -13,9 +13,6 @@
 from neutron.conf.services import provider_configuration
 from oslo_config import cfg
 
-from networking_bgpvpn.neutron.services.service_drivers.opencontrail \
-    import opencontrail_client
-
 
 def list_service_provider():
     return [
@@ -35,9 +32,3 @@ _dummy_bgpvpn_provider = ':'.join([
 def set_service_provider_default():
     cfg.set_defaults(provider_configuration.serviceprovider_opts,
                      service_provider=[_dummy_bgpvpn_provider])
-
-
-def list_opencontrail_driver_opts():
-    return [
-        ('apiserver', opencontrail_client.opencontrail_opts),
-    ]

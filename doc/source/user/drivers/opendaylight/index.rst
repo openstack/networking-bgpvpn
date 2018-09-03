@@ -9,6 +9,14 @@ OpenDaylight driver requires `networking-odl plugin`_ which comes with its own
 devstack scripts. Details on how to configure devstack for OpenDaylight
 plugin can be found at `networking-odl/devstack`_.
 
+.. note::
+
+   The legacy BGPVPN *v1 driver* for ODL that was hosted in
+   ``networking-bgpvpn`` tree (``networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver``)
+   has been deprecated in Rocky OpenStack release, and removed in Stein
+   OpenStack release. The documentation below refers to the newer *v2 driver*
+   in the ``networking-odl`` project.
+
 * add the following to local.conf to enable networking-odl plugin:
 
   .. code-block:: none
@@ -19,7 +27,7 @@ plugin can be found at `networking-odl/devstack`_.
 
   .. code-block:: ini
 
-     NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenDaylight:networking_bgpvpn.neutron.services.service_drivers.opendaylight.odl.OpenDaylightBgpvpnDriver:default"
+     NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenDaylight:networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default"
 
 * Run stack.sh:
 

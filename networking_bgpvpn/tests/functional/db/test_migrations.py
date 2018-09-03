@@ -24,8 +24,6 @@ from networking_bgpvpn.neutron.db import head
 IGNORED_TABLES_MATCH = (
     'ml2_route_target_allocations',
     '_bagpipe_',
-    'odl_',
-    'opendaylight'
 )
 
 # EXTERNAL_TABLES should contain all names of tables that are not related to
