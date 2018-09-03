@@ -14,7 +14,7 @@
 # pip install {opts} {packages}
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
-BRANCH_NAME=master
+BRANCH_NAME=stable/queens
 GIT_BASE=${GIT_BASE:-https://git.openstack.org/}
 
 install_project() {
