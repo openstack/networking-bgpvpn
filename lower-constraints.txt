@@ -36,7 +36,7 @@ future==0.16.0
 futurist==1.2.0
 greenlet==0.4.10
 hacking==0.12.0
-horizon==14.0.0.0b3
+horizon==14.0.0
 httplib2==0.9.1
 idna==2.6
 imagesize==0.7.1
@@ -62,7 +62,7 @@ msgpack-python==0.4.0
 munch==2.1.0
 netaddr==0.7.18
 netifaces==0.10.4
-networking-bagpipe==8.0.0
+networking-bagpipe==9.0.0
 networking-odl==12.0.0
 neutron==12.0.0
 neutron-lib==1.18.0
