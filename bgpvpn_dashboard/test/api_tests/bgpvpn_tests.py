@@ -25,8 +25,6 @@ from neutronclient.v2_0.client import Client as neutronclient
 
 class BgpvpnApiTests(bgpvpn_test.APITestCase):
 
-    use_mox = False
-
     def setUp(self):
         bgpvpn_test.APITestCase.setUp(self)
 
