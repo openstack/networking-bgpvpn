@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    The obsolete in-tree drivers for OpenContrail and OpenDaylight have been
+    removed, in favor of the out-of-tree drivers provided by these projects.

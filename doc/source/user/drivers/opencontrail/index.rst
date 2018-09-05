@@ -9,11 +9,13 @@ The **OpenContrail** driver for the BGPVPN service plugin is designed to work
 jointly with the `OpenContrail SDN controller`_ (`GitHub`_). The BGP VPN driver
 can be found in the `monolithic Neutron plugin tree`__ [#]_.
 
-.. Warning::
+.. Note::
 
-   The `old OpenContail driver`_ has been deprecated in Queens release in favor
-   of the production ready `driver`_ and plan to be completly removed in Rocky
-   release. Be careful, **no** migration path is planned.
+   The BGPVPN Contrail driver that was under ``networking_bgpvpn`` (``networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver``)
+   has been deprecated in Queens release, and has been completly removed in
+   Stein release. The documentation below refers to the production ready
+   `driver`_ under ``Juniper/contrail-neutron-plugin``. Be careful, **no**
+   migration path is planned.
 
 Limitations
 -----------
@@ -98,7 +100,6 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 .. _GitHub: https://github.com/Juniper/contrail-controller
 .. _driver: https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn
 __ driver_
-.. _old OpenContail driver: https://github.com/openstack/networking-bgpvpn/tree/stable/queens/networking_bgpvpn/neutron/services/service_drivers/opencontrail
 .. _route distinguisher: https://developer.openstack.org/api-ref/networking/v2/#on-route-distinguishers-rds
 .. _router associations: https://developer.openstack.org/api-ref/networking/v2/#router-associations
 .. _network associations: https://developer.openstack.org/api-ref/networking/v2/#network-associations
