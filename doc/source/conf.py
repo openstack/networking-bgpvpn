@@ -95,7 +95,6 @@ blockdiag_html_image_format = "svg"
 
 _config_generator_config_files = [
     'networking-bgpvpn.conf',
-    'opencontrail-driver.conf',
 ]
 
 def _get_config_generator_config_definition(conf_file):
