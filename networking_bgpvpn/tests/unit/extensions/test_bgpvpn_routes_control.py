@@ -20,8 +20,11 @@ from oslo_utils import uuidutils
 
 from neutron.extensions import l3
 from neutron.tests.unit.api.v2 import test_base
+
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
 from neutron_lib.api.definitions import bgpvpn_routes_control as rc_api_def
+from neutron_lib.utils import test
+
 from webob import exc
 
 from networking_bgpvpn.neutron.extensions import bgpvpn
@@ -78,6 +81,7 @@ class BgpvpnRoutesControlExtensionTestCase(
         return [None, {}, {target: None}, {target: {}}
                 ]
 
+    @test.unstable_test("bug/1791256")
     def test_router_association_update(self):
         data = {
             'router_association': {

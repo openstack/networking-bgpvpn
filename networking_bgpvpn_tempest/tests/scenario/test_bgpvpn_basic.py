@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import functools
 import netaddr
 import os
 import random
@@ -27,26 +26,12 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
+from neutron_lib.utils import test
+
 from networking_bgpvpn_tempest.tests import base
 from networking_bgpvpn_tempest.tests.scenario import manager
 
 from oslo_concurrency import lockutils
-
-
-# TODO(tmorin): move to neutron-lib
-# code copied from neutron repository - neutron/tests/base.py
-def unstable_test(reason):
-    def decor(f):
-        @functools.wraps(f)
-        def inner(self, *args, **kwargs):
-            try:
-                return f(self, *args, **kwargs)
-            except Exception as e:
-                msg = ("%s was marked as unstable because of %s, "
-                       "failure was: %s") % (self.id(), reason, e)
-                raise self.skipTest(msg)
-        return inner
-    return decor
 
 
 CONF = config.CONF
@@ -686,7 +671,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     @decorators.idempotent_id('d92a8a18-c4d0-40d5-8592-713d7dae7d25')
     @utils.services('compute', 'network')
     @utils.requires_ext(extension='bgpvpn-routes-control', service='network')
-    @unstable_test("bug 1780205")
+    @test.unstable_test("bug 1780205")
     def test_port_association_many_bgpvpn_routes(self):
         """This test checks port association in BGPVPN.
 
