@@ -1,3 +1,49 @@
+- job:
+    name: networking-bgpvpn-bagpipe-dsvm-functional
+    parent: legacy-dsvm-base
+    run: playbooks/networking-bgpvpn-bagpipe-dsvm-functional/run.yaml
+    post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-functional/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-bagpipe
+      - openstack/networking-bgpvpn
+
+- job:
+    name: networking-bgpvpn-bagpipe-dsvm-install
+    parent: legacy-dsvm-base
+    run: playbooks/networking-bgpvpn-bagpipe-dsvm-install/run.yaml
+    post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-install/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-bagpipe
+      - openstack/networking-bgpvpn
+
+- job:
+    name: networking-bgpvpn-dsvm-functional
+    parent: legacy-dsvm-base
+    run: playbooks/networking-bgpvpn-dsvm-functional/run.yaml
+    post-run: playbooks/networking-bgpvpn-dsvm-functional/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-bgpvpn
+      - openstack/neutron
+      - openstack/networking-bagpipe
+      - openstack/networking-odl
+      - openstack/horizon
+
+- job:
+    name: networking-bgpvpn-dsvm-install
+    parent: legacy-dsvm-base
+    run: playbooks/networking-bgpvpn-dsvm-install/run.yaml
+    post-run: playbooks/networking-bgpvpn-dsvm-install/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-bgpvpn
+
 - project:
     templates:
       - openstack-python-jobs-neutron
@@ -51,7 +97,7 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - legacy-networking-bgpvpn-dsvm-functional
+        - networking-bgpvpn-dsvm-functional
     gate:
       jobs:
         - openstack-tox-lower-constraints:
@@ -85,12 +131,12 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - legacy-networking-bgpvpn-dsvm-functional
+        - networking-bgpvpn-dsvm-functional
     experimental:
       jobs:
-        - legacy-networking-bgpvpn-dsvm-install
-        - legacy-networking-bgpvpn-bagpipe-dsvm-install
-        - legacy-networking-bgpvpn-bagpipe-dsvm-functional
+        - networking-bgpvpn-dsvm-install
+        - networking-bgpvpn-bagpipe-dsvm-install
+        - networking-bgpvpn-bagpipe-dsvm-functional
     post:
       jobs:
         - publish-openstack-python-branch-tarball:
