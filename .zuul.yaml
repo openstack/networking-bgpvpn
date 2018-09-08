@@ -27,10 +27,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - horizon-openstack-tox-python3-django111
-        - openstack-tox-docs:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
@@ -65,10 +61,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - horizon-openstack-tox-python3-django111
-        - openstack-tox-docs:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
@@ -89,11 +81,6 @@
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
-        - openstack-tox-cover:
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - legacy-networking-bgpvpn-dsvm-functional
     experimental:
       jobs:
@@ -106,4 +93,3 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - publish-openstack-sphinx-docs
