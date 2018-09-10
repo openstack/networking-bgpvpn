@@ -4,9 +4,7 @@ export OVERRIDE_ENABLED_SERVICES=n-api,n-crt,n-cpu,n-cond,n-sch,placement-api,q-
 
 if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
     export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
-
-    # skip all scenario tests until bug #1789878
-    export DEVSTACK_GATE_TEMPEST_REGEX="networking_bgpvpn_tempest\.tests\.api"
+    export DEVSTACK_GATE_TEMPEST_REGEX="^networking_bgpvpn_tempest\."
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
 fi
 
