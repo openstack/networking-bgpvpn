@@ -4,10 +4,6 @@
 _XTRACE_NETWORKING_BGPVPN=$(set +o | grep xtrace)
 set -o xtrace
 
-if is_service_enabled q-agt; then
-   source $NEUTRON_DIR/devstack/lib/l2_agent
-fi
-
 if [[ "$1" == "source" ]]; then
     # no-op
     :
@@ -36,6 +32,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
     fi
     if is_service_enabled q-agt && is_service_enabled b-bgp ; then
         echo_summary "Configuring agent for bagpipe bgpvpn"
+        source $NEUTRON_DIR/devstack/lib/l2_agent
 
         plugin_agent_add_l2_agent_extension bagpipe_bgpvpn
         configure_l2_agent
