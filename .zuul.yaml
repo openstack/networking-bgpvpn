@@ -133,9 +133,3 @@
         - networking-bgpvpn-dsvm-install
         - networking-bgpvpn-bagpipe-dsvm-install
         - networking-bgpvpn-bagpipe-dsvm-functional
-    post:
-      jobs:
-        - publish-openstack-python-branch-tarball:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
