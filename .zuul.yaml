@@ -69,18 +69,29 @@
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py35:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - build-openstack-sphinx-docs:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-cover:
             required-projects:
+              - openstack/neutron
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -91,18 +102,29 @@
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py35:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - build-openstack-sphinx-docs:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-cover:
             required-projects:
+              - openstack/neutron
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -113,9 +135,13 @@
         - build-openstack-sphinx-docs:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - openstack-tox-py27:
             required-projects:
               - openstack/networking-odl
+              - openstack/networking-bagpipe
+              - openstack/horizon
     experimental:
       jobs:
         - networking-bgpvpn-dsvm-install
