@@ -61,7 +61,7 @@ class BGPVPNDriverBase(object):
         pass
 
     @abc.abstractmethod
-    def create_net_assoc(self, bgpvpn_id, network_association):
+    def create_net_assoc(self, context, bgpvpn_id, network_association):
         pass
 
     @abc.abstractmethod
