@@ -21,13 +21,13 @@ from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
 from neutron.db import _model_query as model_query
-from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import standard_attr
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
 from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
+from neutron_lib.db import api as db_api
 from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
 from neutron_lib.plugins import directory
@@ -214,7 +214,7 @@ def _list_bgpvpns_result_filter_hook(query, filters):
     return query
 
 
-@db_api.context_manager.writer
+@db_api.CONTEXT_WRITER
 def _add_port_assoc_route_db_from_dict(context, route, port_association_id):
     if route['type'] == 'prefix':
         kwargs = {'prefix': route['prefix']}
@@ -256,7 +256,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             result_filters=_list_bgpvpns_result_filter_hook)
         return super(BGPVPNPluginDb, cls).__new__(cls, *args, **kwargs)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _get_bgpvpns_for_tenant(self, session, tenant_id, fields):
         try:
             qry = session.query(BGPVPN)
@@ -267,7 +267,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         return [self._make_bgpvpn_dict(bgpvpn, fields=fields)
                 for bgpvpn in bgpvpns]
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _make_bgpvpn_dict(self, bgpvpn_db, fields=None):
         net_list = [net_assocs.network_id for net_assocs in
                     bgpvpn_db.network_associations]
@@ -302,14 +302,14 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
         return self._fields(res, fields)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def create_bgpvpn(self, context, bgpvpn):
         rt = utils.rtrd_list2str(bgpvpn['route_targets'])
         i_rt = utils.rtrd_list2str(bgpvpn['import_targets'])
         e_rt = utils.rtrd_list2str(bgpvpn['export_targets'])
         rd = utils.rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
 
-        with db_api.context_manager.writer.using(context):
+        with db_api.CONTEXT_WRITER.using(context):
             bgpvpn_db = BGPVPN(
                 id=uuidutils.generate_uuid(),
                 tenant_id=bgpvpn['tenant_id'],
@@ -326,24 +326,24 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
 
         return self._make_bgpvpn_dict(bgpvpn_db)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_bgpvpns(self, context, filters=None, fields=None):
         return self._get_collection(context, BGPVPN, self._make_bgpvpn_dict,
                                     filters=filters, fields=fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _get_bgpvpn(self, context, id):
         try:
             return self._get_by_id(context, BGPVPN, id)
         except exc.NoResultFound:
             raise bgpvpn_ext.BGPVPNNotFound(id=id)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_bgpvpn(self, context, id, fields=None):
         bgpvpn_db = self._get_bgpvpn(context, id)
         return self._make_bgpvpn_dict(bgpvpn_db, fields)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def update_bgpvpn(self, context, id, bgpvpn):
         bgpvpn_db = self._get_bgpvpn(context, id)
         if bgpvpn:
@@ -363,14 +363,14 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             bgpvpn_db.update(bgpvpn)
         return self._make_bgpvpn_dict(bgpvpn_db)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def delete_bgpvpn(self, context, id):
         bgpvpn_db = self._get_bgpvpn(context, id)
         bgpvpn = self._make_bgpvpn_dict(bgpvpn_db)
         context.session.delete(bgpvpn_db)
         return bgpvpn
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _make_net_assoc_dict(self, net_assoc_db, fields=None):
         res = {'id': net_assoc_db['id'],
                'tenant_id': net_assoc_db['tenant_id'],
@@ -378,7 +378,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                'network_id': net_assoc_db['network_id']}
         return self._fields(res, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _get_net_assoc(self, context, assoc_id, bgpvpn_id):
         try:
             query = self._model_query(context, BGPVPNNetAssociation)
@@ -389,10 +389,10 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_ext.BGPVPNNetAssocNotFound(id=assoc_id,
                                                     bgpvpn_id=bgpvpn_id)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def create_net_assoc(self, context, bgpvpn_id, net_assoc):
         try:
-            with db_api.context_manager.writer.using(context):
+            with db_api.CONTEXT_WRITER.using(context):
                 net_assoc_db = BGPVPNNetAssociation(
                     tenant_id=net_assoc['tenant_id'],
                     bgpvpn_id=bgpvpn_id,
@@ -407,12 +407,12 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_ext.BGPVPNNetAssocAlreadyExists(
                 bgpvpn_id=bgpvpn_id, net_id=net_assoc['network_id'])
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         net_assoc_db = self._get_net_assoc(context, assoc_id, bgpvpn_id)
         return self._make_net_assoc_dict(net_assoc_db, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_net_assocs(self, context, bgpvpn_id, filters=None, fields=None):
         if not filters:
             filters = {}
@@ -421,7 +421,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     self._make_net_assoc_dict,
                                     filters, fields)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def delete_net_assoc(self, context, assoc_id, bgpvpn_id):
         LOG.info("deleting network association %(id)s for "
                  "BGPVPN %(bgpvpn)s", {'id': assoc_id,
@@ -431,7 +431,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         context.session.delete(net_assoc_db)
         return net_assoc
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _make_router_assoc_dict(self, router_assoc_db, fields=None):
         res = {'id': router_assoc_db['id'],
                'tenant_id': router_assoc_db['tenant_id'],
@@ -442,7 +442,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                }
         return self._fields(res, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _get_router_assoc(self, context, assoc_id, bgpvpn_id):
         try:
             query = self._model_query(context, BGPVPNRouterAssociation)
@@ -453,11 +453,11 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_ext.BGPVPNRouterAssocNotFound(id=assoc_id,
                                                        bgpvpn_id=bgpvpn_id)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def create_router_assoc(self, context, bgpvpn_id, router_association):
         router_id = router_association['router_id']
         try:
-            with db_api.context_manager.writer.using(context):
+            with db_api.CONTEXT_WRITER.using(context):
                 router_assoc_db = BGPVPNRouterAssociation(
                     tenant_id=router_association['tenant_id'],
                     bgpvpn_id=bgpvpn_id,
@@ -472,12 +472,12 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_ext.BGPVPNRouterAssocAlreadyExists(
                 bgpvpn_id=bgpvpn_id, router_id=router_association['router_id'])
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         router_assoc_db = self._get_router_assoc(context, assoc_id, bgpvpn_id)
         return self._make_router_assoc_dict(router_assoc_db, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_router_assocs(self, context, bgpvpn_id, filters=None, fields=None):
         if not filters:
             filters = {}
@@ -486,14 +486,14 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     self._make_router_assoc_dict,
                                     filters, fields)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def update_router_assoc(self, context, assoc_id, bgpvpn_id, router_assoc):
         router_assoc_db = self._get_router_assoc(context,
                                                  assoc_id, bgpvpn_id)
         router_assoc_db.update(router_assoc)
         return self._make_router_assoc_dict(router_assoc_db)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def delete_router_assoc(self, context, assoc_id, bgpvpn_id):
         LOG.info("deleting router association %(id)s for "
                  "BGPVPN %(bgpvpn)s",
@@ -504,7 +504,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         context.session.delete(router_assoc_db)
         return router_assoc
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _make_port_assoc_dict(self, port_assoc_db, fields=None):
         routes = [port_assoc_route_dict_from_db(r)
                   for r in port_assoc_db['routes']]
@@ -516,7 +516,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                'routes': routes}
         return self._fields(res, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def _get_port_assoc(self, context, assoc_id, bgpvpn_id):
         try:
             query = self._model_query(context, BGPVPNPortAssociation)
@@ -527,12 +527,12 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_rc_ext.BGPVPNPortAssocNotFound(id=assoc_id,
                                                         bgpvpn_id=bgpvpn_id)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def create_port_assoc(self, context, bgpvpn_id, port_association):
         port_id = port_association['port_id']
         advertise_fixed_ips = port_association['advertise_fixed_ips']
         try:
-            with db_api.context_manager.writer.using(context):
+            with db_api.CONTEXT_WRITER.using(context):
                 port_assoc_db = BGPVPNPortAssociation(
                     tenant_id=port_association['tenant_id'],
                     bgpvpn_id=bgpvpn_id,
@@ -547,18 +547,18 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
             raise bgpvpn_rc_ext.BGPVPNPortAssocAlreadyExists(
                 bgpvpn_id=bgpvpn_id, port_id=port_association['port_id'])
 
-        with db_api.context_manager.writer.using(context):
+        with db_api.CONTEXT_WRITER.using(context):
             for route in port_association['routes']:
                     _add_port_assoc_route_db_from_dict(context,
                                                        route, port_assoc_db.id)
         return self._make_port_assoc_dict(port_assoc_db)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_port_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
         port_assoc_db = self._get_port_assoc(context, assoc_id, bgpvpn_id)
         return self._make_port_assoc_dict(port_assoc_db, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def get_port_assocs(self, context, bgpvpn_id, filters=None, fields=None):
         if not filters:
             filters = {}
@@ -567,9 +567,9 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
                                     self._make_port_assoc_dict,
                                     filters, fields)
 
-    @db_api.context_manager.reader
+    @db_api.CONTEXT_READER
     def update_port_assoc(self, context, assoc_id, bgpvpn_id, port_assoc):
-        with db_api.context_manager.writer.using(context):
+        with db_api.CONTEXT_WRITER.using(context):
             port_assoc_db = self._get_port_assoc(context, assoc_id, bgpvpn_id)
             for route_db in port_assoc_db.routes:
                 context.session.delete(route_db)
@@ -579,7 +579,7 @@ class BGPVPNPluginDb(common_db_mixin.CommonDbMixin):
         context.session.refresh(port_assoc_db)
         return self._make_port_assoc_dict(port_assoc_db)
 
-    @db_api.context_manager.writer
+    @db_api.CONTEXT_WRITER
     def delete_port_assoc(self, context, assoc_id, bgpvpn_id):
         LOG.info(("deleting port association %(id)s for "
                   "BGPVPN %(bgpvpn)s"),
