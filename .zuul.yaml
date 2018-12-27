@@ -65,7 +65,7 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario004-multinode-oooq:
             voting: false
-        - tripleo-ci-centos-7-scenario004-multinode-oooq-container:
+        - tripleo-ci-centos-7-scenario004-standalone:
             voting: false
         - openstack-tox-lower-constraints:
             required-projects:
