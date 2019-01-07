@@ -28,6 +28,8 @@ from neutron_lib.db import api as db_api
 from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins import directory
 
+from networking_bagpipe.objects import bgpvpn as bgpvpn_objects
+
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
@@ -35,7 +37,6 @@ from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.common import utils
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
-from networking_bagpipe.objects import bgpvpn as bgpvpn_objects
 
 LOG = logging.getLogger(__name__)
 

@@ -44,13 +44,16 @@ disable=
 # "C" Coding convention violations
  bad-continuation,
  invalid-name,
+ len-as-condition,
  missing-docstring,
  superfluous-parens,
 # "R" Refactor recommendations
  abstract-class-little-used,
  abstract-class-not-used,
  duplicate-code,
+ inconsistent-return-statements,
  interface-not-implemented,
+ no-else-return,
  no-self-use,
  too-few-public-methods,
  too-many-ancestors,
