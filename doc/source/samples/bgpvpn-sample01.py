@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
+import sys
+
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from neutronclient.v2_0 import client
-import os
-import sys
 
 # Parameter for subnet neutron object
 SUBNET_IP = "192.168.24.0/24"

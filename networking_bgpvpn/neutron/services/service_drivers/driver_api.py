@@ -306,9 +306,6 @@ class BGPVPNDriverRCBase(BGPVPNDriverBase):
     more_supported_extension_aliases = [
         bgpvpn_rc.Bgpvpn_routes_control.get_alias()]
 
-    def __init__(self, *args, **kwargs):
-        super(BGPVPNDriverRCBase, self).__init__(*args, **kwargs)
-
     @abc.abstractmethod
     def update_router_assoc(self, context, assoc_id, router_association):
         pass
