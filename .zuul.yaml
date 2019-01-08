@@ -90,7 +90,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
-            voting: false # until bug 1807152 is resolved
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -125,7 +124,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
-            voting: false # until bug 1807152 is resolved
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
