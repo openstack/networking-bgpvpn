@@ -66,7 +66,7 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
         self.mock_delete_rpc = self.mocked_rpc.delete_bgpvpn
 
         mock.patch(
-            'neutron.common.rpc.get_client').start().return_value
+            'neutron_lib.rpc.get_client').start().return_value
 
         if not plugin:
             plugin = '%s.%s' % (__name__, TestCorePluginWithAgents.__name__)
