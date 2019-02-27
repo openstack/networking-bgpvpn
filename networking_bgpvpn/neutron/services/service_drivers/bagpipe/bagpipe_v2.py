@@ -59,14 +59,14 @@ def network_is_external(context, net_id):
         return False
 
 
-def _log_callback_processing_exception(resource, event, trigger, kwargs, e):
+def _log_callback_processing_exception(resource, event, trigger, metadata, e):
     LOG.exception("Error during notification processing "
                   "%(resource)s %(event)s, %(trigger)s, "
-                  "%(kwargs)s: %(exc)s",
+                  "%(metadata)s: %(exc)s",
                   {'trigger': trigger,
                    'resource': resource,
                    'event': event,
-                   'kwargs': kwargs,
+                   'metadata': metadata,
                    'exc': e})
 
 
@@ -228,15 +228,15 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
     @registry.receives(resources.ROUTER_INTERFACE, [events.AFTER_CREATE])
     @log_helpers.log_method_call
     def registry_router_interface_created(self, resource, event, trigger,
-                                          **kwargs):
+                                          payload=None):
         try:
-            context = kwargs['context']
-            router_id = kwargs['router_id']
-            net_id = kwargs['port']['network_id']
+            context = payload.context
+            router_id = payload.resource_id
+            net_id = payload.metadata.get('port')['network_id']
             self.notify_router_interface_created(context, router_id, net_id)
         except Exception as e:
             _log_callback_processing_exception(resource, event, trigger,
-                                               kwargs, e)
+                                               payload.metadata, e)
 
     # need to subscribe to router interface *before*_delete
     # because after delete, we can't build the OVO objects from the DB anymore

@@ -78,10 +78,10 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
 
     @registry.receives(resources.ROUTER_INTERFACE, [events.BEFORE_CREATE])
     def _notify_adding_interface_to_router(self, resource, event, trigger,
-                                           **kwargs):
-        context = kwargs.get('context')
-        network_id = kwargs.get('network_id')
-        router_id = kwargs.get('router_id')
+                                           payload):
+        context = payload.context
+        network_id = payload.metadata.get('network_id')
+        router_id = payload.resource_id
         try:
             routers_bgpvpns = self.driver.get_bgpvpns(
                 context,

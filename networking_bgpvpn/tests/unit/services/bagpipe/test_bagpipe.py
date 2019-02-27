@@ -29,6 +29,7 @@ from neutron.plugins.ml2 import rpc as ml2_rpc
 from neutron.tests.common import helpers
 
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.callbacks import events
 from neutron_lib import constants as const
 from neutron_lib import context as n_context
 from neutron_lib.plugins import directory
@@ -793,11 +794,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                                   return_value=[{
                                       'bgpvpn_id': bgpvpn['bgpvpn']['id']
                                   }]).start():
+
+            payload = events.DBEventPayload(
+                self.ctxt, resource_id=router['router']['id'],
+                metadata={'port': {'network_id': net['network']['id']}})
             self.bagpipe_driver.registry_router_interface_created(
-                None, None, None,
-                context=self.ctxt,
-                port={'network_id': net['network']['id']},
-                router_id=router['router']['id'],
+                None, None, None, payload=payload
             )
             self.mock_update_rpc.assert_called_once_with(
                 mock.ANY,
@@ -818,12 +820,16 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                                   return_value=[{
                                       'bgpvpn_id': bgpvpn['bgpvpn']['id']
                                   }]).start():
+            payload = events.DBEventPayload(
+                self.ctxt, metadata={
+                    'network_id': port['port']['network_id'],
+                    'port': {
+                        'device_id': router['router']['id'],
+                        'network_id': net['network']['id']}
+                })
             self.bagpipe_driver.registry_router_interface_deleted(
                 None, None, None,
-                context=self.ctxt,
-                network_id=port['port']['network_id'],
-                port={'device_id': router['router']['id'],
-                      'network_id': net['network']['id']}
+                payload=payload
             )
             self.mock_delete_rpc.assert_called_once_with(
                 mock.ANY,
