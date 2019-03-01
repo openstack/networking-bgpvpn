@@ -49,6 +49,7 @@
       - openstack-python-jobs-neutron
       - openstack-python35-jobs-neutron
       - openstack-python36-jobs-neutron
+      - openstack-python37-jobs-neutron
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
@@ -86,6 +87,10 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
+        - openstack-tox-py37:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -117,6 +122,10 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-py36:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py37:
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
