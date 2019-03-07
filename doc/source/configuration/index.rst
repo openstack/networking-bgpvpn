@@ -1,31 +1,36 @@
-=====================
-Configuration Options
-=====================
+===================
+Configuration Guide
+===================
+
+Configuration
+-------------
 
 This section provides a list of all possible options for each
 configuration file.
-These are generated from code and reflect the current state of code
+networking-bgpvpn uses the following configuration file.
+
+.. toctree::
+   :maxdepth: 1
+
+   networking-bgpvpn
+
+The following is a sample configuration file for networking-bgpvpn.
+It is generated from code and reflect the current state of code
 in the networking-bgpvpn repository.
 
-Configuration Reference
------------------------
-
-networking-bgpvpn uses the following configuration files for its
-various services.
-
 .. toctree::
-   :glob:
    :maxdepth: 1
 
-   *
+   samples/networking-bgpvpn
 
-Sample Configuration Files
---------------------------
+Policy
+------
 
-The following are sample configuration files for all networking-bgpvpn.
+networking-bgpvpn, like most OpenStack projects, uses a policy language to
+restrict permissions on REST API actions.
 
 .. toctree::
-   :glob:
    :maxdepth: 1
 
-   samples/*
+   Policy Reference <policy>
+   Sample Policy File <policy-sample>

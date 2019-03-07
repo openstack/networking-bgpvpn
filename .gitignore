@@ -48,6 +48,7 @@ output/*/index.html
 # Documentation
 doc/build
 doc/source/_static/config-samples/*.sample
+doc/source/_static/*.policy.yaml.sample
 etc/**/*.sample
 
 # pbr generates these
