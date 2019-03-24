@@ -62,7 +62,7 @@ In devstack
 
   * enable networking-bagpipe_, which contains code for agent extensions::
 
-     enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
+     enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
 
   * enable the ``openvswitch`` and ``l2population`` ML2 mechanism drivers::
 
@@ -87,7 +87,7 @@ In devstack
 
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
-        enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
+        enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
 
     * define ``Q_AGENT=openvswitch`` in ``local.conf``  (optional, this is actually the default now)
 

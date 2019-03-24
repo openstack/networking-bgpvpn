@@ -34,7 +34,7 @@ install_project() {
         $ZUUL_CLONER --cache-dir \
             /opt/git \
             --branch $BRANCH_NAME \
-            git://git.openstack.org \
+            https://git.openstack.org \
             openstack/$project
         cd openstack/$project
         $install_cmd -e .
