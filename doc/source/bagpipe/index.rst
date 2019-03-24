@@ -68,7 +68,7 @@ In devstack
 
     * install networking-bagpipe_  (the code to interact with ``bagpipe-bgp`` comes from there)::
 
-        enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
+        enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
 
     * define ``Q_AGENT=bagpipe-openvswitch`` in ``local.conf``
 

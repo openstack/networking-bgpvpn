@@ -32,7 +32,7 @@ the forwarding plane) you can:
 * add the devstack plugin for the BGPVPN service plugin to your ``local.conf``: ::
 
 	[[local|localrc]]
-	enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
+	enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
 
 * bgpvpn-create/update/associate/delete/show/list commands will be available with
   the neutron client, for example: ::
