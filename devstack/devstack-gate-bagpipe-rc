@@ -21,7 +21,7 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 
 # at least some DB setup things (e.g. for functional tests) require
 # helpers from neutron devstack plugin
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron git://git.openstack.org/openstack/neutron"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron https://git.openstack.org/openstack/neutron"
 
 # Using the openvswitch firewall driver for security groups is currently
 # required to allow BGPVPN/router coexistence in single node or DVR setup
