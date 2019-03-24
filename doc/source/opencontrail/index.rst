@@ -82,7 +82,7 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 
  enable_plugin contrail https://github.com/zioc/contrail-devstack-plugin.git
 
- enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
+ enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
  NETWORKING_BGPVPN_DRIVER="BGPVPN:OpenContrail:networking_bgpvpn.neutron.services.service_drivers.opencontrail.opencontrail.OpenContrailBGPVPNDriver:default"
 
 .. _OpenContrail SDN controller : https://github.com/Juniper/contrail-controller

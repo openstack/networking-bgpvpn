@@ -70,11 +70,11 @@ Devstack
 
 You can easily test the bgpvpn service plugin with devstack, by adding the following line to your local.conf::
 
-    enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git
+    enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
 
 Or the following if you want a specific branch or version (example for Mitaka)::
 
-    enable_plugin networking-bgpvpn git://git.openstack.org/openstack/networking-bgpvpn.git stable/mitaka
+    enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git stable/mitaka
 
 By default, the service driver will use a dummy driver, that only responds to API calls, and stores data in the database.
 If you want to test a fully functional driver with devstack, you can configure the bagpipe driver with its devstack plugin (see :doc:`bagpipe/index`).
