@@ -66,8 +66,8 @@ In devstack
 
     .. code-block:: ini
 
-       enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
-       # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
+       enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
+       # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
 
 * on a control node, if you want to run the Fake Route-Reflector there (relevant only for a multinode setup):
 
@@ -83,8 +83,8 @@ In devstack
 
       .. code-block:: ini
 
-         enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git
-         # enable_plugin networking-bagpipe git://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
+         enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
+         # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/ocata
 
     * define ``Q_AGENT=openvswitch`` in ``local.conf``  (optional, this is actually the default now)
 
