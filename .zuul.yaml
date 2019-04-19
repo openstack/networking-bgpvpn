@@ -5,7 +5,7 @@
     post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-functional/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
 
@@ -16,7 +16,7 @@
     post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-install/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
 
@@ -27,7 +27,7 @@
     post-run: playbooks/networking-bgpvpn-dsvm-functional/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-bgpvpn
       - openstack/neutron
       - openstack/networking-bagpipe
@@ -41,7 +41,7 @@
     post-run: playbooks/networking-bgpvpn-dsvm-install/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-bgpvpn
 
 - project:
