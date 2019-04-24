@@ -9,7 +9,7 @@ if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
 fi
 
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"NETWORKING_BGPVPN_DRIVER=BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe"
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"BAGPIPE_DATAPLANE_DRIVER_IPVPN=ovs"
 
 # until we do multinode, there is no BGP peer to connect to
@@ -21,7 +21,7 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"VERBOSE=False"
 
 # at least some DB setup things (e.g. for functional tests) require
 # helpers from neutron devstack plugin
-export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron https://git.openstack.org/openstack/neutron"
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin neutron https://opendev.org/openstack/neutron"
 
 # Using the openvswitch firewall driver for security groups is currently
 # required to allow BGPVPN/router coexistence in single node or DVR setup
