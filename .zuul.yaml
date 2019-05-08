@@ -91,7 +91,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -129,7 +129,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - legacy-tempest-dsvm-networking-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
