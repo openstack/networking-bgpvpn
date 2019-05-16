@@ -118,49 +118,12 @@ class BGPVPNPortAssociation(standard_attr.HasStandardAttributes,
                             backref=orm.backref('bgpvpn_associations',
                                                 cascade='all'),
                             lazy='joined',)
-    routes = orm.relationship("BGPVPNPortAssociationRoute",
-                              backref="bgpvpn_port_associations")
 
     # standard attributes support:
     api_collections = []
     api_sub_resources = [bgpvpn_rc_def.PORT_ASSOCIATIONS]
     collection_resource_map = {bgpvpn_rc_def.PORT_ASSOCIATIONS:
                                bgpvpn_rc_def.PORT_ASSOCIATION}
-
-
-class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
-    """Represents an item of the 'routes' attribute of a port association."""
-    __tablename__ = 'bgpvpn_port_association_routes'
-
-    port_association_id = sa.Column(
-        sa.String(length=36),
-        sa.ForeignKey('bgpvpn_port_associations.id', ondelete='CASCADE'),
-        nullable=False)
-    type = sa.Column(sa.Enum(*bgpvpn_rc_def.ROUTE_TYPES,
-                             name="bgpvpn_port_assoc_route_type"),
-                     nullable=False)
-    local_pref = sa.Column(sa.BigInteger(),
-                           nullable=True)
-    # prefix is NULL unless type is 'prefix'
-    prefix = sa.Column(sa.String(49),
-                       nullable=True)
-    # bgpvpn_id is NULL unless type is 'bgpvpn'
-    bgpvpn_id = sa.Column(sa.String(length=36),
-                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
-                          nullable=True)
-
-    port_association = orm.relationship(
-        "BGPVPNPortAssociation",
-        backref=orm.backref('port_association_routes',
-                            cascade='all'),
-        lazy='joined')
-    bgpvpn = orm.relationship(
-        "BGPVPN",
-        backref=orm.backref("port_association_routes",
-                            uselist=False,
-                            lazy='select',
-                            cascade='all, delete-orphan'),
-        lazy='joined')
 
 
 class BGPVPN(standard_attr.HasStandardAttributes, model_base.BASEV2,
@@ -193,6 +156,41 @@ class BGPVPN(standard_attr.HasStandardAttributes, model_base.BASEV2,
     api_collections = [bgpvpn_def.COLLECTION_NAME]
     collection_resource_map = {bgpvpn_def.COLLECTION_NAME:
                                bgpvpn_def.RESOURCE_NAME}
+
+
+class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
+    """Represents an item of the 'routes' attribute of a port association."""
+    __tablename__ = 'bgpvpn_port_association_routes'
+
+    port_association_id = sa.Column(
+        sa.String(length=36),
+        sa.ForeignKey('bgpvpn_port_associations.id', ondelete='CASCADE'),
+        nullable=False)
+    type = sa.Column(sa.Enum(*bgpvpn_rc_def.ROUTE_TYPES,
+                             name="bgpvpn_port_assoc_route_type"),
+                     nullable=False)
+    local_pref = sa.Column(sa.BigInteger(),
+                           nullable=True)
+    # prefix is NULL unless type is 'prefix'
+    prefix = sa.Column(sa.String(49),
+                       nullable=True)
+    # bgpvpn_id is NULL unless type is 'bgpvpn'
+    bgpvpn_id = sa.Column(sa.String(length=36),
+                          sa.ForeignKey('bgpvpns.id', ondelete='CASCADE'),
+                          nullable=True)
+
+    port_association = orm.relationship(
+        "BGPVPNPortAssociation",
+        backref=orm.backref('routes',
+                            cascade='all'),
+        lazy='joined')
+    bgpvpn = orm.relationship(
+        "BGPVPN",
+        backref=orm.backref("port_association_routes",
+                            uselist=False,
+                            lazy='select',
+                            cascade='all, delete-orphan'),
+        lazy='joined')
 
 
 def _list_bgpvpns_result_filter_hook(query, filters):
