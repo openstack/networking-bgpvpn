@@ -145,10 +145,7 @@ seqdiag==0.9.5
 simplejson==3.5.1
 six==1.10.0
 snowballstemmer==1.2.1
-Sphinx==1.6.2
-sphinxcontrib-blockdiag==1.5.4
-sphinxcontrib-seqdiag==0.8.4
-sphinxcontrib-websupport==1.0.1
+sphinx==1.6.5
 SQLAlchemy==1.0.10
 sqlalchemy-migrate==0.11.0
 sqlparse==0.2.2
