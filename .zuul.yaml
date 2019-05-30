@@ -47,7 +47,6 @@
 - project:
     templates:
       - openstack-python-jobs-neutron
-      - openstack-python35-jobs-neutron
       - openstack-python36-jobs-neutron
       - openstack-python37-jobs-neutron
       - publish-openstack-docs-pti
@@ -76,10 +75,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-py27:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
-        - openstack-tox-py35:
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
@@ -114,10 +109,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-py27:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
-        - openstack-tox-py35:
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
