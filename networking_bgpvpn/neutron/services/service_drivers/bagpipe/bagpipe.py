@@ -51,7 +51,9 @@ def get_network_info_for_port(context, port_id, network_id):
                           models_v2.IPAllocation.ip_address,
                           models_v2.Subnet.cidr,
                           models_v2.Subnet.gateway_ip).
-                    join(models_v2.IPAllocation).
+                    join(models_v2.IPAllocation,
+                         models_v2.IPAllocation.port_id ==
+                         models_v2.Port.id).
                     join(models_v2.Subnet,
                          models_v2.IPAllocation.subnet_id ==
                          models_v2.Subnet.id).
