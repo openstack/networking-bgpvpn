@@ -47,8 +47,7 @@
 - project:
     templates:
       - openstack-python-jobs-neutron
-      - openstack-python36-jobs-neutron
-      - openstack-python37-jobs-neutron
+      - openstack-python3-train-jobs-neutron
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
