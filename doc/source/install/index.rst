@@ -29,7 +29,7 @@ If you use ``pip``, follow these steps to install networking-bgpvpn:
 
   .. code-block:: console
 
-     $ pip install -c  https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=stable/ocata networking-bgpvpn=6.0.0
+     $ pip install -c  https://opendev.org/openstack/requirements/raw/branch/master/upper-constraints.txt?h=stable/ocata networking-bgpvpn=6.0.0
 
 Configuration
 =============

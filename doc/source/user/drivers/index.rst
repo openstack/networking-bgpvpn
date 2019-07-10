@@ -60,10 +60,10 @@ Driver Compatibility Matrix
 |                     |    routes:local_pref   |   ✔       |              |              |       |
 +---------------------+------------------------+-----------+--------------+--------------+-------+
 
-.. [#] This applies to the `current BGPVPN Contrail driver <https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn>`_
+.. [#] This applies to the `current BGPVPN Contrail driver <https://github.com/Juniper/contrail-neutron-plugin/src/branch/master/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn>`_
        sometimes called *v2 driver*, which is different from the now
        obsolete *v1 driver* that was under ``networking_bgpvpn``.
-.. [#] This applies to the `current BGPVPN ODL v2 driver <https://git.openstack.org/cgit/openstack/networking-odl/tree/networking_odl/bgpvpn/odl_v2.py>`_
+.. [#] This applies to the `current BGPVPN ODL v2 driver <https://opendev.org/openstack/networking-odl/src/branch/master/networking_odl/bgpvpn/odl_v2.py>`_
        sometimes called *v2 driver*, which is different from the now
        obsolete *v1 driver* that was under ``networking_bgpvpn``.
 .. [#] The behavior corresponding to ``advertise_extra_routes: true``, is

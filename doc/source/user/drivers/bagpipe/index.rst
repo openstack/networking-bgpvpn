@@ -98,9 +98,9 @@ In devstack
 
     .. code-block:: ini
 
-       enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
-       # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/pike
-       # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/queens
+       enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git
+       # enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git stable/pike
+       # enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git stable/queens
 
 * on a control node, if you want to run the Fake Route-Reflector there (relevant only for a multinode setup):
 
@@ -116,9 +116,9 @@ In devstack
 
       .. code-block:: ini
 
-         enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git
-         # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/queens
-         # enable_plugin networking-bagpipe https://git.openstack.org/openstack/networking-bagpipe.git stable/pike
+         enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git
+         # enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git stable/queens
+         # enable_plugin networking-bagpipe https://opendev.org/openstack/networking-bagpipe.git stable/pike
 
     * the ``bagpipe_bgpvpn`` agent extension is automatically added to the agent configuration by the devstack plugin
 

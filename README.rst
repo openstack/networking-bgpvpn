@@ -27,7 +27,7 @@ A reference implementation working along with Neutron reference drivers is
 also provided.
 
 * Free software: Apache license
-* Source: https://git.openstack.org/cgit/openstack/networking-bgpvpn
+* Source: https://opendev.org/openstack/networking-bgpvpn
 * Bugs: https://bugs.launchpad.net/bgpvpn
 * Doc: https://docs.openstack.org/networking-bgpvpn/latest/
 * Release notes: https://docs.openstack.org/releasenotes/networking-bgpvpn/

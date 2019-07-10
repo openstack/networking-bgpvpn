@@ -21,7 +21,7 @@ plugin can be found at `networking-odl/devstack`_.
 
   .. code-block:: none
 
-     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
+     enable_plugin networking-odl http://opendev.org/openstack/networking-odl
 
 * add the following to local.conf to enable ODL Driver for BGPVPN service Plugin:
 
