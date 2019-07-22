@@ -8,7 +8,7 @@
 API
 ===
 
-This API is documented in the `Neutron API Reference <https://developer.openstack.org/api-ref/networking/v2/#bgp-mpls-vpn-interconnection>`_.
+This API is documented in the `Neutron API Reference <https://docs.openstack.org/api-ref/network/v2/#bgp-mpls-vpn-interconnection>`_.
 
 ADMIN
 =====

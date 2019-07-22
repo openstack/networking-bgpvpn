@@ -100,8 +100,8 @@ A `devstack plugin`_ can be used to setup an OpenContrail dev/test platform.
 .. _GitHub: https://github.com/Juniper/contrail-controller
 .. _driver: https://github.com/Juniper/contrail-neutron-plugin/tree/master/neutron_plugin_contrail/plugins/opencontrail/networking_bgpvpn
 __ driver_
-.. _route distinguisher: https://developer.openstack.org/api-ref/networking/v2/#on-route-distinguishers-rds
-.. _router associations: https://developer.openstack.org/api-ref/networking/v2/#router-associations
-.. _network associations: https://developer.openstack.org/api-ref/networking/v2/#network-associations
-.. _association with ports: https://developer.openstack.org/api-ref/network/v2/#port-associations
+.. _route distinguisher: https://docs.openstack.org/api-ref/network/v2/#on-route-distinguishers-rds
+.. _router associations: https://docs.openstack.org/api-ref/network/v2/#router-associations
+.. _network associations: https://docs.openstack.org/api-ref/network/v2/#network-associations
+.. _association with ports: https://docs.openstack.org/api-ref/network/v2/#port-associations
 .. _devstack plugin: https://github.com/zioc/contrail-devstack-plugin
