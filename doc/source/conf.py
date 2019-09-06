@@ -47,7 +47,6 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'networking_bgpvpn'
 copyright = u'2013, OpenStack Foundation'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -60,6 +59,14 @@ add_module_names = True
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# Example configuration for intersphinx: refer to the Python standard library.
+#intersphinx_mapping = {'http://docs.python.org/': None}
+
+#blockdiag_antialias = True
+seq_antialias = True
+seqdiag_html_image_format = "svg"
+blockdiag_html_image_format = "svg"
+
 # -- Options for HTML output --------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
@@ -71,27 +78,21 @@ html_theme = 'openstackdocs'
 
 html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
-# Output file base name for HTML help builder.
-htmlhelp_basename = '%sdoc' % project
+# -- Options for LaTeX output -------------------------------------------------
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
     ('index',
-     '%s.tex' % project,
-     u'%s Documentation' % project,
+     'doc-networking-bgpvpn.tex',
+     u'Networking BGPVPN Documentation',
      u'OpenStack Foundation', 'manual'),
 ]
 
-# Example configuration for intersphinx: refer to the Python standard library.
-#intersphinx_mapping = {'http://docs.python.org/': None}
-
-
-#blockdiag_antialias = True
-seq_antialias = True
-seqdiag_html_image_format = "svg"
-blockdiag_html_image_format = "svg"
+latex_elements = {
+    'extraclassoptions': 'openany,oneside',
+}
 
 # -- Options for oslo_config.sphinxconfiggen ---------------------------------
 

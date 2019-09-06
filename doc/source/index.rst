@@ -10,18 +10,9 @@ Neutron BGP VPN Interconnection Documentation
 
 .. include:: introduction.rst
 
-Introduction videos
-===================
+.. only:: html
 
-The following videos are filmed presentations of talks given during the
-Barcelona OpenStack Summit (Oct' 2016). Although they do not cover the work
-done since, they can be a good introduction to the project:
-
-* https://www.youtube.com/watch?v=kGW5R8mtmRg
-* https://www.youtube.com/watch?v=LCDeR7MwTzE
-
-Contents
-========
+   Contents:
 
 .. toctree::
    :maxdepth: 2
@@ -31,7 +22,9 @@ Contents
    configuration/index
    contributor/index
 
-.. rubric:: Indices and Tables
+.. only:: html
 
-* :ref:`genindex`
-* :ref:`search`
+   .. rubric:: Indices and Tables
+
+   * :ref:`genindex`
+   * :ref:`search`
