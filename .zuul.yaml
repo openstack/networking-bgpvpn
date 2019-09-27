@@ -85,7 +85,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe-train:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -119,7 +119,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe-train:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
