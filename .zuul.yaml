@@ -52,6 +52,7 @@
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
       - check-requirements
+      - horizon-non-primary-django-jobs
     check:
       jobs:
         # TripleO jobs that deploy networking-bgpvpn.
@@ -68,7 +69,6 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - horizon-openstack-tox-python3-django111
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
@@ -102,7 +102,6 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - horizon-openstack-tox-python3-django111
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
