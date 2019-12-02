@@ -46,8 +46,7 @@
 
 - project:
     templates:
-      - openstack-python-jobs-neutron
-      - openstack-python3-train-jobs-neutron
+      - openstack-python3-ussuri-jobs-neutron
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
@@ -70,10 +69,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-pep8:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
-        - openstack-tox-py27:
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
@@ -103,10 +98,6 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-pep8:
-            required-projects:
-              - openstack/networking-bagpipe
-              - openstack/horizon
-        - openstack-tox-py27:
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
