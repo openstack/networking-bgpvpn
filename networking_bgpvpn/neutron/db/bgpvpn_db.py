@@ -20,8 +20,6 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import exc
 
-from neutron.db import standard_attr
-
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
 from neutron_lib.api.definitions import bgpvpn_routes_control as bgpvpn_rc_def
 from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
@@ -29,6 +27,7 @@ from neutron_lib.db import api as db_api
 from neutron_lib.db import constants as db_const
 from neutron_lib.db import model_base
 from neutron_lib.db import model_query
+from neutron_lib.db import standard_attr
 from neutron_lib.db import utils as db_utils
 from neutron_lib.plugins import directory
 
