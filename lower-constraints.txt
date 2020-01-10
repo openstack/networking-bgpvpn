@@ -106,7 +106,7 @@ Pint==0.5
 positional==1.2.1
 prettytable==0.7.2
 psutil==3.2.2
-psycopg2==2.6.2
+psycopg2==2.7.1
 pyasn1==0.1.8
 pycadf==1.1.0
 pycparser==2.18
@@ -151,7 +151,7 @@ Sphinx==1.6.5
 sphinxcontrib-blockdiag==1.5.4
 sphinxcontrib-seqdiag==0.8.4
 sphinxcontrib-websupport==1.0.1
-SQLAlchemy==1.0.10
+SQLAlchemy==1.2.0
 sqlalchemy-migrate==0.11.0
 sqlparse==0.2.2
 statsd==3.2.1
