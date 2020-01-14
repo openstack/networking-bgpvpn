@@ -164,7 +164,6 @@ testtools==2.2.0
 tinyrpc==0.6
 tooz==1.58.0
 traceback2==1.4.0
-unittest2==1.1.0
 urllib3==1.21.1
 vine==1.1.4
 waitress==1.1.0
