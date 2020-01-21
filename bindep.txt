@@ -4,6 +4,7 @@
 libpq-dev [platform:dpkg]
 mysql-client [platform:dpkg]
 mysql-server [platform:dpkg]
-postgresql
-postgresql-client [platform:dpkg]
-
+postgresql [test]
+postgresql-client [platform:dpkg test]
+postgresql-devel [platform:rpm test]
+postgresql-server [platform:rpm test]
