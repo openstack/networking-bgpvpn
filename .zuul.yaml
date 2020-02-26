@@ -1,13 +1,35 @@
 - job:
-    name: networking-bgpvpn-bagpipe-dsvm-functional
-    parent: legacy-dsvm-base
-    run: playbooks/networking-bgpvpn-bagpipe-dsvm-functional/run.yaml
-    post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-functional/post.yaml
-    timeout: 7800
+    name: networking-bgpvpn-functional-bagpipe
+    parent: neutron-functional
     required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-bagpipe
+      - openstack/neutron
       - openstack/networking-bgpvpn
+      - openstack/networking-bagpipe
+    vars:
+      project_name: networking-bgpvpn
+      devstack_localrc:
+        NETWORKING_BGPVPN_DRIVER: BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default
+        BAGPIPE_DATAPLANE_DRIVER_IPVPN: ovs
+        BAGPIPE_BGP_PEERS: "-"
+      devstack_plugins:
+        networking-bagpipe: https://opendev.org/openstack/networking-bagpipe
+        networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
+        neutron: https://opendev.org/openstack/neutron
+
+- job:
+    name: networking-bgpvpn-functional-full
+    parent: neutron-functional
+    required-projects:
+      - openstack/neutron
+      - openstack/networking-bgpvpn
+      - openstack/networking-bagpipe
+      - openstack/networking-odl
+      - openstack/horizon
+    vars:
+      project_name: networking-bgpvpn
+      devstack_plugins:
+        networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
+        neutron: https://opendev.org/openstack/neutron
 
 - job:
     name: networking-bgpvpn-bagpipe-dsvm-install
@@ -19,20 +41,6 @@
       - openstack/devstack-gate
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
-
-- job:
-    name: networking-bgpvpn-dsvm-functional
-    parent: legacy-dsvm-base
-    run: playbooks/networking-bgpvpn-dsvm-functional/run.yaml
-    post-run: playbooks/networking-bgpvpn-dsvm-functional/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-bgpvpn
-      - openstack/neutron
-      - openstack/networking-bagpipe
-      - openstack/networking-odl
-      - openstack/horizon
 
 - job:
     name: networking-bgpvpn-dsvm-install
@@ -80,6 +88,10 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
+        - openstack-tox-py38:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe:
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -89,7 +101,7 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - networking-bgpvpn-dsvm-functional
+        - networking-bgpvpn-functional-full
     gate:
       jobs:
         - openstack-tox-lower-constraints:
@@ -113,9 +125,9 @@
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
-        - networking-bgpvpn-dsvm-functional
+        - networking-bgpvpn-functional-full
     experimental:
       jobs:
         - networking-bgpvpn-dsvm-install
         - networking-bgpvpn-bagpipe-dsvm-install
-        - networking-bgpvpn-bagpipe-dsvm-functional
+        - networking-bgpvpn-functional-bagpipe
