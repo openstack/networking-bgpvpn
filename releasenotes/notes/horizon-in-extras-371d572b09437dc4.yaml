@@ -1,0 +1,10 @@
+---
+upgrade:
+  - |
+    Horizon is now an optional dependency of networking-bgpvpn
+    as the GUI support is optional. This means horizon will not be
+    installed automatically. The horizon dependency is now declared
+    in ``extras`` section in ``setup.cfg``. If you would like to enable
+    the GUI support, you can install the dependencies using
+    ``python -m pip install networking-bgpvpn[horizon]``
+    (or ``.[horizon]`` in case you install it from the source code).
