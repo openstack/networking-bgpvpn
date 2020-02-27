@@ -241,7 +241,7 @@ def port_assoc_route_dict_from_db(route_db):
     return route
 
 
-class BGPVPNPluginDb(object):
+class BGPVPNPluginDb():
     """BGPVPN service plugin database class using SQLAlchemy models."""
 
     def __new__(cls, *args, **kwargs):
@@ -551,8 +551,8 @@ class BGPVPNPluginDb(object):
 
         with db_api.CONTEXT_WRITER.using(context):
             for route in port_association['routes']:
-                    _add_port_assoc_route_db_from_dict(context,
-                                                       route, port_assoc_db.id)
+                _add_port_assoc_route_db_from_dict(
+                    context, route, port_assoc_db.id)
         return self._make_port_assoc_dict(port_assoc_db)
 
     @db_api.CONTEXT_READER

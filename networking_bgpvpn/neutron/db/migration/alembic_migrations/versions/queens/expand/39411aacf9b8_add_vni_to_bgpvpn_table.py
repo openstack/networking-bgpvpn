@@ -14,6 +14,9 @@
 # under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """add vni to bgpvpn table
 
 Revision ID: 39411aacf9b8
@@ -25,9 +28,6 @@ Create Date: 2017-09-19 17:37:11.359338
 # revision identifiers, used by Alembic.
 revision = '39411aacf9b8'
 down_revision = '9a6664f3b8d4'
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

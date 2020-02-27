@@ -13,6 +13,9 @@
 #    under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """Add 'extra-routes' to router association table
 
 Revision ID: 4610803bdf0d
@@ -24,9 +27,6 @@ Create Date: 2017-06-26 17:39:11.086696
 # revision identifiers, used by Alembic.
 revision = '4610803bdf0d'
 down_revision = '39411aacf9b8'
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

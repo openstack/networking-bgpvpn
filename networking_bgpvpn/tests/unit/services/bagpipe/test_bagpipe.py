@@ -40,11 +40,11 @@ from networking_bagpipe.objects import bgpvpn as objs
 
 
 def _expected_formatted_bgpvpn(id, net_id, rt=None, gateway_mac=None):
-        return {'id': id,
-                'network_id': net_id,
-                'l3vpn': {'import_rt': rt or mock.ANY,
-                          'export_rt': rt or mock.ANY},
-                'gateway_mac': gateway_mac or mock.ANY}
+    return {'id': id,
+            'network_id': net_id,
+            'l3vpn': {'import_rt': rt or mock.ANY,
+                      'export_rt': rt or mock.ANY},
+            'gateway_mac': gateway_mac or mock.ANY}
 
 
 class TestCorePluginWithAgents(db_base_plugin_v2.NeutronDbPluginV2,
@@ -513,6 +513,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                 'gateway_ip': subnet['subnet']['gateway_ip'],
                 'gateway_mac': itf_port['mac_address']
             }, r)
+
 
 RT = '12345:1'
 

@@ -50,8 +50,8 @@ def http_client_error(req, res):
 
 class TestBgpvpnDriverWithVni(driver_api.BGPVPNDriverRC):
     more_supported_extension_aliases = (
-        driver_api.BGPVPNDriverRC.more_supported_extension_aliases +
-        [bgpvpn_vni_def.ALIAS])
+        driver_api.BGPVPNDriverRC.more_supported_extension_aliases + [
+            bgpvpn_vni_def.ALIAS])
 
     def __init__(self, *args, **kwargs):
         super(TestBgpvpnDriverWithVni, self).__init__(*args, **kwargs)
@@ -807,8 +807,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
         super(TestBGPVPNServiceDriverDB, self).setUp()
 
     def _raise_bgpvpn_driver_precommit_exc(self, *args, **kwargs):
-            raise extensions.bgpvpn.BGPVPNDriverError(
-                method='precommit method')
+        raise extensions.bgpvpn.BGPVPNDriverError(method='precommit method')
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_bgpvpn_postcommit')

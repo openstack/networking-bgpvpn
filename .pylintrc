@@ -46,6 +46,7 @@ disable=
  invalid-name,
  len-as-condition,
  missing-docstring,
+ multiple-statements,
  superfluous-parens,
 # "R" Refactor recommendations
  abstract-class-little-used,

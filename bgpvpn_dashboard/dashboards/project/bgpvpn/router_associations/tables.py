@@ -57,20 +57,20 @@ class DeleteRouterAssociation(tables.DeleteAction):
 
 
 class UpdateRouterAssociation(tables.LinkAction):
-        name = "update"
-        verbose_name = _("Update Router Association")
-        url = "horizon:project:bgpvpn:update-router-association"
-        classes = ("ajax-modal",)
-        icon = "pencil"
+    name = "update"
+    verbose_name = _("Update Router Association")
+    url = "horizon:project:bgpvpn:update-router-association"
+    classes = ("ajax-modal",)
+    icon = "pencil"
 
-        def get_link_url(self, asso):
-            bgpvpn_id = self.table.kwargs['bgpvpn_id']
-            return reverse(self.url, args=(bgpvpn_id, asso.id))
+    def get_link_url(self, asso):
+        bgpvpn_id = self.table.kwargs['bgpvpn_id']
+        return reverse(self.url, args=(bgpvpn_id, asso.id))
 
-        def allowed(self, request, datum=None):
-            if api.neutron.is_extension_supported(request,
-                                                  'bgpvpn-routes-control'):
-                return True
+    def allowed(self, request, datum=None):
+        if api.neutron.is_extension_supported(request,
+                                              'bgpvpn-routes-control'):
+            return True
 
 
 class CreateRouterAssociation(tables.LinkAction):

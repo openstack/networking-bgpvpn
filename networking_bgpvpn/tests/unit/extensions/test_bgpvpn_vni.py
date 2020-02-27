@@ -31,9 +31,9 @@ _uuid = uuidutils.generate_uuid
 _get_path = test_base._get_path
 BGPVPN_PREFIX = 'bgpvpn'
 BGPVPN_URI = BGPVPN_PREFIX + '/' + 'bgpvpns'
-BGPVPN_PLUGIN_BASE_NAME = (
-    bgpvpn.BGPVPNPluginBase.__module__ + '.' +
-    bgpvpn.BGPVPNPluginBase.__name__)
+BGPVPN_PLUGIN_BASE_NAME = (bgpvpn.BGPVPNPluginBase.__module__ +
+                           '.' +
+                           bgpvpn.BGPVPNPluginBase.__name__)
 
 
 class BgpvpnVniTestExtensionManager(object):

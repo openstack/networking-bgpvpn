@@ -45,11 +45,12 @@ class _TestModelsMigrationsBGPVPN(test_migrations._TestModelsMigrations):
         return head.get_metadata()
 
     def include_object(self, object_, name, type_, reflected, compare_to):
-        if type_ == 'table' and (name.startswith('alembic') or
-                                 name == VERSION_TABLE or
-                                 name in EXTERNAL_TABLES or
-                                 any([match in name
-                                      for match in IGNORED_TABLES_MATCH])):
+        if (type_ == "table" and (
+            name.startswith("alembic") or
+            name == VERSION_TABLE or
+            name in EXTERNAL_TABLES or
+            any([match in name for match in IGNORED_TABLES_MATCH])
+        )):
             return False
         if type_ == 'index' and reflected and name.startswith("idx_autoinc_"):
             return False
