@@ -130,7 +130,7 @@ class BGPVPN(standard_attr.HasStandardAttributes, model_base.BASEV2,
     """Represents a BGPVPN Object."""
     name = sa.Column(sa.String(255))
     type = sa.Column(sa.Enum("l2", "l3",
-                             name="bgpvpn_type"),
+                             name="vpn_types"),
                      nullable=False)
     route_targets = sa.Column(sa.String(255), nullable=False)
     import_targets = sa.Column(sa.String(255), nullable=True)
@@ -166,7 +166,7 @@ class BGPVPNPortAssociationRoute(model_base.BASEV2, model_base.HasId):
         sa.ForeignKey('bgpvpn_port_associations.id', ondelete='CASCADE'),
         nullable=False)
     type = sa.Column(sa.Enum(*bgpvpn_rc_def.ROUTE_TYPES,
-                             name="bgpvpn_port_assoc_route_type"),
+                             name="bgpvpn_port_association_route_type"),
                      nullable=False)
     local_pref = sa.Column(sa.BigInteger(),
                            nullable=True)

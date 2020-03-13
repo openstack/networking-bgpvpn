@@ -156,7 +156,7 @@ def get_bgpvpns_of_router_assocs_by_network(context, net_id):
 def get_networks_for_router(context, router_id):
     ports = get_router_ports(context, router_id)
     if ports:
-        return set([port['network_id'] for port in ports])
+        return {port['network_id'] for port in ports}
     else:
         return []
 
