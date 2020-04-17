@@ -76,8 +76,6 @@ blockdiag_html_image_format = "svg"
 html_static_path = ['_static']
 html_theme = 'openstackdocs'
 
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
-
 # -- Options for LaTeX output -------------------------------------------------
 
 # Grouping the document tree into LaTeX files. List of tuples
