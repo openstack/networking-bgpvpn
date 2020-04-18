@@ -15,7 +15,7 @@
 #
 
 import copy
-import mock
+from unittest import mock
 
 from oslo_utils import uuidutils
 

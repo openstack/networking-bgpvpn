@@ -15,7 +15,8 @@
 
 import contextlib
 import copy
-import mock
+from unittest import mock
+
 import webob.exc
 
 from neutron_lib.plugins import directory

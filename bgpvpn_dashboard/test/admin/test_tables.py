@@ -14,7 +14,7 @@
 #    under the License.
 
 from django import test
-import mock
+from unittest import mock
 
 from bgpvpn_dashboard.dashboards.admin.bgpvpn import tables as bgpvpn_tables
 
