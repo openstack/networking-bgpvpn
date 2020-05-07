@@ -24,6 +24,7 @@ from oslo_utils import uuidutils
 from neutron.api import extensions as api_extensions
 from neutron.db import servicetype_db as sdb
 from neutron import extensions as n_extensions
+from neutron.services import provider_configuration as pconfig
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit.extensions import test_l3
 from neutron.tests.unit.extensions.test_l3 import TestL3NatServicePlugin
@@ -80,6 +81,11 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             mock.patch.object(sdb.ServiceTypeManager,
                               'get_service_providers').start())
         self.service_providers.return_value = [provider]
+
+        self.provider_configuration = (
+            mock.patch.object(pconfig.ProviderConfiguration,
+                              '__init__').start())
+        self.provider_configuration.return_value = None
 
         bgpvpn_plugin_str = ('networking_bgpvpn.neutron.services.plugin.'
                              'BGPVPNPlugin')
