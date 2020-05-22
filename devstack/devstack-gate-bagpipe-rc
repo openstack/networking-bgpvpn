@@ -3,7 +3,6 @@
 export OVERRIDE_ENABLED_SERVICES=n-api,n-crt,n-cpu,n-cond,n-api-meta,n-sch,placement-api,g-api,g-reg,neutron-api,neutron-agent,neutron-dhcp,neutron-l3,neutron-metadata-agent,neutron-bagpipe-bgp,key,mysql,rabbit
 
 if [[ $DEVSTACK_GATE_TEMPEST -eq 1 ]] ; then
-    export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
     export DEVSTACK_GATE_TEMPEST_REGEX="^networking_bgpvpn_tempest\."
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
 fi
