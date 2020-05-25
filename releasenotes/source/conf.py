@@ -41,9 +41,10 @@ extensions = [
 ]
 
 # openstackdocstheme options
-repository_name = 'openstack/networking-bgpvpn'
-bug_project = 'bgpvpn'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/networking-bgpvpn'
+openstackdocs_auto_name = False
+openstackdocs_bug_project = 'bgpvpn'
+openstackdocs_bug_tag = ''
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -97,7 +98,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []

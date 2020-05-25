@@ -32,9 +32,10 @@ extensions = [
 ]
 
 # openstackdocstheme options
-repository_name = 'openstack/networking-bgpvpn'
-bug_project = 'bgpvpn'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/networking-bgpvpn'
+openstackdocs_pdf_link = True
+openstackdocs_bug_project = 'bgpvpn'
+openstackdocs_bug_tag = ''
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
@@ -57,7 +58,7 @@ add_function_parentheses = True
 add_module_names = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 #intersphinx_mapping = {'http://docs.python.org/': None}
