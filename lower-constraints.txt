@@ -145,7 +145,6 @@ ryu==4.24
 semantic-version==2.3.1
 seqdiag==0.9.5
 simplejson==3.5.1
-six==1.10.0
 snowballstemmer==1.2.1
 Sphinx==2.0.0
 SQLAlchemy==1.2.0

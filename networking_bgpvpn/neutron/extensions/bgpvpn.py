@@ -15,8 +15,6 @@
 
 import abc
 
-import six
-
 from neutron.api import extensions
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
@@ -140,8 +138,7 @@ class Bgpvpn(api_extensions.APIExtensionDescriptor):
         return BGPVPNPluginBase
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNPluginBase(libbase.ServicePluginBase):
+class BGPVPNPluginBase(libbase.ServicePluginBase, metaclass=abc.ABCMeta):
 
     path_prefix = "/" + bgpvpn_api_def.ALIAS
     supported_extension_aliases = [bgpvpn_api_def.ALIAS]

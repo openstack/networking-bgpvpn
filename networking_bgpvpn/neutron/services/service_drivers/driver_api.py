@@ -15,7 +15,6 @@
 
 import abc
 import copy
-import six
 
 from neutron_lib.db import api as db_api
 
@@ -24,8 +23,7 @@ from networking_bgpvpn.neutron.extensions \
     import bgpvpn_routes_control as bgpvpn_rc
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNDriverBase(object):
+class BGPVPNDriverBase(object, metaclass=abc.ABCMeta):
     """BGPVPNDriver interface for driver
 
     That driver interface does not persist BGPVPN data in any database. The
@@ -93,8 +91,7 @@ class BGPVPNDriverBase(object):
         pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNDriverDBMixin(BGPVPNDriverBase):
+class BGPVPNDriverDBMixin(BGPVPNDriverBase, metaclass=abc.ABCMeta):
     """BGPVPNDriverDB Mixin to provision the database on behalf of the driver
 
     That driver interface persists BGPVPN data in its database and forwards
@@ -299,8 +296,7 @@ class BGPVPNDriver(BGPVPNDriverDBMixin):
         pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNDriverRCBase(BGPVPNDriverBase):
+class BGPVPNDriverRCBase(BGPVPNDriverBase, metaclass=abc.ABCMeta):
     """Base class for drivers implementing the bgpvpn-routes-control API ext"""
 
     more_supported_extension_aliases = [
@@ -331,8 +327,8 @@ class BGPVPNDriverRCBase(BGPVPNDriverBase):
         pass
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin):
+class BGPVPNDriverRCDBMixin(BGPVPNDriverRCBase, BGPVPNDriverDBMixin,
+                            metaclass=abc.ABCMeta):
     """BGPVPNDriverDBMixin with DB operations for bgpvpn-route-control ext."""
 
     def __init__(self, *args, **xargs):

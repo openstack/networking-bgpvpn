@@ -15,8 +15,6 @@
 
 import abc
 
-import six
-
 from neutron.api import extensions
 from neutron.api.v2 import base
 
@@ -99,8 +97,8 @@ class Bgpvpn_routes_control(api_extensions.APIExtensionDescriptor):
         return BGPVPNRoutesControlPluginBase
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BGPVPNRoutesControlPluginBase(libbase.ServicePluginBase):
+class BGPVPNRoutesControlPluginBase(libbase.ServicePluginBase,
+                                    metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def update_bgpvpn_router_association(self, context, assoc_id, bgpvpn_id,
