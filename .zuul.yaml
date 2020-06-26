@@ -126,6 +126,16 @@
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
         - networking-bgpvpn-functional-full
+    periodic:
+      jobs:
+        - openstack-tox-py36:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - openstack-tox-py37:
+            required-projects:
+              - openstack/networking-bagpipe
+              - openstack/horizon
     experimental:
       jobs:
         - networking-bgpvpn-dsvm-install
