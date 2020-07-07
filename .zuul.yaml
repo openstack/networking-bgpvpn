@@ -35,25 +35,26 @@
         neutron: https://opendev.org/openstack/neutron
 
 - job:
-    name: networking-bgpvpn-bagpipe-dsvm-install
-    parent: legacy-dsvm-base
-    run: playbooks/networking-bgpvpn-bagpipe-dsvm-install/run.yaml
-    post-run: playbooks/networking-bgpvpn-bagpipe-dsvm-install/post.yaml
+    name: networking-bgpvpn-bagpipe-install
+    parent: devstack-tempest
     timeout: 7800
     required-projects:
-      - openstack/devstack-gate
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
+    vars:
+      devstack_plugins:
+        networking-bgpvpn https://opendev.org/openstack/networking-bgpvpn
+        networking-bagpipe https://opendev.org/openstack/networking-bagpipe
 
 - job:
-    name: networking-bgpvpn-dsvm-install
-    parent: legacy-dsvm-base
-    run: playbooks/networking-bgpvpn-dsvm-install/run.yaml
-    post-run: playbooks/networking-bgpvpn-dsvm-install/post.yaml
+    name: networking-bgpvpn-install
+    parent: devstack-tempest
     timeout: 7800
     required-projects:
-      - openstack/devstack-gate
       - openstack/networking-bgpvpn
+    vars:
+      devstack_plugins:
+        networking-bgpvpn https://opendev.org/openstack/networking-bgpvpn
 
 - project:
     templates:
