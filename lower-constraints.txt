@@ -3,7 +3,7 @@ alembic==0.8.10
 amqp==2.1.1
 appdirs==1.4.3
 asn1crypto==0.23.0
-astroid==1.6.5
+astroid==2.1.0
 Babel==2.3.4
 beautifulsoup4==4.6.0
 blockdiag==1.5.3
@@ -40,6 +40,7 @@ httplib2==0.9.1
 idna==2.6
 imagesize==0.7.1
 iso8601==0.1.11
+isort==4.3.21
 Jinja2==2.10
 jmespath==0.9.0
 jsonpatch==1.16
@@ -61,6 +62,7 @@ msgpack-python==0.4.0
 munch==2.1.0
 netaddr==0.7.18
 netifaces==0.10.4
+neutron==13.0.0
 neutron-lib==1.30.0
 openstacksdk==0.31.2
 os-client-config==1.28.0
