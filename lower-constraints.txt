@@ -7,12 +7,12 @@ Babel==2.3.4
 beautifulsoup4==4.6.0
 blockdiag==1.5.3
 cachetools==2.0.0
-cffi==1.7.0
+cffi==1.14
 cliff==2.8.0
 cmd2==0.8.0
 contextlib2==0.4.0
 coverage==4.0
-cryptography==2.1
+cryptography==3.0
 debtcollector==1.19.0
 decorator==3.4.0
 deprecation==1.0
@@ -31,7 +31,7 @@ fixtures==3.0.0
 funcparserlib==0.3.6
 future==0.16.0
 futurist==1.2.0
-greenlet==0.4.10
+greenlet==0.4.15
 horizon==17.1.0
 httplib2==0.9.1
 idna==2.6
@@ -101,7 +101,7 @@ Pint==0.5
 positional==1.2.1
 prettytable==0.7.2
 psutil==3.2.2
-psycopg2==2.7.7
+psycopg2==2.8.5
 pyasn1==0.1.8
 pycadf==1.1.0
 pycparser==2.18
@@ -109,7 +109,7 @@ Pygments==2.2.0
 pyinotify==0.9.6
 pymongo==3.0.2
 PyMySQL==0.7.6
-pyOpenSSL==17.1.0
+pyOpenSSL==19.1.0
 pyparsing==2.1.0
 pyperclip==1.5.27
 pyroute2==0.5.7
