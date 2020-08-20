@@ -13,6 +13,9 @@
 #    under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """Add tables for port associations
 
 Revision ID: 9a6664f3b8d4
@@ -24,9 +27,6 @@ Create Date: 2017-06-26 17:34:14.411603
 # revision identifiers, used by Alembic.
 revision = '9a6664f3b8d4'
 down_revision = '0ab4049986b8'
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

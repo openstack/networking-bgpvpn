@@ -15,24 +15,26 @@
 from horizon.test.settings import *  # noqa
 from openstack_dashboard.test.settings import *  # noqa
 
-# pop these keys to avoid log warnings about deprecation
-# update_dashboards will populate them anyway
-HORIZON_CONFIG.pop('dashboards', None)
-HORIZON_CONFIG.pop('default_dashboard', None)
-
 import bgpvpn_dashboard.enabled
 import openstack_dashboard.enabled
 
 from openstack_dashboard.utils import settings
+
+
+# pop these keys to avoid log warnings about deprecation
+# update_dashboards will populate them anyway
+HORIZON_CONFIG.pop('dashboards', None)  # noqa: F405
+HORIZON_CONFIG.pop('default_dashboard', None)  # noqa: F405
+
 
 settings.update_dashboards(
     [
         bgpvpn_dashboard.enabled,
         openstack_dashboard.enabled,
     ],
-    HORIZON_CONFIG,
-    INSTALLED_APPS
+    HORIZON_CONFIG,  # noqa: F405
+    INSTALLED_APPS  # noqa: F405
 )
 
 # Ensure any duplicate apps are removed after the update_dashboards call
-INSTALLED_APPS = list(set(INSTALLED_APPS))
+INSTALLED_APPS = list(set(INSTALLED_APPS))  # noqa: F405

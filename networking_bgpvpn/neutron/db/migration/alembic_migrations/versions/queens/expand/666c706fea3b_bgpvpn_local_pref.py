@@ -13,6 +13,9 @@
 #    under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """ Add local_pref to bgpvpns table
 
 Revision ID: 666c706fea3b
@@ -24,9 +27,6 @@ Create Date: 2018-01-18 15:40:05.723129
 # revision identifiers, used by Alembic.
 revision = '666c706fea3b'
 down_revision = '4610803bdf0d'
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

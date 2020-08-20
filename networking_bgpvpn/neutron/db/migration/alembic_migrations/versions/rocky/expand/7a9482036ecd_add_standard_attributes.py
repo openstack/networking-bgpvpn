@@ -13,6 +13,9 @@
 #    under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """Add standard attributes
 
 Revision ID: 7a9482036ecd
@@ -24,9 +27,6 @@ Create Date: 2018-04-04 10:12:40.399032
 # revision identifiers, used by Alembic.
 revision = '7a9482036ecd'
 down_revision = '666c706fea3b'
-
-from alembic import op
-import sqlalchemy as sa
 
 
 def upgrade():

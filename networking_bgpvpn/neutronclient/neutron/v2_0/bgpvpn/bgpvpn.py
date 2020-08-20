@@ -127,7 +127,7 @@ def _get_bgpvpn_id(client, name_or_id):
         client, BGPVPN.resource, name_or_id)
 
 
-class BGPVPNAssociation(object):
+class BGPVPNAssociation():
 
     def add_known_arguments(self, parser):
         parser.add_argument('bgpvpn', metavar='BGPVPN',

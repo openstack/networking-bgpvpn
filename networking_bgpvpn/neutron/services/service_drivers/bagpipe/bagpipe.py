@@ -380,8 +380,9 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
             self.agent_rpc.delete_bgpvpn(context, formated_bgpvpn)
 
     def _ignore_port(self, context, port):
-        if (port['device_owner'].startswith(const.DEVICE_OWNER_NETWORK_PREFIX)
-                and not port['device_owner'] in
+        if (port['device_owner'].startswith(
+                const.DEVICE_OWNER_NETWORK_PREFIX) and not
+            port['device_owner'] in
                 (debug_agent.DEVICE_OWNER_COMPUTE_PROBE,
                  debug_agent.DEVICE_OWNER_NETWORK_PROBE)):
             LOG.info("Port %s owner is network:*, we'll do nothing",
@@ -428,7 +429,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
                 pass
 
         elif (port['status'] == const.PORT_STATUS_DOWN and
-                original_port['status'] != const.PORT_STATUS_DOWN):
+              original_port['status'] != const.PORT_STATUS_DOWN):
             LOG.debug("notify_port_updated, port became DOWN")
             self.agent_rpc.detach_port_from_bgpvpn(context,
                                                    port_bgpvpn_info,

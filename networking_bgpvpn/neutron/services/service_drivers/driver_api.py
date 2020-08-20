@@ -23,7 +23,7 @@ from networking_bgpvpn.neutron.extensions \
     import bgpvpn_routes_control as bgpvpn_rc
 
 
-class BGPVPNDriverBase(object, metaclass=abc.ABCMeta):
+class BGPVPNDriverBase(metaclass=abc.ABCMeta):
     """BGPVPNDriver interface for driver
 
     That driver interface does not persist BGPVPN data in any database. The

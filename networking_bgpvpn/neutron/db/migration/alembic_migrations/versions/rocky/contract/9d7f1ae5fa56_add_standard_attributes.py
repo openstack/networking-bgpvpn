@@ -13,6 +13,9 @@
 #    under the License.
 #
 
+from alembic import op
+import sqlalchemy as sa
+
 """Add standard FK and constraints, and defs for existing objects
 
 Revision ID: 9d7f1ae5fa56
@@ -26,8 +29,6 @@ revision = '9d7f1ae5fa56'
 down_revision = '23ce05e0a19f'
 depends_on = ('7a9482036ecd',)
 
-from alembic import op
-import sqlalchemy as sa
 
 # adapted from b12a3ef66e62_add_standardattr_to_qos_policies.py
 

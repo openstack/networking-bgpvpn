@@ -20,9 +20,9 @@ from horizon import forms
 from horizon import workflows
 from openstack_dashboard import api
 
-LOG = logging.getLogger(__name__)
-
 from bgpvpn_dashboard.api import bgpvpn as bgpvpn_api
+
+LOG = logging.getLogger(__name__)
 
 
 class AddRouterParametersInfoAction(workflows.Action):
