@@ -132,8 +132,8 @@ class RouterAssociation(workflows.Workflow):
         try:
             router_association = bgpvpn_api.router_association_create(
                 request, bgpvpn_id, router_id=router_id)
-        except Exception as e:
-            exceptions.handle(request, msg_error + ": %s" % str(e))
+        except Exception:
+            exceptions.handle(request, msg_error)
             return False
         if not context["with_parameters"]:
             return True
@@ -143,7 +143,7 @@ class RouterAssociation(workflows.Workflow):
                 request, bgpvpn_id, asso_id,
                 advertise_extra_routes=context['advertise_extra_routes'])
             return True
-        except exceptions as e:
+        except exceptions:
             bgpvpn_api.router_association_delete(request, asso_id, bgpvpn_id)
-            exceptions.handle(request, msg_error + ": %s" % str(e))
+            exceptions.handle(request, msg_error)
             return False

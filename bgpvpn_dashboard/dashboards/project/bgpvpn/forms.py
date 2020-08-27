@@ -131,9 +131,9 @@ class CreateNetworkAssociation(forms.SelfHandlingForm):
             else:
                 self.fields['network_resource'].choices = [('',
                                                             _("No network"))]
-        except Exception as e:
+        except Exception:
             exceptions.handle(
-                request, _("Unable to retrieve networks: %s") % e)
+                request, _("Unable to retrieve networks."))
 
     def handle(self, request, data):
         try:
@@ -141,10 +141,9 @@ class CreateNetworkAssociation(forms.SelfHandlingForm):
             bgpvpn_api.network_association_create(
                 request, data['bgpvpn_id'], **params)
             return True
-        except Exception as e:
-            exceptions.handle(
-                request, _("Unable to associate network {} : {}").format(
-                    data["network_resource"], str(e)))
+        except Exception:
+            exceptions.handle(request, (_('Unable to associate network "%s".')
+                                        % data["network_resource"]))
             return False
 
     def _set_params(self, data):
