@@ -42,9 +42,13 @@
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
     vars:
+      devstack_localrc:
+        NETWORKING_BGPVPN_DRIVER: "BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
+        BAGPIPE_DATAPLANE_DRIVER_IPVPN: "ovs"
+        BAGPIPE_BGP_PEERS: "-"
       devstack_plugins:
-        networking-bgpvpn https://opendev.org/openstack/networking-bgpvpn
-        networking-bagpipe https://opendev.org/openstack/networking-bagpipe
+        networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
+        networking-bagpipe: https://opendev.org/openstack/networking-bagpipe
 
 - job:
     name: networking-bgpvpn-install
@@ -54,7 +58,7 @@
       - openstack/networking-bgpvpn
     vars:
       devstack_plugins:
-        networking-bgpvpn https://opendev.org/openstack/networking-bgpvpn
+        networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
 
 - project:
     templates:
@@ -128,6 +132,6 @@
         - networking-bgpvpn-functional-full
     experimental:
       jobs:
-        - networking-bgpvpn-dsvm-install
-        - networking-bgpvpn-bagpipe-dsvm-install
+        - networking-bgpvpn-install
+        - networking-bgpvpn-bagpipe-install
         - networking-bgpvpn-functional-bagpipe
