@@ -80,6 +80,7 @@
         - tripleo-ci-centos-7-scenario004-standalone:
             voting: false
         - openstack-tox-lower-constraints:
+            voting: false
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -108,11 +109,6 @@
         - networking-bgpvpn-functional-full
     gate:
       jobs:
-        - openstack-tox-lower-constraints:
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
