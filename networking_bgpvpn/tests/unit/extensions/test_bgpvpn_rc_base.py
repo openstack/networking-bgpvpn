@@ -93,8 +93,9 @@ class BGPVPNRCExtensionTestCase(test_extensions_base.ExtensionTestCase):
             setattr(instance, native_sorting_attr_name, True)
         if use_quota:
             quota.QUOTAS._driver = None
-            cfg.CONF.set_override('quota_driver', 'neutron.quota.ConfDriver',
-                                  group='QUOTAS')
+            cfg.CONF.set_override(
+                'quota_driver', 'neutron.db.quota.driver.DbQuotaDriver',
+                group='QUOTAS')
         setattr(instance, 'path_prefix', resource_prefix)
 
         ####################################################################
