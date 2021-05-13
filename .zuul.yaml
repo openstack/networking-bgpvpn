@@ -42,10 +42,27 @@
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
     vars:
+      devstack_services:
+        # Disable OVN services
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services that are not used by OVN
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
+        br-ex-tcpdump: true
+        br-int-flows: true
       devstack_localrc:
         NETWORKING_BGPVPN_DRIVER: "BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
         BAGPIPE_DATAPLANE_DRIVER_IPVPN: "ovs"
         BAGPIPE_BGP_PEERS: "-"
+        Q_AGENT: openvswitch
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       devstack_plugins:
         networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
         networking-bagpipe: https://opendev.org/openstack/networking-bagpipe
@@ -57,6 +74,24 @@
     required-projects:
       - openstack/networking-bgpvpn
     vars:
+      devstack_services:
+        # Disable OVN services
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services that are not used by OVN
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
+        br-ex-tcpdump: true
+        br-int-flows: true
+      devstack_localrc:
+        Q_AGENT: openvswitch
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       devstack_plugins:
         networking-bgpvpn: https://opendev.org/openstack/networking-bgpvpn
 
