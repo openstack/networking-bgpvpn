@@ -23,6 +23,7 @@
 - job:
     name: networking-bgpvpn-dsvm-functional
     parent: legacy-dsvm-base
+    pre-run: playbooks/networking-bgpvpn-dsvm-functional/pre.yaml
     run: playbooks/networking-bgpvpn-dsvm-functional/run.yaml
     post-run: playbooks/networking-bgpvpn-dsvm-functional/post.yaml
     timeout: 7800
@@ -66,6 +67,7 @@
         - tripleo-ci-centos-7-scenario004-standalone:
             voting: false
         - openstack-tox-lower-constraints:
+            voting: false
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -101,9 +103,12 @@
               - openstack/networking-bagpipe
               - openstack/horizon
         - networking-bgpvpn-dsvm-functional
+        - requirements-check:
+            nodeset: ubuntu-bionic
     gate:
       jobs:
         - openstack-tox-lower-constraints:
+            voting: false
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -134,6 +139,8 @@
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
         - networking-bgpvpn-dsvm-functional
+        - requirements-check:
+            nodeset: ubuntu-bionic
     experimental:
       jobs:
         - networking-bgpvpn-dsvm-install

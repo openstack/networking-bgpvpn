@@ -4,7 +4,7 @@ set -xe
 
 NETWORKING_BGPVPN_DIR="$BASE/new/networking-bgpvpn"
 LOGS=/opt/stack/logs
-GATE_STACK_USER=stack
+GATE_STACK_USER=zuul
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
 
 typetest=${1:-"unknown"}
@@ -29,7 +29,7 @@ dsvm-bagpipe-functional*|dsvm-functional*)
     venv=${typetest/dsvm-bagpipe/dsvm}
     echo "Running networking-bgpvpn $venv test suite"
     set +e
-    sudo -H -u $GATE_STACK_USER tox -e ${venv}
+    sudo -E -H -u $GATE_STACK_USER /home/$GATE_STACK_USER/.local/tox/bin/tox -ve ${venv}
     testr_exit_code=$?
     set -e
 

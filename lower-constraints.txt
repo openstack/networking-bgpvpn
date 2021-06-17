@@ -40,6 +40,7 @@ httplib2==0.9.1
 idna==2.6
 imagesize==0.7.1
 iso8601==0.1.11
+isort==4.3.21
 Jinja2==2.10
 jmespath==0.9.0
 jsonpatch==1.16
@@ -63,7 +64,7 @@ netaddr==0.7.18
 netifaces==0.10.4
 networking-bagpipe==9.0.0
 networking-odl==12.0.0
-neutron==12.0.0
+neutron==13.0.0
 neutron-lib==1.18.0
 openstacksdk==0.11.2
 os-client-config==1.28.0
