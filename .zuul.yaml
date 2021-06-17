@@ -23,6 +23,7 @@
 - job:
     name: networking-bgpvpn-dsvm-functional
     parent: legacy-dsvm-base
+    pre-run: playbooks/networking-bgpvpn-dsvm-functional/pre.yaml
     run: playbooks/networking-bgpvpn-dsvm-functional/run.yaml
     post-run: playbooks/networking-bgpvpn-dsvm-functional/post.yaml
     timeout: 7800
@@ -63,11 +64,6 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-7-scenario004-standalone:
             voting: false
-        - openstack-tox-lower-constraints:
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - horizon-openstack-tox-python3-django111
         - openstack-tox-pep8:
             required-projects:
@@ -97,11 +93,6 @@
         - networking-bgpvpn-dsvm-functional
     gate:
       jobs:
-        - openstack-tox-lower-constraints:
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - horizon-openstack-tox-python3-django111
         - openstack-tox-pep8:
             required-projects:

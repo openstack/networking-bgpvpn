@@ -4,7 +4,7 @@ set -xe
 
 NETWORKING_BGPVPN_DIR="$BASE/new/networking-bgpvpn"
 LOGS=/opt/stack/logs
-GATE_STACK_USER=stack
+GATE_STACK_USER=zuul
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
 
 typetest=${1:-"unknown"}
