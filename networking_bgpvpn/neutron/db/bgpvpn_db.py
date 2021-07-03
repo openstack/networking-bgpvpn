@@ -306,21 +306,19 @@ class BGPVPNPluginDb():
         e_rt = utils.rtrd_list2str(bgpvpn['export_targets'])
         rd = utils.rtrd_list2str(bgpvpn.get('route_distinguishers', ''))
 
-        with db_api.CONTEXT_WRITER.using(context):
-            bgpvpn_db = BGPVPN(
-                id=uuidutils.generate_uuid(),
-                tenant_id=bgpvpn['tenant_id'],
-                name=bgpvpn['name'],
-                type=bgpvpn['type'],
-                route_targets=rt,
-                import_targets=i_rt,
-                export_targets=e_rt,
-                route_distinguishers=rd,
-                vni=bgpvpn.get(bgpvpn_vni_def.VNI),
-                local_pref=bgpvpn.get(bgpvpn_rc_def.LOCAL_PREF_KEY),
-            )
-            context.session.add(bgpvpn_db)
-
+        bgpvpn_db = BGPVPN(
+            id=uuidutils.generate_uuid(),
+            tenant_id=bgpvpn['tenant_id'],
+            name=bgpvpn['name'],
+            type=bgpvpn['type'],
+            route_targets=rt,
+            import_targets=i_rt,
+            export_targets=e_rt,
+            route_distinguishers=rd,
+            vni=bgpvpn.get(bgpvpn_vni_def.VNI),
+            local_pref=bgpvpn.get(bgpvpn_rc_def.LOCAL_PREF_KEY),
+        )
+        context.session.add(bgpvpn_db)
         return self._make_bgpvpn_dict(bgpvpn_db)
 
     @db_api.CONTEXT_READER
@@ -387,7 +385,6 @@ class BGPVPNPluginDb():
             raise bgpvpn_ext.BGPVPNNetAssocNotFound(id=assoc_id,
                                                     bgpvpn_id=bgpvpn_id)
 
-    @db_api.CONTEXT_WRITER
     def create_net_assoc(self, context, bgpvpn_id, net_assoc):
         try:
             with db_api.CONTEXT_WRITER.using(context):
@@ -430,7 +427,6 @@ class BGPVPNPluginDb():
         context.session.delete(net_assoc_db)
         return net_assoc
 
-    @db_api.CONTEXT_READER
     def _make_router_assoc_dict(self, router_assoc_db, fields=None):
         res = {'id': router_assoc_db['id'],
                'tenant_id': router_assoc_db['tenant_id'],
@@ -457,12 +453,12 @@ class BGPVPNPluginDb():
     def create_router_assoc(self, context, bgpvpn_id, router_association):
         router_id = router_association['router_id']
         try:
-            with db_api.CONTEXT_WRITER.using(context):
-                router_assoc_db = BGPVPNRouterAssociation(
-                    tenant_id=router_association['tenant_id'],
-                    bgpvpn_id=bgpvpn_id,
-                    router_id=router_id)
-                context.session.add(router_assoc_db)
+            router_assoc_db = BGPVPNRouterAssociation(
+                tenant_id=router_association['tenant_id'],
+                bgpvpn_id=bgpvpn_id,
+                router_id=router_id)
+            context.session.add(router_assoc_db)
+            context.session.flush()
             return self._make_router_assoc_dict(router_assoc_db)
         except db_exc.DBDuplicateEntry:
             LOG.warning("router %(router_id)s is already associated to "
@@ -529,7 +525,6 @@ class BGPVPNPluginDb():
             raise bgpvpn_rc_ext.BGPVPNPortAssocNotFound(id=assoc_id,
                                                         bgpvpn_id=bgpvpn_id)
 
-    @db_api.CONTEXT_READER
     def create_port_assoc(self, context, bgpvpn_id, port_association):
         port_id = port_association['port_id']
         advertise_fixed_ips = port_association['advertise_fixed_ips']
@@ -549,10 +544,9 @@ class BGPVPNPluginDb():
             raise bgpvpn_rc_ext.BGPVPNPortAssocAlreadyExists(
                 bgpvpn_id=bgpvpn_id, port_id=port_association['port_id'])
 
-        with db_api.CONTEXT_WRITER.using(context):
-            for route in port_association['routes']:
-                _add_port_assoc_route_db_from_dict(
-                    context, route, port_assoc_db.id)
+        for route in port_association['routes']:
+            _add_port_assoc_route_db_from_dict(
+                context, route, port_assoc_db.id)
         return self._make_port_assoc_dict(port_assoc_db)
 
     @db_api.CONTEXT_READER
@@ -570,7 +564,6 @@ class BGPVPNPluginDb():
             self._make_port_assoc_dict,
             filters, fields)
 
-    @db_api.CONTEXT_READER
     def update_port_assoc(self, context, assoc_id, bgpvpn_id, port_assoc):
         with db_api.CONTEXT_WRITER.using(context):
             port_assoc_db = self._get_port_assoc(context, assoc_id, bgpvpn_id)
