@@ -712,11 +712,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
 
+            payload = events.DBEventPayload(
+                self.ctxt, resource_id=port['port']['id'],
+                metadata={}, states=[port['port']])
+
             self.bagpipe_driver.registry_port_deleted(
-                None, None, None,
-                context=self.ctxt,
-                port_id=port['port']['id']
-            )
+                None, None, None, payload)
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
@@ -755,11 +756,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
 
+            payload = events.DBEventPayload(
+                self.ctxt, resource_id=port['port']['id'],
+                metadata={}, states=[port['port']])
+
             self.bagpipe_driver.registry_port_deleted(
-                None, None, None,
-                context=self.ctxt,
-                port_id=port['port']['id']
-            )
+                None, None, None, payload)
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
@@ -988,11 +990,12 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_exception_on_callback(self):
         with mock.patch.object(bagpipe.LOG, 'exception') as log_exc:
-            self.bagpipe_driver.registry_port_updated(
-                None, None, None,
-                context=self.ctxt,
-                port=None
-            )
+            payload = events.DBEventPayload(
+                self.ctxt, resource_id=None,
+                metadata={}, states=[])
+
+            self.bagpipe_driver.registry_port_deleted(
+                None, None, None, payload)
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
             self.assertTrue(log_exc.called)

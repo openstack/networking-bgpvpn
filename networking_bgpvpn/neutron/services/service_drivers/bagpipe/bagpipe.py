@@ -506,28 +506,28 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
     @registry.receives(resources.PORT, [events.AFTER_UPDATE])
     @log_helpers.log_method_call
-    def registry_port_updated(self, resource, event, trigger, **kwargs):
+    def registry_port_updated(self, resource, event, trigger, payload):
         try:
-            context = kwargs['context']
-            port = kwargs['port']
-            original_port = kwargs['original_port']
+            context = payload.context
+            port = payload.latest_state
+            original_port = payload.states[0]
 
             self.notify_port_updated(context, port, original_port)
         except Exception as e:
             _log_callback_processing_exception(resource, event, trigger,
-                                               kwargs, e)
+                                               payload.metadata, e)
 
     @registry.receives(resources.PORT, [events.AFTER_DELETE])
     @log_helpers.log_method_call
-    def registry_port_deleted(self, resource, event, trigger, **kwargs):
+    def registry_port_deleted(self, resource, event, trigger, payload):
         try:
-            context = kwargs['context']
-            port = kwargs['port']
+            context = payload.context
+            port = payload.latest_state
 
             self.notify_port_deleted(context, port)
         except Exception as e:
             _log_callback_processing_exception(resource, event, trigger,
-                                               kwargs, e)
+                                               payload.metadata, e)
 
     # contrary to mother class, no need to subscribe to router interface
     # before-delete, because after delete, we still can generate RPCs
