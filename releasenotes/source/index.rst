@@ -13,7 +13,6 @@
    stein
    rocky
    queens
-   mitaka
    pike
    ocata
    newton
