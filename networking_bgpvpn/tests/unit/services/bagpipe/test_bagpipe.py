@@ -1020,13 +1020,13 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             }
         }
 
-        self.assertItemsEqual(result['l3vpn']['import_rt'],
+        self.assertCountEqual(result['l3vpn']['import_rt'],
                               expected['l3vpn']['import_rt'])
-        self.assertItemsEqual(result['l3vpn']['export_rt'],
+        self.assertCountEqual(result['l3vpn']['export_rt'],
                               expected['l3vpn']['export_rt'])
-        self.assertItemsEqual(result['l2vpn']['import_rt'],
+        self.assertCountEqual(result['l2vpn']['import_rt'],
                               expected['l2vpn']['import_rt'])
-        self.assertItemsEqual(result['l2vpn']['export_rt'],
+        self.assertCountEqual(result['l2vpn']['export_rt'],
                               expected['l2vpn']['export_rt'])
 
 
