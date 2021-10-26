@@ -112,12 +112,6 @@
         # failures, please reach us on #tripleo IRC channel.
         - tripleo-ci-centos-8-scenario004-standalone:
             voting: false
-        - openstack-tox-lower-constraints:
-            voting: false
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - openstack-tox-pep8:
             required-projects:
               - openstack/networking-bagpipe
