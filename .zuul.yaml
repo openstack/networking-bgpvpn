@@ -128,6 +128,7 @@
               - openstack/horizon
         - openstack-tox-py38:
             required-projects:
+              - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe:
@@ -135,6 +136,11 @@
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
         - openstack-tox-cover:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
+        - horizon-tox-python3-django32:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -152,6 +158,7 @@
               - openstack/horizon
         - openstack-tox-py38:
             required-projects:
+              - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe:
