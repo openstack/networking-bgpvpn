@@ -59,8 +59,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Networking-bgpvpn Release Notes'
-copyright = u'2016, Networking-bgpvpn Developers'
+project = 'Networking-bgpvpn Release Notes'
+copyright = '2016, Networking-bgpvpn Developers'
 
 # Release notes are version independent.
 # The full version, including alpha/beta/rc tags.
@@ -206,8 +206,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'NetworkingBgpvpnReleaseNotes.tex',
-     u'Networking-bgpvpn Release Notes Documentation',
-     u'Networking-bgpvpn Developers', 'manual'),
+     'Networking-bgpvpn Release Notes Documentation',
+     'Networking-bgpvpn Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -237,8 +237,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'networkingbgpvpnreleasenotes',
-     u'Networking-bgpvpn Release Notes Documentation',
-     [u'Networking-bgpvpn Developers'], 1)
+     'Networking-bgpvpn Release Notes Documentation',
+     ['Networking-bgpvpn Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -252,8 +252,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'NetworkingBgpvpnReleaseNotes',
-     u'Networking-bgpvpn Release Notes Documentation',
-     u'Networking-bgpvpn Developers', 'NetworkingBgpvpnReleaseNotes',
+     'Networking-bgpvpn Release Notes Documentation',
+     'Networking-bgpvpn Developers', 'NetworkingBgpvpnReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]

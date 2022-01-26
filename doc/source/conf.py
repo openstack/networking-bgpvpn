@@ -48,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2013, OpenStack Foundation'
+copyright = '2013, OpenStack Foundation'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -85,8 +85,8 @@ html_theme = 'openstackdocs'
 latex_documents = [
     ('index',
      'doc-networking-bgpvpn.tex',
-     u'Networking BGPVPN Documentation',
-     u'OpenStack Foundation', 'manual'),
+     'Networking BGPVPN Documentation',
+     'OpenStack Foundation', 'manual'),
 ]
 
 latex_elements = {
