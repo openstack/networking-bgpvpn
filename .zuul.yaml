@@ -171,3 +171,8 @@
         - networking-bgpvpn-install
         - networking-bgpvpn-bagpipe-install
         - networking-bgpvpn-functional-bagpipe
+    periodic-weekly:
+      jobs:
+        - openstack-tox-py39
+        - neutron-tempest-plugin-bgpvpn-bagpipe
+        - networking-bgpvpn-functional-full
