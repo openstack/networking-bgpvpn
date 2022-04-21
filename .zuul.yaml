@@ -124,6 +124,7 @@
               - openstack/horizon
         - openstack-tox-py36:
             required-projects:
+              - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-py38:
@@ -154,6 +155,7 @@
               - openstack/horizon
         - openstack-tox-py36:
             required-projects:
+              - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
         - openstack-tox-py38:

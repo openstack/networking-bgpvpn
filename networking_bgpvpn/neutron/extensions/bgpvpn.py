@@ -18,6 +18,7 @@ import abc
 from neutron.api import extensions
 from neutron.api.v2 import base
 from neutron.api.v2 import resource_helper
+from neutron.common import config as common_config
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_api_def
 from neutron_lib.api import extensions as api_extensions
@@ -33,6 +34,7 @@ from networking_bgpvpn.neutron import extensions as bgpvpn_extensions
 LOG = log.getLogger(__name__)
 
 
+common_config.register_common_config_options()
 extensions.append_api_extensions_path(bgpvpn_extensions.__path__)
 
 
