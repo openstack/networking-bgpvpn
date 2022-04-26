@@ -175,6 +175,10 @@
         - networking-bgpvpn-functional-bagpipe
     periodic-weekly:
       jobs:
-        - openstack-tox-py39
+        - openstack-tox-py39:
+            required-projects:
+              - openstack/neutron
+              - openstack/networking-bagpipe
+              - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - networking-bgpvpn-functional-full
