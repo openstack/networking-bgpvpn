@@ -122,12 +122,12 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py36:
+        - openstack-tox-py38:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py38:
+        - openstack-tox-py39:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -153,12 +153,12 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py36:
+        - openstack-tox-py38:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py38:
+        - openstack-tox-py39:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
