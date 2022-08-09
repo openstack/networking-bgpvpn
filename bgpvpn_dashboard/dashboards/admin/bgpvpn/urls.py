@@ -13,22 +13,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import url
+from django.urls import re_path
 
 import bgpvpn_dashboard.dashboards.admin.bgpvpn.views as bgpvpn_views
 
 BGPVPN = r'^(?P<bgpvpn_id>[^/]+)/%s$'
 
 urlpatterns = [
-    url(r'^$', bgpvpn_views.IndexView.as_view(), name='index'),
-    url(r'^create/$', bgpvpn_views.CreateView.as_view(), name='create'),
-    url(BGPVPN % 'edit', bgpvpn_views.EditDataView.as_view(), name='edit'),
-    url(BGPVPN % 'create-network-association',
-        bgpvpn_views.CreateNetworkAssociationView.as_view(),
-        name='create-network-association'),
-    url(BGPVPN % 'create-router-association',
-        bgpvpn_views.CreateRouterAssociationView.as_view(),
-        name='create-router-association'),
-    url(r'^(?P<bgpvpn_id>[^/]+)/detail/$',
-        bgpvpn_views.DetailProjectView.as_view(), name='detail'),
+    re_path(r'^$', bgpvpn_views.IndexView.as_view(), name='index'),
+    re_path(r'^create/$', bgpvpn_views.CreateView.as_view(), name='create'),
+    re_path(BGPVPN % 'edit', bgpvpn_views.EditDataView.as_view(),
+            name='edit'),
+    re_path(BGPVPN % 'create-network-association',
+            bgpvpn_views.CreateNetworkAssociationView.as_view(),
+            name='create-network-association'),
+    re_path(BGPVPN % 'create-router-association',
+            bgpvpn_views.CreateRouterAssociationView.as_view(),
+            name='create-router-association'),
+    re_path(r'^(?P<bgpvpn_id>[^/]+)/detail/$',
+            bgpvpn_views.DetailProjectView.as_view(), name='detail'),
 ]

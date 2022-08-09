@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls import url
+from django.urls import re_path
 
 import bgpvpn_dashboard.dashboards.project.bgpvpn.router_associations.views \
     as bgpvpn_router_associations_views
@@ -22,6 +22,7 @@ ROUTER_ASSO = r'^(?P<bgpvpn_id>[^/]+)/router_assos/' \
               r'(?P<router_association_id>[^/]+)/%s$'
 
 urlpatterns = [
-    url(ROUTER_ASSO % 'detail',
-        bgpvpn_router_associations_views.DetailView.as_view(), name='detail'),
+    re_path(ROUTER_ASSO % 'detail',
+            bgpvpn_router_associations_views.DetailView.as_view(),
+            name='detail'),
 ]
