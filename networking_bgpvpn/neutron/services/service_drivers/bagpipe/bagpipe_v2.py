@@ -124,8 +124,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
                 context,
                 bgpvpn_id=bgpvpn_id) +
              bgpvpn_objects.BGPVPNRouterAssociation.get_objects(
-                context,
-                bgpvpn_id=bgpvpn_id)
+                 context,
+                 bgpvpn_id=bgpvpn_id)
              ),
             event_type)
 
@@ -199,8 +199,8 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
                 context,
                 network_id=net_id) +
              bgpvpn_objects.BGPVPNRouterAssociation.get_objects(
-                context,
-                network_id=net_id)),
+                 context,
+                 network_id=net_id)),
             rpc_events.UPDATED)
 
     @log_helpers.log_method_call
