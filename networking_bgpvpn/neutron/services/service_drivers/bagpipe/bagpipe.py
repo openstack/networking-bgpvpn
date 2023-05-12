@@ -18,7 +18,6 @@ from sqlalchemy import sql
 
 from neutron.db.models import l3
 from neutron.db import models_v2
-from neutron.debug import debug_agent
 
 from neutron_lib.api.definitions import portbindings
 from neutron_lib.callbacks import events
@@ -381,10 +380,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
     def _ignore_port(self, context, port):
         if (port['device_owner'].startswith(
-                const.DEVICE_OWNER_NETWORK_PREFIX) and not
-                port['device_owner'] in
-                (debug_agent.DEVICE_OWNER_COMPUTE_PROBE,
-                 debug_agent.DEVICE_OWNER_NETWORK_PROBE)):
+                const.DEVICE_OWNER_NETWORK_PREFIX)):
             LOG.info("Port %s owner is network:*, we'll do nothing",
                      port['id'])
             return True

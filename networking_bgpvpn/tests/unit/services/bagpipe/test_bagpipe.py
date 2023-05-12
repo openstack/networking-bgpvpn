@@ -23,7 +23,6 @@ from oslo_config import cfg
 from neutron.api.rpc.handlers import resources_rpc
 from neutron.db import agents_db
 from neutron.db import db_base_plugin_v2
-from neutron.debug import debug_agent
 from neutron.plugins.ml2 import plugin as ml2_plugin
 from neutron.plugins.ml2 import rpc as ml2_rpc
 from neutron.tests.common import helpers
@@ -125,7 +124,8 @@ class TestBagpipeOVOPushPullMixin(object):
         with self.bgpvpn() as bgpvpn:
             self._update('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'],
-                         {'bgpvpn': {'route_targets': ['64512:43']}})
+                         {'bgpvpn': {'route_targets': ['64512:43']}},
+                         as_admin=True)
             # check that no RPC push is done for BGPVPN objects
             self.assertTrue(
                 mocked_push.call_count == 0 or
@@ -150,7 +150,8 @@ class TestBagpipeOVOPushPullMixin(object):
             mocked_push.reset_mock()
             self._update('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'],
-                         {'bgpvpn': {'route_targets': ['64512:43']}})
+                         {'bgpvpn': {'route_targets': ['64512:43']}},
+                         as_admin=True)
 
             mocked_push.assert_any_call(mock.ANY, 'BGPVPNNetAssociation',
                                         mock.ANY, 'updated')
@@ -161,7 +162,7 @@ class TestBagpipeOVOPushPullMixin(object):
 
             # delete BGPVPN
             self._delete('bgpvpn/bgpvpns',
-                         bgpvpn['bgpvpn']['id'])
+                         bgpvpn['bgpvpn']['id'], as_admin=True)
 
             # after delete
             mocked_push.assert_any_call(mock.ANY, 'BGPVPNNetAssociation',
@@ -253,7 +254,8 @@ class TestBagpipeOVOPushPullMixin(object):
                     ('bgpvpn/bgpvpns/%s/port_associations' %
                      bgpvpn['bgpvpn']['id']),
                     port_assoc['port_association']['id'],
-                    {'port_association': {'advertise_fixed_ips': False}})
+                    {'port_association': {'advertise_fixed_ips': False}},
+                    as_admin=True)
 
                 mocked_push.assert_called_once_with(mock.ANY, mock.ANY,
                                                     'updated')
@@ -297,7 +299,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
 
         # Assert that an error is returned to the client
         bgpvpn_req = self.new_create_request(
-            'bgpvpn/bgpvpns', bgpvpn_data)
+            'bgpvpn/bgpvpns', bgpvpn_data, as_admin=True)
         res = bgpvpn_req.get_response(self.ext_api)
         self.assertEqual(webob.exc.HTTPBadRequest.code,
                          res.status_int)
@@ -309,9 +311,10 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
             self._update('bgpvpn/bgpvpns',
                          bgpvpn['bgpvpn']['id'],
                          update_data,
-                         expected_code=webob.exc.HTTPBadRequest.code)
+                         expected_code=webob.exc.HTTPBadRequest.code,
+                         as_admin=True)
             show_bgpvpn = self._show('bgpvpn/bgpvpns',
-                                     bgpvpn['bgpvpn']['id'])
+                                     bgpvpn['bgpvpn']['id'], as_admin=True)
             self.assertEqual([],
                              show_bgpvpn['bgpvpn']['route_distinguishers'])
 
@@ -338,7 +341,8 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                 data=data,
                 fmt=self.fmt,
                 id=id,
-                subresource='network_associations')
+                subresource='network_associations',
+                as_admin=True)
             res = bgpvpn_net_req.get_response(self.ext_api)
             self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
@@ -401,7 +405,8 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                     self.mock_update_rpc.reset_mock()
                     self._update('bgpvpn/bgpvpns',
                                  bgpvpn['bgpvpn']['id'],
-                                 update_data)
+                                 update_data,
+                                 as_admin=True)
                     self.mock_update_rpc.assert_called_once_with(
                         mock.ANY,
                         _expected_formatted_bgpvpn(id, net_id, rt))
@@ -420,7 +425,8 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                                           None)
             update_data = {'bgpvpn': {'route_targets': ['6543:21']}}
             self.mock_update_rpc.reset_mock()
-            self._update('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'], update_data)
+            self._update('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'], update_data,
+                         as_admin=True)
             self.mock_update_rpc.assert_called_once_with(
                 mock.ANY,
                 _expected_formatted_bgpvpn(bgpvpn['bgpvpn']['id'],
@@ -435,7 +441,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                 rt = bgpvpn['bgpvpn']['route_targets']
                 mocked_delete.reset_mock()
                 with self.assoc_net(id, net_id, do_disassociate=False):
-                    self._delete('bgpvpn/bgpvpns', id)
+                    self._delete('bgpvpn/bgpvpns', id, as_admin=True)
                     mocked_delete.assert_called_once_with(
                         mock.ANY,
                         _expected_formatted_bgpvpn(id, net_id, rt))
@@ -454,7 +460,8 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
                                           subnet['subnet']['id'],
                                           None)
             self.mock_delete_rpc.reset_mock()
-            self._delete('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'])
+            self._delete('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'],
+                         as_admin=True)
             self.mocked_rpc.delete_bgpvpn.assert_called_once_with(
                 mock.ANY,
                 _expected_formatted_bgpvpn(bgpvpn['bgpvpn']['id'],
@@ -583,7 +590,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_bagpipe_callback_to_rpc_update_down2active(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
 
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
@@ -598,7 +606,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_bagpipe_callback_to_rpc_update_active2down(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
 
             self._update_port_status(port, const.PORT_STATUS_ACTIVE)
             self.mock_attach_rpc.reset_mock()
@@ -613,7 +622,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_bagpipe_callback_to_rpc_update_active2active(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
 
             self._update_port_status(port, const.PORT_STATUS_ACTIVE)
             self.mock_attach_rpc.reset_mock()
@@ -625,7 +635,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_bagpipe_callback_to_rpc_update_down2down(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
 
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
@@ -637,7 +648,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
 
     def test_bagpipe_callback_to_rpc_deleted(self):
         with self.port(arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -653,7 +665,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
     def test_bagpipe_callback_to_rpc_update_active_ignore_net_ports(self):
         with self.port(device_owner=const.DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -662,40 +675,11 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             self.assertFalse(self.mock_attach_rpc.called)
             self.assertFalse(self.mock_detach_rpc.called)
 
-    def test_bagpipe_callback_to_rpc_dont_ignore_probe_ports_compute(self):
-        with self.port(device_owner=debug_agent.DEVICE_OWNER_COMPUTE_PROBE,
-                       arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
-            self._update_port_status(port, const.PORT_STATUS_DOWN)
-            self.mock_attach_rpc.reset_mock()
-            self.mock_detach_rpc.reset_mock()
-            self._update_port_status(port, const.PORT_STATUS_ACTIVE)
-
-            self.mock_attach_rpc.assert_called_once_with(
-                mock.ANY,
-                self._build_expected_return_active(port['port']),
-                helpers.HOST)
-            self.assertFalse(self.mock_detach_rpc.called)
-
-    def test_bagpipe_callback_to_rpc_dont_ignore_probe_ports_network(self):
-        with self.port(device_owner=debug_agent.DEVICE_OWNER_NETWORK_PROBE,
-                       arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
-            self._update_port_status(port, const.PORT_STATUS_DOWN)
-            self.mock_attach_rpc.reset_mock()
-            self.mock_detach_rpc.reset_mock()
-            self._update_port_status(port, const.PORT_STATUS_ACTIVE)
-
-            self.mock_attach_rpc.assert_called_once_with(
-                mock.ANY,
-                self._build_expected_return_active(port['port']),
-                helpers.HOST)
-            self.assertFalse(self.mock_detach_rpc.called)
-
     def test_bagpipe_callback_to_rpc_update_down_ignore_net_ports(self):
         with self.port(device_owner=const.DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -707,7 +691,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
     def test_bagpipe_callback_to_rpc_deleted_ignore_net_ports(self):
         with self.port(device_owner=const.DEVICE_OWNER_NETWORK_PREFIX,
                        arg_list=(portbindings.HOST_ID,),
-                       **{portbindings.HOST_ID: helpers.HOST}) as port:
+                       **{portbindings.HOST_ID: helpers.HOST},
+                       is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -725,7 +710,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         with self.subnet(network=self.external_net) as subnet, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
-                          **{portbindings.HOST_ID: helpers.HOST}) as port:
+                          **{portbindings.HOST_ID: helpers.HOST},
+                          is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -738,7 +724,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         with self.subnet(network=self.external_net) as subnet, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
-                          **{portbindings.HOST_ID: helpers.HOST}) as port:
+                          **{portbindings.HOST_ID: helpers.HOST},
+                          is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_ACTIVE)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -751,7 +738,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         with self.subnet(network=self.external_net) as subnet, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
-                          **{portbindings.HOST_ID: helpers.HOST}) as port:
+                          **{portbindings.HOST_ID: helpers.HOST},
+                          is_admin=True) as port:
             self._update_port_status(port, const.PORT_STATUS_DOWN)
             self.mock_attach_rpc.reset_mock()
             self.mock_detach_rpc.reset_mock()
@@ -770,7 +758,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             self.subnet(network=net) as subnet, \
             self.port(subnet=subnet,
                       arg_list=(portbindings.HOST_ID,),
-                      **{portbindings.HOST_ID: helpers.HOST}) as port, \
+                      **{portbindings.HOST_ID: helpers.HOST},
+                      is_admin=True) as port, \
             mock.patch.object(self.plugin, 'get_port',
                               return_value=port['port']), \
             mock.patch.object(self.plugin, 'get_network',
@@ -812,7 +801,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
     def test_bagpipe_callback_to_rpc_update_port_router_itf_removed(self):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.port(subnet=subnet) as port, \
+                self.port(subnet=subnet, is_admin=True) as port, \
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
@@ -846,7 +835,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                 self.bgpvpn() as bgpvpn, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
-                          **{portbindings.HOST_ID: helpers.HOST}), \
+                          **{portbindings.HOST_ID: helpers.HOST},
+                          is_admin=True), \
                 mock.patch.object(bagpipe,
                                   'get_router_bgpvpn_assocs',
                                   return_value=[{
@@ -881,7 +871,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                 self.bgpvpn(route_targets=[RT]) as bgpvpn, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
-                          **{portbindings.HOST_ID: helpers.HOST}) as port, \
+                          **{portbindings.HOST_ID: helpers.HOST},
+                          is_admin=True) as port, \
                 self.assoc_net(bgpvpn['bgpvpn']['id'],
                                net['network']['id']), \
                 mock.patch.object(self.bgpvpn_plugin.driver,
