@@ -129,11 +129,6 @@
         - openstack-tox-py39:
             required-projects: *bgpvpn_required_projects
         - neutron-tempest-plugin-bgpvpn-bagpipe:
-            # failing, see https://bugs.launchpad.net/neutron/+bug/2020698,
-            # https://bugs.launchpad.net/neutron/+bug/2019097
-            # When both bgpvpn and bagpipe fixes are merged
-            # voting can be set again to true
-            voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -152,14 +147,10 @@
             required-projects: *bgpvpn_required_projects
         - openstack-tox-py39:
             required-projects: *bgpvpn_required_projects
-        # failing, see https://bugs.launchpad.net/neutron/+bug/2020698,
-        # https://bugs.launchpad.net/neutron/+bug/2019097
-        # When both bgpvpn and bagpipe fixes are merged
-        # voting can be set again to true
-        # - neutron-tempest-plugin-bgpvpn-bagpipe:
-        #     irrelevant-files:
-        #       - ^(test-|)requirements.txt$
-        #       - ^setup.cfg$
+        - neutron-tempest-plugin-bgpvpn-bagpipe:
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^setup.cfg$
         - networking-bgpvpn-functional-full
     experimental:
       jobs:
