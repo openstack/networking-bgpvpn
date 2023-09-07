@@ -2,8 +2,9 @@
 # see https://docs.openstack.org/infra/bindep/ for additional information.
 
 libpq-dev [platform:dpkg]
-mysql-client [platform:dpkg]
-mysql-server [platform:dpkg]
+mysql-client [platform:dpkg !platform:debian]
+mysql-server [platform:dpkg !platform:debian]
+mariadb-server [platform:rpm platform:redhat platform:debian]
 postgresql [test]
 postgresql-client [platform:dpkg test]
 postgresql-devel [platform:rpm test]
