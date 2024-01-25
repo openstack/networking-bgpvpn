@@ -16,7 +16,7 @@
 from unittest import mock
 
 from django import test
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from bgpvpn_dashboard.dashboards.project.bgpvpn import tables as bgpvpn_tables
 

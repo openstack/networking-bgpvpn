@@ -17,8 +17,8 @@ import logging
 
 from django.urls import reverse
 from django.utils import html
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
 from horizon import exceptions
 from horizon import tables
 from openstack_dashboard import policy
@@ -32,15 +32,15 @@ LOG = logging.getLogger(__name__)
 class DeleteBgpvpn(policy.PolicyTargetMixin, tables.DeleteAction):
     @staticmethod
     def action_present(count):
-        return ungettext_lazy(u"Delete BGPVPN",
-                              u"Delete BGPVPNs",
-                              count)
+        return ngettext_lazy(u"Delete BGPVPN",
+                             u"Delete BGPVPNs",
+                             count)
 
     @staticmethod
     def action_past(count):
-        return ungettext_lazy(u"Deleted BGPVPN",
-                              u"Deleted BGPVPNs",
-                              count)
+        return ngettext_lazy(u"Deleted BGPVPN",
+                             u"Deleted BGPVPNs",
+                             count)
 
     def delete(self, request, obj_id):
         try:

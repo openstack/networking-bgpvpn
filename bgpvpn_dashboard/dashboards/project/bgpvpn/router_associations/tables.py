@@ -18,8 +18,8 @@ import logging
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import safestring
-from django.utils.translation import ugettext_lazy as _
-from django.utils.translation import ungettext_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext_lazy
 
 from horizon import exceptions
 from horizon import tables
@@ -35,15 +35,15 @@ class DeleteRouterAssociation(tables.DeleteAction):
 
     @staticmethod
     def action_present(count):
-        return ungettext_lazy(u"Delete Router Association",
-                              u"Delete Router Associations",
-                              count)
+        return ngettext_lazy(u"Delete Router Association",
+                             u"Delete Router Associations",
+                             count)
 
     @staticmethod
     def action_past(count):
-        return ungettext_lazy(u"Deleted Router Association",
-                              u"Deleted Router Associations",
-                              count)
+        return ngettext_lazy(u"Deleted Router Association",
+                             u"Deleted Router Associations",
+                             count)
 
     def delete(self, request, asso_id):
         try:

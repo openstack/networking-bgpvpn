@@ -17,7 +17,7 @@ from django.urls import reverse
 from django.utils import html
 from django.utils.http import urlencode
 from django.utils import safestring
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from horizon import tables
 
 

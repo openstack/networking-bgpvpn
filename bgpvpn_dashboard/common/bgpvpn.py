@@ -14,7 +14,7 @@
 #    under the License.
 import re
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 ROUTE_TARGET_HELP = _("A single BGP Route Target or a "

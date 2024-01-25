@@ -14,4 +14,5 @@
 
 import pbr.version
 
+# DNM: just test state of master
 version_info = pbr.version.VersionInfo('networking-bgpvpn')
