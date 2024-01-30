@@ -177,7 +177,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
     """BGPVPN Service Driver class for BaGPipe"""
 
     def __init__(self, service_plugin):
-        super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
+        super().__init__(service_plugin)
 
         self.agent_rpc = rpc_client.BGPVPNAgentNotifyApi()
 
@@ -312,11 +312,11 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
         bgpvpn_rts = self._format_bgpvpn_network_route_targets(bgpvpns)
 
         LOG.debug("Port connected on BGPVPN network %s with route targets "
-                  "%s" % (network_id, bgpvpn_rts))
+                  "%s", (network_id, bgpvpn_rts))
 
         bgpvpn_network_info.update(bgpvpn_rts)
 
-        LOG.debug("Getting port %s network details" % port_id)
+        LOG.debug("Getting port %s network details", port_id)
         network_info = get_network_info_for_port(context, port_id, network_id)
 
         if not network_info:
@@ -341,18 +341,19 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
                     context,
                     self._format_bgpvpn(context, bgpvpn, net_id))
 
-    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
-        super(BaGPipeBGPVPNDriver, self).update_bgpvpn_postcommit(
-            context, old_bgpvpn, bgpvpn)
+    def update_bgpvpn_postcommit(self, context, old_bgpvpn, new_bgpvpn):
+        super().update_bgpvpn_postcommit(
+            context, old_bgpvpn, new_bgpvpn)
 
         (added_keys, removed_keys, changed_keys) = (
-            utils.get_bgpvpn_differences(bgpvpn, old_bgpvpn))
+            utils.get_bgpvpn_differences(new_bgpvpn, old_bgpvpn))
         ATTRIBUTES_TO_IGNORE = set('name')
         moving_keys = added_keys | removed_keys | changed_keys
         if len(moving_keys ^ ATTRIBUTES_TO_IGNORE):
-            for net_id in self._networks_for_bgpvpn(context, bgpvpn):
+            for net_id in self._networks_for_bgpvpn(context, new_bgpvpn):
                 if (get_network_ports(context, net_id)):
-                    self._update_bgpvpn_for_network(context, net_id, bgpvpn)
+                    self._update_bgpvpn_for_network(context, net_id,
+                                                    new_bgpvpn)
 
     def _update_bgpvpn_for_net_with_id(self, context, network_id, bgpvpn_id):
         if get_network_ports(context, network_id):
@@ -365,8 +366,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
                                      formated_bgpvpn)
 
     def create_net_assoc_postcommit(self, context, net_assoc):
-        super(BaGPipeBGPVPNDriver, self).create_net_assoc_postcommit(context,
-                                                                     net_assoc)
+        super().create_net_assoc_postcommit(context, net_assoc)
         self._update_bgpvpn_for_net_with_id(context,
                                             net_assoc['network_id'],
                                             net_assoc['bgpvpn_id'])
@@ -447,7 +447,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
                                                port[portbindings.HOST_ID])
 
     def create_router_assoc_postcommit(self, context, router_assoc):
-        super(BaGPipeBGPVPNDriver, self).create_router_assoc_postcommit(
+        super().create_router_assoc_postcommit(
             context, router_assoc)
         for net_id in get_networks_for_router(context,
                                               router_assoc['router_id']):
@@ -464,7 +464,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
     @log_helpers.log_method_call
     def notify_router_interface_created(self, context, router_id, net_id):
-        super(BaGPipeBGPVPNDriver, self).notify_router_interface_created(
+        super().notify_router_interface_created(
             context, router_id, net_id)
 
         net_assocs = get_network_bgpvpn_assocs(context, net_id)
@@ -485,7 +485,7 @@ class BaGPipeBGPVPNDriver(v2.BaGPipeBGPVPNDriver):
 
     @log_helpers.log_method_call
     def notify_router_interface_deleted(self, context, router_id, net_id):
-        super(BaGPipeBGPVPNDriver, self).notify_router_interface_deleted(
+        super().notify_router_interface_deleted(
             context, router_id, net_id)
 
         net_assocs = get_network_bgpvpn_assocs(context, net_id)

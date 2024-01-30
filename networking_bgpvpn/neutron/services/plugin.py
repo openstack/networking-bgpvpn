@@ -49,7 +49,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                    bgpvpn_rc.BGPVPNRoutesControlPluginBase):
 
     def __init__(self):
-        super(BGPVPNPlugin, self).__init__()
+        super().__init__()
 
         # Need to look into /etc/neutron/networking_bgpvpn.conf for
         # service_provider definitions:
@@ -72,7 +72,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
 
     @property
     def supported_extension_aliases(self):
-        exts = copy.copy(super(BGPVPNPlugin, self).supported_extension_aliases)
+        exts = copy.copy(super().supported_extension_aliases)
         exts += self.driver.more_supported_extension_aliases
         return exts
 
@@ -260,16 +260,16 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                       r['type'] == bgpvpn_rc.api_def.BGPVPN_TYPE]:
             try:
                 route_bgpvpn = self.get_bgpvpn(context, route['bgpvpn_id'])
-            except bgpvpn.BGPVPNNotFound:
+            except bgpvpn.BGPVPNNotFound as not_found_exc:
                 raise bgpvpn_rc.BGPVPNPortAssocRouteNoSuchBGPVPN(
-                    bgpvpn_id=route['bgpvpn_id'])
+                    bgpvpn_id=route['bgpvpn_id']) from not_found_exc
 
             assoc_bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
             if route_bgpvpn['type'] != assoc_bgpvpn['type']:
                 raise bgpvpn_rc.BGPVPNPortAssocRouteBGPVPNTypeDiffer(
                     route_bgpvpn_type=route_bgpvpn['type'],
                     bgpvpn_type=assoc_bgpvpn['type']
-                    )
+                )
 
             assoc_tenant_id = port_association.get('project_id')
             if assoc_tenant_id is None:

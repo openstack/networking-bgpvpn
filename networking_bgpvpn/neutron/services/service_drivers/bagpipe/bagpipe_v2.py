@@ -79,7 +79,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
                                         bgpvpn_vni_def.ALIAS]
 
     def __init__(self, service_plugin):
-        super(BaGPipeBGPVPNDriver, self).__init__(service_plugin)
+        super().__init__(service_plugin)
 
         self._push_rpc = resources_rpc.ResourcesPushRpcApi()
 
@@ -105,16 +105,16 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
         self._push_bgpvpn_associations(context, bgpvpn['id'],
                                        rpc_events.DELETED)
 
-    def update_bgpvpn_precommit(self, context, old_bgpvpn, bgpvpn):
-        self._common_precommit_checks(bgpvpn)
+    def update_bgpvpn_precommit(self, context, old_bgpvpn, new_bgpvpn):
+        self._common_precommit_checks(new_bgpvpn)
 
-    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
+    def update_bgpvpn_postcommit(self, context, old_bgpvpn, new_bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
-            utils.get_bgpvpn_differences(bgpvpn, old_bgpvpn))
+            utils.get_bgpvpn_differences(new_bgpvpn, old_bgpvpn))
         ATTRIBUTES_TO_IGNORE = set(['name'])
         moving_keys = added_keys | removed_keys | changed_keys
         if len(moving_keys ^ ATTRIBUTES_TO_IGNORE):
-            self._push_bgpvpn_associations(context, bgpvpn['id'],
+            self._push_bgpvpn_associations(context, new_bgpvpn['id'],
                                            rpc_events.UPDATED)
 
     def _push_bgpvpn_associations(self, context, bgpvpn_id, event_type):

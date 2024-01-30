@@ -83,7 +83,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 # Test should ensure vni attribute is not present as
                 # bpvpn_vni extension is not loaded.
                 #
-                self.assertFalse('vni' in bgpvpn)
+                self.assertNotIn('vni', bgpvpn)
 
             if utils.is_extension_supported(self.bgpvpn_plugin,
                                             bgpvpn_rc_def.ALIAS):
@@ -93,7 +93,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 # Test should ensure local_pref attribute is not present as
                 # bpvpn-routes-control extension is not loaded.
                 #
-                self.assertFalse('local_pref' in bgpvpn)
+                self.assertNotIn('local_pref', bgpvpn)
 
             self.assertEqual([net['network']['id']], bgpvpn['networks'])
 

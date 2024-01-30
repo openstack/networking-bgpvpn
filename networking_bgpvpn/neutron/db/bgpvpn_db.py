@@ -331,8 +331,8 @@ class BGPVPNPluginDb():
     def _get_bgpvpn(self, context, id):
         try:
             return model_query.get_by_id(context, BGPVPN, id)
-        except exc.NoResultFound:
-            raise bgpvpn_ext.BGPVPNNotFound(id=id)
+        except exc.NoResultFound as no_res:
+            raise bgpvpn_ext.BGPVPNNotFound(id=id) from no_res
 
     @db_api.CONTEXT_READER
     def get_bgpvpn(self, context, id, fields=None):
@@ -381,9 +381,10 @@ class BGPVPNPluginDb():
             return query.filter(BGPVPNNetAssociation.id == assoc_id,
                                 BGPVPNNetAssociation.bgpvpn_id == bgpvpn_id
                                 ).one()
-        except exc.NoResultFound:
-            raise bgpvpn_ext.BGPVPNNetAssocNotFound(id=assoc_id,
-                                                    bgpvpn_id=bgpvpn_id)
+        except exc.NoResultFound as no_res:
+            raise bgpvpn_ext.BGPVPNNetAssocNotFound(
+                id=assoc_id,
+                bgpvpn_id=bgpvpn_id) from no_res
 
     def create_net_assoc(self, context, bgpvpn_id, net_assoc):
         try:
@@ -394,13 +395,14 @@ class BGPVPNPluginDb():
                     network_id=net_assoc['network_id'])
                 context.session.add(net_assoc_db)
             return self._make_net_assoc_dict(net_assoc_db)
-        except db_exc.DBDuplicateEntry:
+        except db_exc.DBDuplicateEntry as db_dup_exc:
             LOG.warning("network %(net_id)s is already associated to "
                         "BGPVPN %(bgpvpn_id)s",
                         {'net_id': net_assoc['network_id'],
                          'bgpvpn_id': bgpvpn_id})
             raise bgpvpn_ext.BGPVPNNetAssocAlreadyExists(
-                bgpvpn_id=bgpvpn_id, net_id=net_assoc['network_id'])
+                bgpvpn_id=bgpvpn_id,
+                net_id=net_assoc['network_id']) from db_dup_exc
 
     @db_api.CONTEXT_READER
     def get_net_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
@@ -445,9 +447,10 @@ class BGPVPNPluginDb():
             return query.filter(BGPVPNRouterAssociation.id == assoc_id,
                                 BGPVPNRouterAssociation.bgpvpn_id == bgpvpn_id
                                 ).one()
-        except exc.NoResultFound:
-            raise bgpvpn_ext.BGPVPNRouterAssocNotFound(id=assoc_id,
-                                                       bgpvpn_id=bgpvpn_id)
+        except exc.NoResultFound as no_res_exc:
+            raise bgpvpn_ext.BGPVPNRouterAssocNotFound(
+                id=assoc_id,
+                bgpvpn_id=bgpvpn_id) from no_res_exc
 
     @db_api.CONTEXT_WRITER
     def create_router_assoc(self, context, bgpvpn_id, router_association):
@@ -460,13 +463,14 @@ class BGPVPNPluginDb():
             context.session.add(router_assoc_db)
             context.session.flush()
             return self._make_router_assoc_dict(router_assoc_db)
-        except db_exc.DBDuplicateEntry:
+        except db_exc.DBDuplicateEntry as db_dup_exc:
             LOG.warning("router %(router_id)s is already associated to "
                         "BGPVPN %(bgpvpn_id)s",
                         {'router_id': router_id,
                          'bgpvpn_id': bgpvpn_id})
             raise bgpvpn_ext.BGPVPNRouterAssocAlreadyExists(
-                bgpvpn_id=bgpvpn_id, router_id=router_association['router_id'])
+                bgpvpn_id=bgpvpn_id,
+                router_id=router_association['router_id']) from db_dup_exc
 
     @db_api.CONTEXT_READER
     def get_router_assoc(self, context, assoc_id, bgpvpn_id, fields=None):
@@ -521,9 +525,10 @@ class BGPVPNPluginDb():
             return query.filter(BGPVPNPortAssociation.id == assoc_id,
                                 BGPVPNPortAssociation.bgpvpn_id == bgpvpn_id
                                 ).one()
-        except exc.NoResultFound:
-            raise bgpvpn_rc_ext.BGPVPNPortAssocNotFound(id=assoc_id,
-                                                        bgpvpn_id=bgpvpn_id)
+        except exc.NoResultFound as no_res_exc:
+            raise bgpvpn_rc_ext.BGPVPNPortAssocNotFound(
+                id=assoc_id,
+                bgpvpn_id=bgpvpn_id) from no_res_exc
 
     def create_port_assoc(self, context, bgpvpn_id, port_association):
         port_id = port_association['port_id']
@@ -536,13 +541,14 @@ class BGPVPNPluginDb():
                     port_id=port_id,
                     advertise_fixed_ips=advertise_fixed_ips)
                 context.session.add(port_assoc_db)
-        except db_exc.DBDuplicateEntry:
+        except db_exc.DBDuplicateEntry as db_dup_exc:
             LOG.warning(("port %(port_id)s is already associated to "
                          "BGPVPN %(bgpvpn_id)s"),
                         {'port_id': port_id,
                          'bgpvpn_id': bgpvpn_id})
             raise bgpvpn_rc_ext.BGPVPNPortAssocAlreadyExists(
-                bgpvpn_id=bgpvpn_id, port_id=port_association['port_id'])
+                bgpvpn_id=bgpvpn_id,
+                port_id=port_association['port_id']) from db_dup_exc
 
         for route in port_association['routes']:
             _add_port_assoc_route_db_from_dict(
