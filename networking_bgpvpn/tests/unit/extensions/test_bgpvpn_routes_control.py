@@ -97,7 +97,7 @@ class BgpvpnRoutesControlExtensionTestCase(
 
         update_data = {'router_association': {
             'advertise_extra_routes': False,
-            }}
+        }}
 
         return_value = {
             'project_id': _uuid(),
@@ -134,30 +134,25 @@ class BgpvpnRoutesControlExtensionTestCase(
              "No valid key specs"),
             ({'routes': [{
                 'type': 'prefix',
-                'something_else_than_prefix': 'foo'
-                }]},
+                'something_else_than_prefix': 'foo'}]},
              "No valid key specs"),
             ({'routes': [{
                 'type': 'prefix',
-                'prefix': '1.1.1.352'
-                }]},
+                'prefix': '1.1.1.352'}]},
              "No valid key specs"),
             ({'routes': [{
                 'type': 'prefix',
-                'something_else_than_bgpvpn_id': 'foo'
-                }]},
+                'something_else_than_bgpvpn_id': 'foo'}]},
              "No valid key specs"),
             ({'routes': [{
                 'type': 'prefix',
                 'prefix': '12.1.2.3',
-                'local_pref': -1,
-                }]},
+                'local_pref': -1, }]},
              "No valid key specs"),
             ({'routes': [{
                 'type': 'prefix',
                 'prefix': '12.1.2.3/20',
-                'local_pref': 2 ** 32,
-                }]},
+                'local_pref': 2 ** 32, }]},
              "No valid key specs")
         ]
 
@@ -216,8 +211,7 @@ class BgpvpnRoutesControlExtensionTestCase(
             data = {'port_association': {
                 'port_id': self.port_id,
                 'project_id': _uuid()
-                }
-            }
+            }}
             data['port_association'].update(port_assoc_attrs)
             self._test_port_association_create_with_invalid_data(data, msg)
 
@@ -261,8 +255,8 @@ class BgpvpnRoutesControlExtensionTestCase(
                  'local_pref': 42},
                 {'type': 'bgpvpn',
                  'bgpvpn_id': _uuid()},
-                ]
-            }}
+            ]
+        }}
 
         return_value = {
             'port_id': self.port_id,

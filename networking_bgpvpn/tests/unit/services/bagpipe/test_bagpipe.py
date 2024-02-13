@@ -186,7 +186,7 @@ class TestBagpipeOVOPushPullMixin(object):
                 self.assertEqual(
                     [AnyOfClass(objs.BGPVPNNetAssociation)],
                     ovos_in_call
-                    )
+                )
 
                 mocked_push.reset_mock()
 
@@ -198,7 +198,7 @@ class TestBagpipeOVOPushPullMixin(object):
             self.assertEqual(
                 [AnyOfClass(objs.BGPVPNNetAssociation)],
                 ovos_in_call
-                )
+            )
 
     @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
     def test_router_assoc_create_delete(self, mocked_push):
@@ -216,7 +216,7 @@ class TestBagpipeOVOPushPullMixin(object):
                 self.assertEqual(
                     [AnyOfClass(objs.BGPVPNRouterAssociation)],
                     ovos_in_call
-                    )
+                )
 
                 mocked_push.reset_mock()
 
@@ -228,7 +228,7 @@ class TestBagpipeOVOPushPullMixin(object):
             self.assertEqual(
                 [AnyOfClass(objs.BGPVPNRouterAssociation)],
                 ovos_in_call
-                )
+            )
 
     @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
     def test_port_assoc_crud(self, mocked_push):
@@ -246,7 +246,7 @@ class TestBagpipeOVOPushPullMixin(object):
                 self.assertEqual(
                     [AnyOfClass(objs.BGPVPNPortAssociation)],
                     ovos_in_call
-                    )
+                )
 
                 mocked_push.reset_mock()
 
@@ -265,7 +265,7 @@ class TestBagpipeOVOPushPullMixin(object):
                 self.assertEqual(
                     [AnyOfClass(objs.BGPVPNPortAssociation)],
                     ovos_in_call
-                    )
+                )
 
                 mocked_push.reset_mock()
 
@@ -277,7 +277,7 @@ class TestBagpipeOVOPushPullMixin(object):
             self.assertEqual(
                 [AnyOfClass(objs.BGPVPNPortAssociation)],
                 ovos_in_call
-                )
+            )
 
 
 class TestBagpipeServiceDriver(TestBagpipeCommon):
@@ -779,7 +779,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
-                                  return_value=bgpvpn['bgpvpn']),\
+                                  return_value=bgpvpn['bgpvpn']), \
                 mock.patch.object(bagpipe,
                                   'get_router_bgpvpn_assocs',
                                   return_value=[{
@@ -805,7 +805,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                 self.router(tenant_id=self._tenant_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
-                                  return_value=bgpvpn['bgpvpn']),\
+                                  return_value=bgpvpn['bgpvpn']), \
                 mock.patch.object(bagpipe,
                                   'get_router_bgpvpn_assocs',
                                   return_value=[{
@@ -1002,11 +1002,11 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
             {
                 'type': 'l3',
                 'route_targets': ['12345:3', '12346:1']
-            },
+        },
             {
                 'type': 'l2',
                 'route_targets': ['12347:1']
-            }]
+        }]
         result = driver._format_bgpvpn_network_route_targets(bgpvpns)
         expected = {
             'l3vpn': {

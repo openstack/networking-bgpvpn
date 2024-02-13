@@ -111,7 +111,8 @@ class Bgpvpn(api_extensions.APIExtensionDescriptor):
             register_quota=True,
             translate_name=True)
         plugin = directory.get_plugin(bgpvpn_api_def.ALIAS)
-        for collection_name in bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP:
+        sub_res_attrs = bgpvpn_api_def.SUB_RESOURCE_ATTRIBUTE_MAP
+        for collection_name in sub_res_attrs:
             # Special handling needed for sub-resources with 'y' ending
             # (e.g. proxies -> proxy)
             resource_name = collection_name[:-1]

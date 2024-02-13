@@ -99,7 +99,7 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase, metaclass=abc.ABCMeta):
     """
 
     def __init__(self, *args, **kwargs):
-        super(BGPVPNDriverDBMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.bgpvpn_db = bgpvpn_db.BGPVPNPluginDb()
 
     def create_bgpvpn(self, context, bgpvpn):
@@ -116,13 +116,13 @@ class BGPVPNDriverDBMixin(BGPVPNDriverBase, metaclass=abc.ABCMeta):
     def get_bgpvpn(self, context, id, fields=None):
         return self.bgpvpn_db.get_bgpvpn(context, id, fields)
 
-    def update_bgpvpn(self, context, id, bgpvpn_delta):
+    def update_bgpvpn(self, context, id, bgpvpn):
         old_bgpvpn = self.get_bgpvpn(context, id)
         with db_api.CONTEXT_WRITER.using(context):
             new_bgpvpn = copy.deepcopy(old_bgpvpn)
-            new_bgpvpn.update(bgpvpn_delta)
+            new_bgpvpn.update(bgpvpn)
             self.update_bgpvpn_precommit(context, old_bgpvpn, new_bgpvpn)
-            bgpvpn = self.bgpvpn_db.update_bgpvpn(context, id, bgpvpn_delta)
+            bgpvpn = self.bgpvpn_db.update_bgpvpn(context, id, bgpvpn)
         self.update_bgpvpn_postcommit(context, old_bgpvpn, bgpvpn)
         return bgpvpn
 
