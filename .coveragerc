@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = networking-bgpvpn
-omit = networking-bgpvpn/tests/*,networking-bgpvpn/openstack/*
+omit = networking-bgpvpn/tests/*
 
 [report]
 ignore_errors = True
