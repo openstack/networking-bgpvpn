@@ -4,7 +4,8 @@
     required-projects:
       - openstack/neutron
       - openstack/networking-bgpvpn
-      - openstack/networking-bagpipe
+      - name: openstack/networking-bagpipe
+        override-checkout: yoga-eol
     vars:
       project_name: networking-bgpvpn
       devstack_localrc:
@@ -22,7 +23,8 @@
     required-projects:
       - openstack/neutron
       - openstack/networking-bgpvpn
-      - openstack/networking-bagpipe
+      - name: openstack/networking-bagpipe
+        override-checkout: yoga-eol
       - openstack/horizon
     vars:
       project_name: networking-bgpvpn
@@ -39,7 +41,8 @@
     parent: devstack-tempest
     timeout: 7800
     required-projects:
-      - openstack/networking-bagpipe
+      - name: openstack/networking-bagpipe
+        override-checkout: yoga-eol
       - openstack/networking-bgpvpn
     vars:
       devstack_services:
@@ -105,63 +108,68 @@
       - horizon-non-primary-django-jobs
     check:
       jobs:
-        # TripleO jobs that deploy networking-bgpvpn.
-        # Note we don't use a project-template here, so it's easier
-        # to disable voting on one specific job if things go wrong.
-        # If you need any support to debug these jobs in case of
-        # failures, please reach us on #tripleo IRC channel.
-        - tripleo-ci-centos-8-scenario004-standalone:
-            voting: false
-        - openstack-tox-lower-constraints:
-            voting: false
-            required-projects:
-              - openstack/neutron
-              - openstack/networking-bagpipe
-              - openstack/horizon
         - openstack-tox-pep8:
             required-projects:
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - openstack-tox-py36:
             required-projects:
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - openstack-tox-py38:
             required-projects:
               - openstack/neutron
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe:
+            required-projects:
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
+              - name: openstack/neutron-tempest-plugin
+                override-checkout: yoga-last
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
         - openstack-tox-cover:
             required-projects:
               - openstack/neutron
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - horizon-tox-python3-django32:
             required-projects:
               - openstack/neutron
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - networking-bgpvpn-functional-full
     gate:
       jobs:
         - openstack-tox-pep8:
             required-projects:
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - openstack-tox-py36:
             required-projects:
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - openstack-tox-py38:
             required-projects:
               - openstack/neutron
-              - openstack/networking-bagpipe
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
               - openstack/horizon
         - neutron-tempest-plugin-bgpvpn-bagpipe:
+            required-projects:
+              - name: openstack/networking-bagpipe
+                override-checkout: yoga-eol
+              - name: openstack/neutron-tempest-plugin
+                override-checkout: yoga-last
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
