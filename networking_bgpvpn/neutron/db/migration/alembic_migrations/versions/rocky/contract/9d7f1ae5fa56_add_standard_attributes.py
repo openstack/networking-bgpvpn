@@ -69,7 +69,7 @@ def upgrade_table(table):
 def generate_records_for_existing(table, table_model):
     session = sa.orm.Session(bind=op.get_bind())
     values = []
-    with session.begin(subtransactions=True):
+    with session.begin():
         for row in session.query(table_model):
             # NOTE(kevinbenton): without this disabled, pylint complains
             # about a missing 'dml' argument.
