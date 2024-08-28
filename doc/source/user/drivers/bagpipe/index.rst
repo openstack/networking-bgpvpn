@@ -26,7 +26,7 @@ nodes of BGP VPN instances and of their MPLS dataplane.
 
 Example with the OpenVSwitch mechanism driver and agent:
 
-.. blockdiag:: overview.blockdiag
+.. image:: ../../figures/overview_blockdiag.png
 
 Limitations
 -----------

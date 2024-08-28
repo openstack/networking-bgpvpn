@@ -95,7 +95,7 @@ So there are two workflows, one for the admin, one for a tenant.
 
 Sequence diagram summarizing these two workflows:
 
-.. seqdiag:: workflows.seqdiag
+.. image:: figures/workflows_seqdiag.png
 
 
 Component architecture overview
@@ -103,12 +103,12 @@ Component architecture overview
 
 This diagram gives an overview of the architecture:
 
-.. blockdiag:: components-sdn.blockdiag
+.. image:: figures/components_sdn_blockdiag.png
 
 This second diagram depicts how the *bagpipe* reference driver implements its
 backend:
 
-.. blockdiag:: drivers/bagpipe/overview.blockdiag
+.. image:: figures/overview_blockdiag.png
 
 References
 ----------
