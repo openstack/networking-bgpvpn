@@ -41,8 +41,7 @@ class UpdateRouterAssociationsView(forms.ModalFormView):
         return reverse(self.url, args=(self.kwargs['bgpvpn_id'],))
 
     def get_context_data(self, **kwargs):
-        context = super(
-            UpdateRouterAssociationsView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         args = (self.kwargs['bgpvpn_id'], self.kwargs['router_association_id'])
         context["bgpvpn_id"] = self.kwargs['bgpvpn_id']
         context["router_association_id"] = self.kwargs['router_association_id']

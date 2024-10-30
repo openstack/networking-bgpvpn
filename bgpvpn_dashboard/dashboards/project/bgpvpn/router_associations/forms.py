@@ -42,7 +42,7 @@ class UpdateRouterAssociation(forms.SelfHandlingForm):
                   "advertised to the BGPVPN (default: true).")
 
     def __init__(self, request, *args, **kwargs):
-        super(UpdateRouterAssociation, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         self.action = 'update'
 
     def handle(self, request, data):

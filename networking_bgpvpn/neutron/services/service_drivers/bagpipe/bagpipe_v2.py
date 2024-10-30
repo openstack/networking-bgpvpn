@@ -111,7 +111,7 @@ class BaGPipeBGPVPNDriver(driver_api.BGPVPNDriverRC):
     def update_bgpvpn_postcommit(self, context, old_bgpvpn, new_bgpvpn):
         (added_keys, removed_keys, changed_keys) = (
             utils.get_bgpvpn_differences(new_bgpvpn, old_bgpvpn))
-        ATTRIBUTES_TO_IGNORE = set(['name'])
+        ATTRIBUTES_TO_IGNORE = {'name'}
         moving_keys = added_keys | removed_keys | changed_keys
         if len(moving_keys ^ ATTRIBUTES_TO_IGNORE):
             self._push_bgpvpn_associations(context, new_bgpvpn['id'],

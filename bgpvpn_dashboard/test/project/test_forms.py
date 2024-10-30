@@ -24,7 +24,7 @@ from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_form
 class TestEditDataBgpVpn(helpers.APITestCase):
 
     def setUp(self):
-        super(TestEditDataBgpVpn, self).setUp()
+        super().setUp()
         self.mock_request = mock.MagicMock()
         self.bgpvpn_form = bgpvpn_form.EditDataBgpVpn(self.mock_request)
         self.bgpvpn_form.action = "update"

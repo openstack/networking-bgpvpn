@@ -22,7 +22,7 @@ from bgpvpn_dashboard.dashboards.admin.bgpvpn import forms as bgpvpn_a_form
 from bgpvpn_dashboard.dashboards.project.bgpvpn import forms as bgpvpn_p_form
 
 
-class Tenant(object):
+class Tenant:
     def __init__(self, id, name, enabled):
         self.id = id
         self.name = name
@@ -33,7 +33,7 @@ class TestCreateDataBgpVpn(helpers.APITestCase):
 
     @mock.patch.object(bgpvpn_a_form, 'api')
     def setUp(self, mock_api):
-        super(TestCreateDataBgpVpn, self).setUp()
+        super().setUp()
         self.mock_request = mock.MagicMock()
 
     @mock.patch.object(bgpvpn_p_form, 'bgpvpn_api')

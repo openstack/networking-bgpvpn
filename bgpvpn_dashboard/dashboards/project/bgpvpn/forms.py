@@ -40,7 +40,7 @@ class CommonData(forms.SelfHandlingForm):
     failure_url = reverse_lazy('horizon:project:bgpvpn:index')
 
     def __init__(self, request, *args, **kwargs):
-        super(CommonData, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         if 'keyOrder' in self.fields:
             self.fields.keyOrder = self.fields_order
         else:
@@ -98,7 +98,7 @@ class EditDataBgpVpn(CommonData):
     fields_order = ['name', 'bgpvpn_id', 'type']
 
     def __init__(self, request, *args, **kwargs):
-        super(EditDataBgpVpn, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         self.action = 'update'
 
 
@@ -111,7 +111,7 @@ class CreateNetworkAssociation(forms.SelfHandlingForm):
             transform=lambda x: "%s" % x.name_or_id))
 
     def __init__(self, request, *args, **kwargs):
-        super(CreateNetworkAssociation, self).__init__(
+        super().__init__(
             request, *args, **kwargs)
 
         # when an admin user uses the project panel BGPVPN, there is no

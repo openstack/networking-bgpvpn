@@ -28,7 +28,7 @@ VIEWS = "bgpvpn_dashboard.dashboards.admin.bgpvpn.views"
 class TestIndexView(helpers.APITestCase):
 
     def setUp(self):
-        super(TestIndexView, self).setUp()
+        super().setUp()
         mock_request = mock.Mock(horizon={'async_messages': []})
         self.bgpvpn_view = bgpvpn_views.IndexView(request=mock_request)
         self.assertEqual(bgpvpn_tables.BgpvpnTable,

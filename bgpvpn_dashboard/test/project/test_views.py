@@ -28,7 +28,7 @@ from openstack_dashboard.test import helpers
 class TestIndexView(helpers.APITestCase):
 
     def setUp(self):
-        super(TestIndexView, self).setUp()
+        super().setUp()
         mock_request = mock.Mock(horizon={'async_messages': []})
         self.bgpvpn_view = bgpvpn_views.IndexView(request=mock_request)
         self.bgpvpn_view._prev = False
@@ -70,7 +70,7 @@ class TestIndexView(helpers.APITestCase):
 class TestEditDataView(helpers.APITestCase):
 
     def setUp(self):
-        super(TestEditDataView, self).setUp()
+        super().setUp()
         mock_request = mock.Mock(horizon={'async_messages': []})
         self.bgpvpn_view = bgpvpn_views.EditDataView(request=mock_request)
         fake_response = {'status_code': 200}

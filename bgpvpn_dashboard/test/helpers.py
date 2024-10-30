@@ -21,12 +21,12 @@ from bgpvpn_dashboard.test.test_data import utils
 class TestCase(helpers.TestCase):
 
     def _setup_test_data(self):
-        super(TestCase, self)._setup_test_data()
+        super()._setup_test_data()
         utils.load_test_data(self)
 
 
 class APITestCase(helpers.APITestCase):
 
     def _setup_test_data(self):
-        super(APITestCase, self)._setup_test_data()
+        super()._setup_test_data()
         utils.load_test_data(self)

@@ -35,14 +35,14 @@ class DeleteRouterAssociation(tables.DeleteAction):
 
     @staticmethod
     def action_present(count):
-        return ngettext_lazy(u"Delete Router Association",
-                             u"Delete Router Associations",
+        return ngettext_lazy("Delete Router Association",
+                             "Delete Router Associations",
                              count)
 
     @staticmethod
     def action_past(count):
-        return ngettext_lazy(u"Deleted Router Association",
-                             u"Deleted Router Associations",
+        return ngettext_lazy("Deleted Router Association",
+                             "Deleted Router Associations",
                              count)
 
     def delete(self, request, asso_id):
@@ -96,7 +96,7 @@ class IDColumn(tables.Column):
 class RouterColumn(tables.Column):
     def get_raw_data(self, asso):
         url = reverse('horizon:project:routers:detail', args=[asso.router_id])
-        instance = '<a href=%s>%s</a>' % (url,
+        instance = '<a href={}>{}</a>'.format(url,
                                           asso.router_name or asso.router_id)
         return safestring.mark_safe(instance)
 
@@ -107,7 +107,7 @@ class RouterAssociationsTable(tables.DataTable):
     router = RouterColumn("router_id", verbose_name=_("Router"))
     failure_url = reverse_lazy('horizon:project:bgpvpn:detail')
 
-    class Meta(object):
+    class Meta:
         name = "router_associations"
         verbose_name = _("Router Associations")
         table_actions = (CreateRouterAssociation, DeleteRouterAssociation)

@@ -42,11 +42,11 @@ class BgpvpnExtensionTestCaseBase(test_extensions_base.ExtensionTestCase):
         # which is why we re-force this here:
         extensions.append_api_extensions_path(bgpvpn_extensions.__path__)
 
-        super(BgpvpnExtensionTestCaseBase, self).setUp()
+        super().setUp()
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self.setup_extension(
-            '%s.%s' % (bgpvpn.BGPVPNPluginBase.__module__,
-                       bgpvpn.BGPVPNPluginBase.__name__),
+            '{}.{}'.format(bgpvpn.BGPVPNPluginBase.__module__,
+                           bgpvpn.BGPVPNPluginBase.__name__),
             bgpvpn_api_def.ALIAS,
             bgpvpn.Bgpvpn,
             BGPVPN_PREFIX,

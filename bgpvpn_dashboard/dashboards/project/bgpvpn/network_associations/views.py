@@ -44,7 +44,7 @@ class DetailView(tabs.TabView):
         return network_association
 
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         network_association = self.get_data()
         context["url"] = reverse(
             "horizon:project:bgpvpn:network_associations_tab",

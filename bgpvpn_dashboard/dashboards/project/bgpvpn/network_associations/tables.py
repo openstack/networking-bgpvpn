@@ -32,14 +32,14 @@ class DeleteNetworkAssociation(tables.DeleteAction):
 
     @staticmethod
     def action_present(count):
-        return ngettext_lazy(u"Delete Network Association",
-                             u"Delete Network Associations",
+        return ngettext_lazy("Delete Network Association",
+                             "Delete Network Associations",
                              count)
 
     @staticmethod
     def action_past(count):
-        return ngettext_lazy(u"Deleted Network Association",
-                             u"Deleted Network Associations",
+        return ngettext_lazy("Deleted Network Association",
+                             "Deleted Network Associations",
                              count)
 
     def delete(self, request, asso_id):
@@ -77,7 +77,7 @@ class NetworkColumn(tables.Column):
     def get_raw_data(self, asso):
         url = reverse('horizon:project:networks:detail',
                       args=[asso.network_id])
-        instance = '<a href=%s>%s</a>' % (url,
+        instance = '<a href={}>{}</a>'.format(url,
                                           asso.network_name or asso.network_id)
         return safestring.mark_safe(instance)
 
@@ -89,7 +89,7 @@ class NetworkAssociationsTable(tables.DataTable):
 
     failure_url = reverse_lazy('horizon:project:bgpvpn:detail')
 
-    class Meta(object):
+    class Meta:
         name = "network_associations"
         verbose_name = _("Network Associations")
         table_actions = (CreateNetworkAssociation,)

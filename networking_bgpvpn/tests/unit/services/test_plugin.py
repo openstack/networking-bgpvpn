@@ -42,8 +42,8 @@ _uuid = uuidutils.generate_uuid
 
 
 def http_client_error(req, res):
-    explanation = "Request '%s %s %s' failed: %s" % (req.method, req.url,
-                                                     req.body, res.body)
+    explanation = "Request '{} {} {}' failed: {}".format(req.method, req.url,
+                                                         req.body, res.body)
     return webob.exc.HTTPClientError(code=res.status_int,
                                      explanation=explanation)
 
@@ -54,7 +54,7 @@ class TestBgpvpnDriverWithVni(driver_api.BGPVPNDriverRC):
             bgpvpn_vni_def.ALIAS])
 
     def __init__(self, *args, **kwargs):
-        super(TestBgpvpnDriverWithVni, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
@@ -105,7 +105,7 @@ class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             {bgpvpn_def.ALIAS: plugin.BGPVPNPlugin(),
              'l3_plugin_name': TestL3NatServicePlugin()})
 
-        super(BgpvpnTestCaseMixin, self).setUp(
+        super().setUp(
             plugin=core_plugin,
             service_plugins=service_plugins,
             ext_mgr=ext_mgr)
@@ -825,7 +825,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
 
     def setUp(self):
-        super(TestBGPVPNServiceDriverDB, self).setUp()
+        super().setUp()
 
     def _raise_bgpvpn_driver_precommit_exc(self, *args, **kwargs):
         raise extensions.bgpvpn.BGPVPNDriverError(method='precommit method')

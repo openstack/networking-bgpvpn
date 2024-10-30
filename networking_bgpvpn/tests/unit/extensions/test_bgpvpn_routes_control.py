@@ -45,14 +45,14 @@ class TestPlugin(bgpvpn.BGPVPNPluginBase,
                                                rc_api_def.ALIAS]
 
 
-TEST_PLUGIN_CLASS = '%s.%s' % (TestPlugin.__module__, TestPlugin.__name__)
+TEST_PLUGIN_CLASS = '{}.{}'.format(TestPlugin.__module__, TestPlugin.__name__)
 
 
 class BgpvpnRoutesControlExtensionTestCase(
         test_bgpvpn_rc_base.BGPVPNRCExtensionTestCase):
 
     def setUp(self):
-        super(BgpvpnRoutesControlExtensionTestCase, self).setUp()
+        super().setUp()
 
         self._setUpExtensions(
             TEST_PLUGIN_CLASS,

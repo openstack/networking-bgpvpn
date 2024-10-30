@@ -30,7 +30,7 @@ ASSOC_PATH = "/bgpvpn/bgpvpns/%s/network_associations/%%s" % BGPVPN_ID
 class BgpvpnClientTestCase(test_extensions_base.ExtensionTestCase):
 
     def setUp(self):
-        super(BgpvpnClientTestCase, self).setUp()
+        super().setUp()
 
         self.client = client.Client()
         self.client.list_ext = mock.Mock()

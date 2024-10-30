@@ -117,7 +117,7 @@ class BGPVPN(neutron.NeutronResource):
     }
 
     def validate(self):
-        super(BGPVPN, self).validate()
+        super().validate()
 
     def handle_create(self):
         props = self.prepare_properties(
@@ -213,7 +213,7 @@ class BGPVPNNetAssoc(neutron.NeutronResource):
     }
 
     def validate(self):
-        super(BGPVPNNetAssoc, self).validate()
+        super().validate()
 
     def handle_create(self):
         self.props = self.prepare_properties(self.properties,
@@ -303,7 +303,7 @@ class BGPVPNRouterAssoc(neutron.NeutronResource):
     }
 
     def validate(self):
-        super(BGPVPNRouterAssoc, self).validate()
+        super().validate()
 
     def handle_create(self):
         self.props = self.prepare_properties(self.properties,
@@ -454,7 +454,7 @@ class BGPVPNPortAssoc(neutron.NeutronResource):
     }
 
     def validate(self):
-        super(BGPVPNPortAssoc, self).validate()
+        super().validate()
 
     def handle_create(self):
         self.props = self.prepare_properties(self.properties,

@@ -34,7 +34,7 @@ else:
     msg = _("Bug, inconsistency between neutron-lib and "
             "networking-bgpvpn for RTRD regex")
     raise Exception(msg)
-RTRDS_REGEX = '^%s( *, *%s)*$' % (RTRD_REGEX, RTRD_REGEX)
+RTRDS_REGEX = '^{}( *, *{})*$'.format(RTRD_REGEX, RTRD_REGEX)
 
 
 class CommonData(project_forms.CommonData):
@@ -65,7 +65,7 @@ class CommonData(project_forms.CommonData):
     failure_url = reverse_lazy('horizon:admin:bgpvpn:index')
 
     def __init__(self, request, *args, **kwargs):
-        super(CommonData, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
 
 
 class CreateBgpVpn(CommonData):
@@ -81,7 +81,7 @@ class CreateBgpVpn(CommonData):
                     'route_targets', 'import_targets', 'export_targets']
 
     def __init__(self, request, *args, **kwargs):
-        super(CreateBgpVpn, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         tenant_choices = [('', _("Select a project"))]
         tenants, has_more = api.keystone.tenant_list(request)
         for tenant in tenants:
@@ -102,7 +102,7 @@ class EditDataBgpVpn(CommonData):
                     'route_targets', 'import_targets', 'export_targets']
 
     def __init__(self, request, *args, **kwargs):
-        super(EditDataBgpVpn, self).__init__(request, *args, **kwargs)
+        super().__init__(request, *args, **kwargs)
         self.action = 'update'
 
 
@@ -110,6 +110,6 @@ class CreateNetworkAssociation(project_forms.CreateNetworkAssociation):
     project_id = forms.CharField(widget=forms.HiddenInput())
 
     def _set_params(self, data):
-        params = super(CreateNetworkAssociation, self)._set_params(data)
+        params = super()._set_params(data)
         params['tenant_id'] = data['project_id']
         return params

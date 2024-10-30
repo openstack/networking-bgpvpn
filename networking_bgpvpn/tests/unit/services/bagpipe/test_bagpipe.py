@@ -70,10 +70,11 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
             'neutron_lib.rpc.get_client').start().return_value
 
         if not plugin:
-            plugin = '%s.%s' % (__name__, TestCorePluginWithAgents.__name__)
+            plugin = '{}.{}'.format(
+                __name__, TestCorePluginWithAgents.__name__)
 
-        super(TestBagpipeCommon, self).setUp(service_provider=driver,
-                                             core_plugin=plugin)
+        super().setUp(service_provider=driver,
+                      core_plugin=plugin)
 
         self.ctxt = n_context.Context('fake_user', self._tenant_id)
 
@@ -88,7 +89,7 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
                                                         {'network': n_dict})}
 
 
-class AnyOfClass(object):
+class AnyOfClass:
 
     def __init__(self, cls):
         self._class = cls
@@ -100,7 +101,7 @@ class AnyOfClass(object):
         return "AnyOfClass<%s>" % self._class.__name__
 
 
-class TestBagpipeOVOPushPullMixin(object):
+class TestBagpipeOVOPushPullMixin:
     # tests for OVO-based push notifications go here
 
     @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
@@ -550,8 +551,8 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
                               ['logger', 'fake_agent'],
                               'ml2')
 
-        super(TestBagpipeServiceDriverCallbacks, self).setUp(
-            "%s.%s" % (__name__, TestCorePluginML2WithAgents.__name__))
+        super().setUp(
+            "{}.{}".format(__name__, TestCorePluginML2WithAgents.__name__))
 
         self.port_create_status = 'DOWN'
         self.plugin = directory.get_plugin()
@@ -1039,8 +1040,8 @@ class TestBagpipeServiceDriverV2RPCs(TestBagpipeCommon,
                               ['logger', 'fake_agent'],
                               'ml2')
 
-        super(TestBagpipeServiceDriverV2RPCs, self).setUp(
-            "%s.%s" % (__name__, TestCorePluginML2WithAgents.__name__),
+        super().setUp(
+            "{}.{}".format(__name__, TestCorePluginML2WithAgents.__name__),
             driver=('networking_bgpvpn.neutron.services.service_drivers.'
                     'bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver'))
 

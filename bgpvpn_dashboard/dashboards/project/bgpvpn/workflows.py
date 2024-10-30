@@ -35,12 +35,12 @@ class AddRouterParametersInfoAction(workflows.Action):
                   "specified in the routes attribute of the router will be "
                   "advertised to the BGPVPN (default: true).")
 
-    class Meta(object):
+    class Meta:
         name = _("Optional Parameters")
         slug = "add_router_parameters"
 
     def __init__(self, request, context, *args, **kwargs):
-        super(AddRouterParametersInfoAction, self).__init__(
+        super().__init__(
             request, context, *args, **kwargs)
         if 'with_parameters' in context:
             self.fields['with_parameters'] = forms.BooleanField(
@@ -58,13 +58,13 @@ class CreateRouterAssociationInfoAction(workflows.Action):
             data_attrs=('name', 'id'),
             transform=lambda x: "%s" % x.name_or_id))
 
-    class Meta(object):
+    class Meta:
         name = _("Create Association")
         help_text = _("Create a new router association.")
         slug = "create_router_association"
 
     def __init__(self, request, context, *args, **kwargs):
-        super(CreateRouterAssociationInfoAction, self).__init__(
+        super().__init__(
             request, context, *args, **kwargs)
 
         # when an admin user uses the project panel BGPVPN, there is no

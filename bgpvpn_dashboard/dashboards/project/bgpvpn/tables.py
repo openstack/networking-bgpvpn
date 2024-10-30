@@ -53,13 +53,13 @@ class CreateRouterAssociation(tables.LinkAction):
 
 def get_network_url(network):
     url = reverse('horizon:project:networks:detail', args=[network.id])
-    instance = '<a href=%s>%s</a>' % (url, html.escape(network.name_or_id))
+    instance = '<a href={}>{}</a>'.format(url, html.escape(network.name_or_id))
     return instance
 
 
 def get_router_url(router):
     url = reverse('horizon:project:routers:detail', args=[router.id])
-    instance = '<a href=%s>%s</a>' % (url, html.escape(router.name_or_id))
+    instance = '<a href={}>{}</a>'.format(url, html.escape(router.name_or_id))
     return instance
 
 
@@ -83,7 +83,7 @@ class BgpvpnTable(tables.DataTable):
     networks = NetworksColumn("networks", verbose_name=_("Networks"))
     routers = RoutersColumn("routers", verbose_name=_("Routers"))
 
-    class Meta(object):
+    class Meta:
         name = "bgpvpns"
         verbose_name = _("BGPVPN")
         row_actions = (EditInfoBgpVpn,

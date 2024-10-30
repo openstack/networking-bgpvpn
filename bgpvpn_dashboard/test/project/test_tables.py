@@ -45,7 +45,7 @@ class TestFunctionGet(test.TestCase):
 class TestNetworksColumn(test.TestCase):
 
     def setUp(self):
-        super(TestNetworksColumn, self).setUp()
+        super().setUp()
         self.nets_column = bgpvpn_tables.NetworksColumn(
             "networks", verbose_name=_("Networks"))
 
@@ -64,7 +64,7 @@ class TestNetworksColumn(test.TestCase):
 class TestRoutersColumn(test.TestCase):
 
     def setUp(self):
-        super(TestRoutersColumn, self).setUp()
+        super().setUp()
         self.routers_column = bgpvpn_tables.RoutersColumn(
             "routers", verbose_name=_("Routers"))
 

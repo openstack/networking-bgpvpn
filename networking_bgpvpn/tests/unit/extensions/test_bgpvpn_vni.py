@@ -36,7 +36,7 @@ BGPVPN_PLUGIN_BASE_NAME = (bgpvpn.BGPVPNPluginBase.__module__ +
                            bgpvpn.BGPVPNPluginBase.__name__)
 
 
-class BgpvpnVniTestExtensionManager(object):
+class BgpvpnVniTestExtensionManager:
 
     def get_resources(self):
         bgpvpn_def.RESOURCE_ATTRIBUTE_MAP[bgpvpn_def.COLLECTION_NAME].update(
@@ -54,7 +54,7 @@ class BgpvpnVniExtensionTestCase(test_extensions_base.ExtensionTestCase):
     fmt = 'json'
 
     def setUp(self):
-        super(BgpvpnVniExtensionTestCase, self).setUp()
+        super().setUp()
         plural_mappings = {'bgpvpn': 'bgpvpns'}
         self.setup_extension(
             BGPVPN_PLUGIN_BASE_NAME,

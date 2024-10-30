@@ -67,7 +67,7 @@ class EditDataView(forms.ModalFormView):
         return ','.join(route_targets_list)
 
     def get_context_data(self, **kwargs):
-        context = super(EditDataView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         args = (self.kwargs['bgpvpn_id'],)
         context["bgpvpn_id"] = self.kwargs['bgpvpn_id']
         context["submit_url"] = reverse(self.submit_url, args=args)
@@ -92,7 +92,7 @@ class EditDataView(forms.ModalFormView):
             return data
 
 
-class GetBgpvpnMixin(object):
+class GetBgpvpnMixin:
     def get_initial(self):
         bgpvpn_id = self.kwargs['bgpvpn_id']
         try:
@@ -119,8 +119,7 @@ class CreateNetworkAssociationView(GetBgpvpnMixin, forms.ModalFormView):
     page_title = _("Create Network Association")
 
     def get_context_data(self, **kwargs):
-        context = super(
-            CreateNetworkAssociationView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         args = (self.kwargs['bgpvpn_id'],)
         context["bgpvpn_id"] = self.kwargs['bgpvpn_id']
         context["submit_url"] = reverse(self.submit_url, args=args)
@@ -140,7 +139,7 @@ class DetailProjectView(tabs.TabbedTableView):
     redirect_url = 'horizon:project:bgpvpn:index'
 
     def get_context_data(self, **kwargs):
-        context = super(DetailProjectView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         bgpvpn = self.get_data()
         table = bgpvpn_tables.BgpvpnTable(self.request)
         context["bgpvpn"] = bgpvpn

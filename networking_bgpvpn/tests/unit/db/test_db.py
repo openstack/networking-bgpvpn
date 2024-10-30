@@ -34,7 +34,7 @@ def _id_list(list):
 class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
     def setUp(self, service_provider=None):
-        super(BgpvpnDBTestCase, self).setUp(service_provider)
+        super().setUp(service_provider)
         self.ctx = context.get_admin_context()
         self.plugin_db = BGPVPNPluginDb()
 
@@ -485,7 +485,7 @@ class BgpvpnDBTestCaseWithVNI(BgpvpnDBTestCase):
     def setUp(self):
         test_service_provider = ('networking_bgpvpn.tests.unit.services'
                                  '.test_plugin.TestBgpvpnDriverWithVni')
-        super(BgpvpnDBTestCaseWithVNI, self).setUp(
+        super().setUp(
             service_provider=test_service_provider)
 
 
@@ -494,5 +494,5 @@ class BgpvpnDBTestCaseWithRC(BgpvpnDBTestCase):
     def setUp(self):
         test_service_provider = ('networking_bgpvpn.neutron.services.'
                                  'service_drivers.driver_api.BGPVPNDriverRC')
-        super(BgpvpnDBTestCaseWithRC, self).setUp(
+        super().setUp(
             service_provider=test_service_provider)

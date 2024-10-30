@@ -60,8 +60,8 @@ def filter_resource(resource, filters=None):
 
 def filter_fields(resource, fields):
     if fields:
-        return dict(((key, item) for key, item in resource.items()
-                     if key in fields))
+        return {key: item for key, item in resource.items()
+                if key in fields}
     return resource
 
 
@@ -130,8 +130,8 @@ def get_bgpvpn_differences(current_dict, old_dict):
 
     added = set_current - intersect
     removed = set_old - intersect
-    changed = set(
+    changed = {
         key for key in intersect if old_dict[key] != current_dict[key]
-    )
+    }
 
     return (added, removed, changed)

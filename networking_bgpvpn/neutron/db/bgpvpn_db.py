@@ -251,7 +251,7 @@ class BGPVPNPluginDb():
             query_hook=None,
             filter_hook=None,
             result_filters=_list_bgpvpns_result_filter_hook)
-        return super(BGPVPNPluginDb, cls).__new__(cls, *args, **kwargs)
+        return super().__new__(cls, *args, **kwargs)
 
     @db_api.CONTEXT_READER
     def _get_bgpvpns_for_tenant(self, session, tenant_id, fields):

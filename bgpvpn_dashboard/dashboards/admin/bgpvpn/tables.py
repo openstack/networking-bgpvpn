@@ -32,14 +32,14 @@ LOG = logging.getLogger(__name__)
 class DeleteBgpvpn(policy.PolicyTargetMixin, tables.DeleteAction):
     @staticmethod
     def action_present(count):
-        return ngettext_lazy(u"Delete BGPVPN",
-                             u"Delete BGPVPNs",
+        return ngettext_lazy("Delete BGPVPN",
+                             "Delete BGPVPNs",
                              count)
 
     @staticmethod
     def action_past(count):
-        return ngettext_lazy(u"Deleted BGPVPN",
-                             u"Deleted BGPVPNs",
+        return ngettext_lazy("Deleted BGPVPN",
+                             "Deleted BGPVPNs",
                              count)
 
     def delete(self, request, obj_id):
@@ -86,13 +86,13 @@ def get_export_targets(bgpvpn):
 
 def get_network_url(network):
     url = reverse('horizon:admin:networks:detail', args=[network.id])
-    instance = '<a href=%s>%s</a>' % (url, html.escape(network.name_or_id))
+    instance = '<a href={}>{}</a>'.format(url, html.escape(network.name_or_id))
     return instance
 
 
 def get_router_url(router):
     url = reverse('horizon:admin:routers:detail', args=[router.id])
-    instance = '<a href=%s>%s</a>' % (url, html.escape(router.name_or_id))
+    instance = '<a href={}>{}</a>'.format(url, html.escape(router.name_or_id))
     return instance
 
 
@@ -104,7 +104,7 @@ class BgpvpnTable(project_tables.BgpvpnTable):
     export_targets = tables.Column(get_export_targets,
                                    verbose_name=_("Export Targets"))
 
-    class Meta(object):
+    class Meta:
         table_actions = (CreateBgpVpn, DeleteBgpvpn)
         row_actions = (EditInfoBgpVpn,
                        CreateNetworkAssociation,

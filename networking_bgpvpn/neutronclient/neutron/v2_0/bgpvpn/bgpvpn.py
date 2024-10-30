@@ -150,8 +150,8 @@ class BGPVPNNetAssoc(BGPVPNAssociation,
     # first %s in *_path will be replaced with parent_id)
     parent_resource = True
 
-    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
-    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+    object_path = '{}/{}'.format(BGPVPN.resource_path, resource_plural)
+    resource_path = '{}/{}/%%s'.format(BGPVPN.resource_path, resource_plural)
 
     versions = ['2.0']
 
@@ -225,8 +225,8 @@ class BGPVPNRouterAssoc(BGPVPNAssociation,
     resource_plural = '%ss' % resource
     parent_resource = True
 
-    object_path = '%s/%s' % (BGPVPN.resource_path, resource_plural)
-    resource_path = '%s/%s/%%%%s' % (BGPVPN.resource_path, resource_plural)
+    object_path = '{}/{}'.format(BGPVPN.resource_path, resource_plural)
+    resource_path = '{}/{}/%%s'.format(BGPVPN.resource_path, resource_plural)
 
     versions = ['2.0']
 
