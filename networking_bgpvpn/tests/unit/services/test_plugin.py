@@ -26,7 +26,7 @@ from neutron.api import extensions as api_extensions
 from neutron.db import servicetype_db as sdb
 from neutron import extensions as n_extensions
 from neutron.services import provider_configuration as pconfig
-from neutron.tests.unit.db import test_db_base_plugin_v2
+from neutron.tests.common import test_db_base_plugin_v2 as test_db_plugin
 from neutron.tests.unit.extensions import test_l3
 from neutron.tests.unit.extensions.test_l3 import TestL3NatServicePlugin
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_def
@@ -57,7 +57,7 @@ class TestBgpvpnDriverWithVni(driver_api.BGPVPNDriverRC):
         super().__init__(*args, **kwargs)
 
 
-class BgpvpnTestCaseMixin(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
+class BgpvpnTestCaseMixin(test_db_plugin.NeutronDbPluginV2TestCase,
                           test_l3.L3NatTestCaseMixin):
 
     def setUp(self, service_provider=None, core_plugin=None):
