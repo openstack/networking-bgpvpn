@@ -128,7 +128,7 @@
               - openstack/horizon
         - openstack-tox-py39:
             required-projects: *bgpvpn_required_projects
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -147,7 +147,7 @@
             required-projects: *bgpvpn_required_projects
         - openstack-tox-py39:
             required-projects: *bgpvpn_required_projects
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
+        - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2:
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
@@ -169,5 +169,5 @@
             required-projects: *bgpvpn_required_projects
         - networking-bgpvpn-openstack-tox-py310-with-sqlalchemy-main:
             required-projects: *bgpvpn_required_projects
-        - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2
         - networking-bgpvpn-functional-full
