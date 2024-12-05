@@ -213,6 +213,7 @@ def _list_bgpvpns_result_filter_hook(query, filters):
 
 @db_api.CONTEXT_WRITER
 def _add_port_assoc_route_db_from_dict(context, route, port_association_id):
+    kwargs = {}
     if route['type'] == 'prefix':
         kwargs = {'prefix': route['prefix']}
     elif route['type'] == 'bgpvpn':
