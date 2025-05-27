@@ -109,7 +109,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py39:
+        - openstack-tox-py310:
             required-projects: &bgpvpn_required_projects
               - openstack/neutron
               - openstack/networking-bagpipe
@@ -131,7 +131,7 @@
             required-projects:
               - openstack/networking-bagpipe
               - openstack/horizon
-        - openstack-tox-py39:
+        - openstack-tox-py310:
             required-projects: *bgpvpn_required_projects
         - openstack-tox-py312:
             required-projects: *bgpvpn_required_projects
