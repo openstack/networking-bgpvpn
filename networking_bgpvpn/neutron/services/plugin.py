@@ -56,7 +56,8 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         service_type_manager = st_db.ServiceTypeManager.get_instance()
         service_type_manager.add_provider_configuration(
             SERVICE_PROVIDER_TYPE,
-            pconf.ProviderConfiguration('networking_bgpvpn'))
+            pconf.ProviderConfiguration('networking_bgpvpn',
+                                        SERVICE_PROVIDER_TYPE))
 
         # Load the default driver
         drivers, default_provider = service_base.load_drivers(
