@@ -1,9 +1,9 @@
 =============================
-Sample networking-bgpvpn.conf
+Sample networking_bgpvpn.conf
 =============================
 
 This sample configuration can also be viewed in `the raw format
 <../../_static/config-samples/networking-bgpvpn.conf.sample>`_.
 
 .. literalinclude::
-   ../../_static/config-samples/networking-bgpvpn.conf.sample
+   ../../_static/config-samples/networking_bgpvpn.conf.sample
