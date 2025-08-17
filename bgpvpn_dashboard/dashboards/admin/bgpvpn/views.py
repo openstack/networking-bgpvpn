@@ -39,7 +39,7 @@ class IndexView(project_views.IndexView):
             return api.keystone.tenant_get(self.request, id).name
         except Exception:
             msg = _("Unable to retrieve information about the "
-                    "tenant %s") % id
+                    "project %s") % id
             exceptions.handle(self.request, msg)
 
     def get_data(self):
