@@ -1,15 +1,10 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/networking-bgpvpn.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
 ===============================================
 BGP-MPLS VPN Extension for OpenStack Networking
 ===============================================
+
+.. image:: https://governance.openstack.org/tc/badges/networking-bgpvpn.svg
+
+.. Change things from this point on
 
 This project provides an API and Framework to interconnect BGP/MPLS VPNs
 to Openstack Neutron networks, routers and ports.
