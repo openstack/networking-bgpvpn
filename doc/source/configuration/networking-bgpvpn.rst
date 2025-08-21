@@ -1,5 +1,5 @@
 ======================
-networking-bgpvpn.conf
+networking_bgpvpn.conf
 ======================
 
 To use networking-bgpvpn, you need to configure one of valid service providers
@@ -11,4 +11,4 @@ BGPVPN but only one of them can be default.
 * BaGPipe provider: ``service_provider = BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe.BaGPipeBGPVPNDriver:default``
 
 .. show-options::
-   :config-file: etc/oslo-config-generator/networking-bgpvpn.conf
+   :config-file: etc/oslo-config-generator/networking_bgpvpn.conf

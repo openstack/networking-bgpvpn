@@ -89,7 +89,7 @@ latex_elements = {
 # -- Options for oslo_config.sphinxconfiggen ---------------------------------
 
 _config_generator_config_files = [
-    'networking-bgpvpn.conf',
+    'networking_bgpvpn.conf',
 ]
 
 def _get_config_generator_config_definition(conf_file):
