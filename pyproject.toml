@@ -1,4 +1,74 @@
 [build-system]
-requires = ["pbr>=5.7.0", "setuptools>=64.0.0", "wheel"]
+requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
 
+[project]
+name = "networking-bgpvpn"
+description = "API and Framework to interconnect bgpvpn to neutron networks"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "Apache-2.0"}
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.10"
+classifiers = [
+  "Environment :: OpenStack",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/networking-bgpvpn/latest/"
+Repository = "https://opendev.org/openstack/networking-bgpvpn"
+
+[tool.setuptools]
+packages = [
+    "networking_bgpvpn",
+    "networking_bgpvpn_heat",
+    "bgpvpn_dashboard",
+]
+
+[project.optional-dependencies]
+"bagpipe" = [
+    "networking-bagpipe>=12.0.0",
+]
+"horizon" = [
+    "horizon>=17.1.0",
+]
+
+[project.entry-points."oslo.config.opts"]
+"networking-bgpvpn.service_provider" = "networking_bgpvpn.neutron.opts:list_service_provider"
+
+[project.entry-points."oslo.config.opts.defaults"]
+"networking-bgpvpn.service_provider" = "networking_bgpvpn.neutron.opts:set_service_provider_default"
+
+[project.entry-points."oslo.policy.policies"]
+"networking-bgpvpn" = "networking_bgpvpn.policies:list_rules"
+
+[project.entry-points."neutron.policies"]
+"networking-bgpvpn" = "networking_bgpvpn.policies:list_rules"
+
+[project.entry-points."neutron.db.alembic_migrations"]
+"networking-bgpvpn" = "networking_bgpvpn.neutron.db.migration:alembic_migrations"
+
+[project.entry-points."heat.constraints"]
+"neutron.bgpvpn" = "networking_bgpvpn_heat.bgpvpnservice:BGPVPNConstraint"
+
+[project.entry-points."neutron.service_plugins"]
+"bgpvpn" = "networking_bgpvpn.neutron.services.plugin:BGPVPNPlugin"
+
+# Note(lajoskatona): setup.cfg contained openstack_translations section also
+# [openstack_translations]
+# django_modules = bgpvpn_dashboard
+# python_modules = networking_bgpvpn networking_bgpvpn_heat
