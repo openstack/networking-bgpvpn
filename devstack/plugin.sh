@@ -57,7 +57,7 @@ elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         cp $BGPVPN_DASHBOARD_ENABLE $HORIZON_DIR/openstack_dashboard/local/enabled/
         # Add policy file for BGPVPN_DASHBOARD
         _set_policy_file $DEST/horizon/openstack_dashboard/local/local_settings.py \
-            networking-bgpvpn $NETWORKING_BGPVPN_DIR/bgpvpn_dashboard/etc/bgpvpn-horizon.conf
+            networking-bgpvpn $NETWORKING_BGPVPN_DIR/bgpvpn_dashboard/etc/networking_bgpvpn_policy.yaml
     fi
 fi
 
@@ -70,12 +70,12 @@ function _ensure_policy_file {
         # If POLICY_FILES is not found, define it.
         cat <<EOF >> $file
 POLICY_FILES = {
-    'identity': 'keystone_policy.json',
-    'compute': 'nova_policy.json',
-    'volume': 'cinder_policy.json',
-    'image': 'glance_policy.json',
-    'orchestration': 'heat_policy.json',
-    'network': 'neutron_policy.json',
+    'identity': 'keystone_policy.yaml',
+    'compute': 'nova_policy.yaml',
+    'volume': 'cinder_policy.yaml',
+    'image': 'glance_policy.yaml',
+    'orchestration': 'heat_policy.yaml',
+    'network': 'neutron_policy.yaml',
 }
 EOF
     fi
