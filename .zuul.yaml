@@ -122,7 +122,9 @@
               - ^setup.cfg$
         - openstack-tox-cover:
             required-projects: *bgpvpn_required_projects
-        - horizon-tox-python3-django32:
+        - horizon-tox-python3-django42:
+            required-projects: *bgpvpn_required_projects
+        - horizon-tox-python3-django52:
             required-projects: *bgpvpn_required_projects
         - networking-bgpvpn-functional-full
     gate:
@@ -140,6 +142,8 @@
               - ^(test-|)requirements.txt$
               - ^setup.cfg$
         - networking-bgpvpn-functional-full
+        - horizon-tox-python3-django42:
+            required-projects: *bgpvpn_required_projects
     experimental:
       jobs:
         - networking-bgpvpn-install
