@@ -128,7 +128,7 @@
               - openstack/neutron
               - openstack/networking-bagpipe
               - openstack/horizon
-        - horizon-tox-python3-django32:
+        - horizon-tox-python3-django42:
             required-projects:
               - openstack/neutron
               - openstack/networking-bagpipe
