@@ -79,7 +79,7 @@ class TestBagpipeCommon(test_plugin.BgpvpnTestCaseMixin):
         self.ctxt = n_context.Context('fake_user', self._project_id)
 
         n_dict = {"name": "netfoo",
-                  "tenant_id": self._project_id,
+                  "project_id": self._project_id,
                   "admin_state_up": True,
                   "router:external": True,
                   "shared": True}
@@ -921,14 +921,14 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         ml2_rpc_callbacks = ml2_rpc.RpcCallbacks(mock.Mock(), mock.Mock())
 
         n_dict = {"name": "netfoo",
-                  "tenant_id": self._project_id,
+                  "project_id": self._project_id,
                   "admin_state_up": True,
                   "shared": False}
 
         net = self.plugin.create_network(self.ctxt, {'network': n_dict})
 
         subnet_dict = {'name': 'test_subnet',
-                       'tenant_id': self._project_id,
+                       'project_id': self._project_id,
                        'ip_version': 4,
                        'cidr': '10.0.0.0/24',
                        'allocation_pools': [{'start': '10.0.0.2',
@@ -941,7 +941,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         self.plugin.create_subnet(self.ctxt, {'subnet': subnet_dict})
 
         p_dict = {'network_id': net['id'],
-                  'tenant_id': self._project_id,
+                  'project_id': self._project_id,
                   'name': 'fooport',
                   "admin_state_up": True,
                   "device_id": "tapfoo",
