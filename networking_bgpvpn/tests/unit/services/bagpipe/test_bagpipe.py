@@ -141,7 +141,7 @@ class TestBagpipeOVOPushPullMixin:
     def test_bgpvpn_update_delete_rts_with_assocs(self, mocked_push):
         with self.bgpvpn(do_delete=False) as bgpvpn, \
                 self.network() as net, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.assoc_net(bgpvpn['bgpvpn']['id'],
                                net['network']['id'],
                                do_disassociate=False), \
@@ -203,7 +203,7 @@ class TestBagpipeOVOPushPullMixin:
 
     @mock.patch.object(resources_rpc.ResourcesPushRpcApi, 'push')
     def test_router_assoc_create_delete(self, mocked_push):
-        with self.router(tenant_id=self._project_id) as router, \
+        with self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn:
             mocked_push.reset_mock()
             with self.assoc_router(bgpvpn['bgpvpn']['id'],
@@ -348,7 +348,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
             self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
     def test_bagpipe_associate_router(self):
-        with self.router(tenant_id=self._project_id) as router:
+        with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
             with self.subnet() as subnet:
                 with self.port(subnet=subnet) as port:
@@ -415,7 +415,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
     def test_bagpipe_update_bgpvpn_with_router_assoc(self):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 self.assoc_router(bgpvpn['bgpvpn']['id'],
                                   router['router']['id']), \
@@ -450,7 +450,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
     def test_bagpipe_delete_bgpvpn_with_router_assoc(self):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn(do_delete=False) as bgpvpn, \
                 self.assoc_router(bgpvpn['bgpvpn']['id'],
                                   router['router']['id'],
@@ -472,7 +472,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
         driver = self.bgpvpn_plugin.driver
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn:
             itf = self._router_interface_action('add',
                                                 router['router']['id'],
@@ -503,7 +503,7 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
     def test_bagpipe_get_network_info_for_port(self):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.port(subnet=subnet) as port:
             itf = self._router_interface_action('add',
                                                 router['router']['id'],
@@ -777,7 +777,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
                 self.port(subnet=subnet) as port, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
                                   return_value=bgpvpn['bgpvpn']), \
@@ -803,7 +803,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
                 self.port(subnet=subnet, is_admin=True) as port, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 mock.patch.object(self.bagpipe_driver, 'get_bgpvpn',
                                   return_value=bgpvpn['bgpvpn']), \
@@ -832,7 +832,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
     def test_l3agent_add_remove_router_interface_to_bgpvpn_rpc(self):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
@@ -868,7 +868,7 @@ class TestBagpipeServiceDriverCallbacks(TestBagpipeCommon,
         self.patched_driver.stop()
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn(route_targets=[RT]) as bgpvpn, \
                 self.port(subnet=subnet,
                           arg_list=(portbindings.HOST_ID,),
@@ -1049,7 +1049,7 @@ class TestBagpipeServiceDriverV2RPCs(TestBagpipeCommon,
     def test_router_itf_event_router_assoc(self, mocked_push):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 self.assoc_router(bgpvpn['bgpvpn']['id'],
                                   router['router']['id']):
@@ -1079,7 +1079,7 @@ class TestBagpipeServiceDriverV2RPCs(TestBagpipeCommon,
     def test_router_itf_event_network_assoc(self, mocked_push):
         with self.network() as net, \
                 self.subnet(network=net) as subnet, \
-                self.router(tenant_id=self._project_id) as router, \
+                self.router(project_id=self._project_id) as router, \
                 self.bgpvpn() as bgpvpn, \
                 self.assoc_net(bgpvpn['bgpvpn']['id'],
                                net['network']['id']):
