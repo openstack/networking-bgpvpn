@@ -184,7 +184,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
     def _test_router_assocs(self, bgpvpn_id, max_assocs, assoc_count=0,
                             previous_assocs=None):
-        with self.router(tenant_id=self._project_id) as router:
+        with self.router(project_id=self._project_id) as router:
             router_assoc = {'router_id': router['router']['id'],
                             'tenant_id': self._project_id}
             assoc = self.plugin_db.create_router_assoc(self.ctx,
@@ -288,7 +288,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertEqual([], bgpvpn_db['networks'])
 
     def test_db_associate_disassociate_router(self):
-        with self.router(tenant_id=self._project_id) as router:
+        with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
@@ -299,7 +299,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 self.assertEqual([], bgpvpn['routers'])
 
     def test_db_find_bgpvpn_for_associated_router(self):
-        with self.router(tenant_id=self._project_id) as router:
+        with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
@@ -313,7 +313,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
     def test_db_delete_router(self):
         with self.bgpvpn() as bgpvpn:
             id = bgpvpn['bgpvpn']['id']
-            with self.router(tenant_id=self._project_id) as router:
+            with self.router(project_id=self._project_id) as router:
                 router_id = router['router']['id']
                 self.assoc_router(id, router_id=router_id,
                                   do_disassociate=False)
@@ -323,8 +323,8 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
     def test_db_list_bgpvpn_filtering_associated_resources(self):
         with self.network() as network1, \
                 self.network() as network2, \
-                self.router(tenant_id=self._project_id) as router1, \
-                self.router(tenant_id=self._project_id) as router2, \
+                self.router(project_id=self._project_id) as router1, \
+                self.router(project_id=self._project_id) as router2, \
                 self.bgpvpn() as bgpvpn1, \
                 self.bgpvpn() as bgpvpn2, \
                 self.bgpvpn() as bgpvpn3, \
@@ -416,7 +416,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             self.assertNotIn(bgpvpn3['bgpvpn']['id'], bgpvpn_id_list)
 
     def test_db_associate_disassociate_port(self):
-        with self.port(tenant_id=self._project_id) as port, \
+        with self.port(project_id=self._project_id) as port, \
                 self.bgpvpn() as bgpvpn:
             port_id = port['port']['id']
             bgpvpn_id = bgpvpn['bgpvpn']['id']
