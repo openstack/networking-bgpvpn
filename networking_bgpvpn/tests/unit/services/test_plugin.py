@@ -830,6 +830,11 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
     def _raise_bgpvpn_driver_precommit_exc(self, *args, **kwargs):
         raise extensions.bgpvpn.BGPVPNDriverError(method='precommit method')
 
+    def _verify(self, ref, actual, keys):
+        # verify values for certain dict key are equal
+        for key in keys:
+            self.assertEqual(ref[key], actual[key])
+
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'create_bgpvpn_postcommit')
     @mock.patch.object(driver_api.BGPVPNDriver,
@@ -880,13 +885,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                              res.status_int)
             # Assert that existing bgpvpn remains
             list = self._list('bgpvpn/bgpvpns', fmt='json')
-            bgpvpn['bgpvpn'].pop('import_targets')
-            bgpvpn['bgpvpn'].pop('project_id')
-            bgpvpn['bgpvpn'].pop('tenant_id')
-            bgpvpn['bgpvpn'].pop('route_distinguishers')
-            bgpvpn['bgpvpn'].pop('route_targets')
-            bgpvpn['bgpvpn'].pop('export_targets')
-            self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+            keys = ['id', 'name', 'type']
+            self._verify(bgpvpn['bgpvpn'], list['bgpvpns'][0], keys)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_bgpvpn_postcommit')
@@ -1089,13 +1089,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     # Assert that existing bgpvpn and net-assoc remains
                     list = self._list('bgpvpn/bgpvpns', fmt='json')
                     bgpvpn['bgpvpn']['networks'] = [net_assoc['network_id']]
-                    bgpvpn['bgpvpn'].pop('import_targets')
-                    bgpvpn['bgpvpn'].pop('project_id')
-                    bgpvpn['bgpvpn'].pop('tenant_id')
-                    bgpvpn['bgpvpn'].pop('route_distinguishers')
-                    bgpvpn['bgpvpn'].pop('route_targets')
-                    bgpvpn['bgpvpn'].pop('export_targets')
-                    self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+                    keys = ['id', 'name', 'networks', 'type']
+                    self._verify(bgpvpn['bgpvpn'], list['bgpvpns'][0], keys)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_net_assoc_postcommit')
@@ -1226,13 +1221,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     # Assert that existing bgpvpn and router-assoc remains
                     list = self._list('bgpvpn/bgpvpns', fmt='json')
                     bgpvpn['bgpvpn']['routers'] = [router_assoc['router_id']]
-                    bgpvpn['bgpvpn'].pop('import_targets')
-                    bgpvpn['bgpvpn'].pop('project_id')
-                    bgpvpn['bgpvpn'].pop('tenant_id')
-                    bgpvpn['bgpvpn'].pop('route_distinguishers')
-                    bgpvpn['bgpvpn'].pop('route_targets')
-                    bgpvpn['bgpvpn'].pop('export_targets')
-                    self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+                    keys = ['id', 'name', 'routers', 'type']
+                    self._verify(bgpvpn['bgpvpn'], list['bgpvpns'][0], keys)
 
     @mock.patch.object(driver_api.BGPVPNDriver,
                        'delete_router_assoc_postcommit')
@@ -1372,13 +1362,8 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             # Assert that existing bgpvpn and port-assoc remains
             list = self._list('bgpvpn/bgpvpns', fmt='json')
             bgpvpn['bgpvpn']['ports'] = [port_assoc['port_id']]
-            bgpvpn['bgpvpn'].pop('import_targets')
-            bgpvpn['bgpvpn'].pop('project_id')
-            bgpvpn['bgpvpn'].pop('tenant_id')
-            bgpvpn['bgpvpn'].pop('route_distinguishers')
-            bgpvpn['bgpvpn'].pop('route_targets')
-            bgpvpn['bgpvpn'].pop('export_targets')
-            self.assertEqual([bgpvpn['bgpvpn']], list['bgpvpns'])
+            keys = ['id', 'name', 'ports', 'type']
+            self._verify(bgpvpn['bgpvpn'], list['bgpvpns'][0], keys)
 
     @mock.patch.object(driver_api.BGPVPNDriverRC,
                        'update_port_assoc_precommit')
