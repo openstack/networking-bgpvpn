@@ -119,9 +119,16 @@
         - openstack-tox-py314:
             required-projects: *bgpvpn_required_projects
         - neutron-tempest-plugin-bgpvpn-bagpipe:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^setup.cfg$
+            irrelevant-files: &bgpvpn_irrelevant_files
+              - ^\.gitignore$
+              - ^\.gitreview$
+              - ^\.pre-commit-config\.yaml$
+              - ^\.pylintrc$
+              - ^test-requirements.txt$
+              - ^releasenotes/.*$
+              - ^doc/.*$
+              - ^.*\.rst$
+              - ^networking_bgpvpn/tests/.*$
         - openstack-tox-cover:
             required-projects: *bgpvpn_required_projects
         - horizon-tox-python3-django42:
@@ -140,9 +147,7 @@
         - openstack-tox-py313:
             required-projects: *bgpvpn_required_projects
         - neutron-tempest-plugin-bgpvpn-bagpipe:
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^setup.cfg$
+            irrelevant-files: *bgpvpn_irrelevant_files
         - networking-bgpvpn-functional-full
         - horizon-tox-python3-django42:
             required-projects: *bgpvpn_required_projects
