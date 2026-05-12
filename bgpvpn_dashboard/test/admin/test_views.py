@@ -68,10 +68,10 @@ class TestIndexView(helpers.APITestCase):
     def test_get_data(self, mock_bgpvpn_api, mock_api, mock_get_tenant_name):
         bgpvpn_foo = self._get_mock_bgpvpn("foo")
         bgpvpn_bar = self._get_mock_bgpvpn("bar")
-        mock_neutron_client = mock_api.neutron.neutronclient(mock.Mock())
+        mock_network_client = mock_api.neutron.networkclient(mock.Mock())
         mock_bgpvpn_api.bgpvpns_list.return_value = [bgpvpn_foo, bgpvpn_bar]
-        mock_neutron_client.list_networks.return_value = []
-        mock_neutron_client.list_routers.return_value = []
+        mock_network_client.networks.return_value = []
+        mock_network_client.routers.return_value = []
 
         expected_bgpvpns = [bgpvpn_foo, bgpvpn_bar]
         result = self.bgpvpn_view.get_data()
