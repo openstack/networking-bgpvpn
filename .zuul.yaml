@@ -48,7 +48,7 @@
         ovn-northd: false
         ovs-vswitchd: false
         ovsdb-server: false
-        q-ovn-metadata-agent: false
+        q-ovn-agent: false
         # Enable Neutron services that are not used by OVN
         q-agt: true
         q-dhcp: true
@@ -80,7 +80,7 @@
         ovn-northd: false
         ovs-vswitchd: false
         ovsdb-server: false
-        q-ovn-metadata-agent: false
+        q-ovn-agent: false
         # Enable Neutron services that are not used by OVN
         q-agt: true
         q-dhcp: true
