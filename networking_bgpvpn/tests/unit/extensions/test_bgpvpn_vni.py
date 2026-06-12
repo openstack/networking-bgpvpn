@@ -72,7 +72,7 @@ class BgpvpnVniExtensionTestCase(test_extensions_base.ExtensionTestCase):
                        'type': 'l3',
                        'route_targets': ['1234:56'],
                        'vni': 1000,
-                       'tenant_id': _uuid()}
+                       'project_id': _uuid()}
         }
         expected_ret_val = copy.copy(data['bgpvpn'])
         expected_ret_val['import_targets'] = []
@@ -100,7 +100,7 @@ class BgpvpnVniExtensionTestCase(test_extensions_base.ExtensionTestCase):
         return_value = {'name': 'bgpvpn1',
                         'type': 'l3',
                         'route_targets': ['1234:56'],
-                        'tenant_id': _uuid(),
+                        'project_id': _uuid(),
                         'vni': 1000,
                         'id': bgpvpn_id}
 

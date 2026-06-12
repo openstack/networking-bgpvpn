@@ -255,10 +255,10 @@ class BGPVPNPluginDb():
         return super().__new__(cls, *args, **kwargs)
 
     @db_api.CONTEXT_READER
-    def _get_bgpvpns_for_tenant(self, session, tenant_id, fields):
+    def _get_bgpvpns_for_project(self, session, project_id, fields):
         try:
             qry = session.query(BGPVPN)
-            bgpvpns = qry.filter_by(tenant_id=tenant_id)
+            bgpvpns = qry.filter_by(project_id=project_id)
         except exc.NoResultFound:
             return
 
@@ -275,7 +275,7 @@ class BGPVPNPluginDb():
                      bgpvpn_db.port_associations]
         res = {
             'id': bgpvpn_db['id'],
-            'tenant_id': bgpvpn_db['tenant_id'],
+            'project_id': bgpvpn_db['project_id'],
             'networks': net_list,
             'routers': router_list,
             'ports': port_list,
@@ -309,7 +309,7 @@ class BGPVPNPluginDb():
 
         bgpvpn_db = BGPVPN(
             id=uuidutils.generate_uuid(),
-            tenant_id=bgpvpn['tenant_id'],
+            project_id=bgpvpn['project_id'],
             name=bgpvpn['name'],
             type=bgpvpn['type'],
             route_targets=rt,
@@ -370,7 +370,7 @@ class BGPVPNPluginDb():
     @db_api.CONTEXT_READER
     def _make_net_assoc_dict(self, net_assoc_db, fields=None):
         res = {'id': net_assoc_db['id'],
-               'tenant_id': net_assoc_db['tenant_id'],
+               'project_id': net_assoc_db['project_id'],
                'bgpvpn_id': net_assoc_db['bgpvpn_id'],
                'network_id': net_assoc_db['network_id']}
         return db_utils.resource_fields(res, fields)
@@ -391,7 +391,7 @@ class BGPVPNPluginDb():
         try:
             with db_api.CONTEXT_WRITER.using(context):
                 net_assoc_db = BGPVPNNetAssociation(
-                    tenant_id=net_assoc['tenant_id'],
+                    project_id=net_assoc['project_id'],
                     bgpvpn_id=bgpvpn_id,
                     network_id=net_assoc['network_id'])
                 context.session.add(net_assoc_db)
@@ -432,7 +432,7 @@ class BGPVPNPluginDb():
 
     def _make_router_assoc_dict(self, router_assoc_db, fields=None):
         res = {'id': router_assoc_db['id'],
-               'tenant_id': router_assoc_db['tenant_id'],
+               'project_id': router_assoc_db['project_id'],
                'bgpvpn_id': router_assoc_db['bgpvpn_id'],
                'router_id': router_assoc_db['router_id'],
                'advertise_extra_routes': router_assoc_db[
@@ -458,7 +458,7 @@ class BGPVPNPluginDb():
         router_id = router_association['router_id']
         try:
             router_assoc_db = BGPVPNRouterAssociation(
-                tenant_id=router_association['tenant_id'],
+                project_id=router_association['project_id'],
                 bgpvpn_id=bgpvpn_id,
                 router_id=router_id)
             context.session.add(router_assoc_db)
@@ -511,7 +511,7 @@ class BGPVPNPluginDb():
         routes = [port_assoc_route_dict_from_db(r)
                   for r in port_assoc_db['routes']]
         res = {'id': port_assoc_db['id'],
-               'tenant_id': port_assoc_db['tenant_id'],
+               'project_id': port_assoc_db['project_id'],
                'bgpvpn_id': port_assoc_db['bgpvpn_id'],
                'port_id': port_assoc_db['port_id'],
                'advertise_fixed_ips': port_assoc_db['advertise_fixed_ips'],
@@ -537,7 +537,7 @@ class BGPVPNPluginDb():
         try:
             with db_api.CONTEXT_WRITER.using(context):
                 port_assoc_db = BGPVPNPortAssociation(
-                    tenant_id=port_association['tenant_id'],
+                    project_id=port_association['project_id'],
                     bgpvpn_id=bgpvpn_id,
                     port_id=port_id,
                     advertise_fixed_ips=advertise_fixed_ips)

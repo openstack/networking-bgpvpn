@@ -47,8 +47,8 @@ class BGPVPNPortAssocRouteNoSuchBGPVPN(n_exc.BadRequest):
     message = _("bgpvpn specified in route does not exist (%(bgpvpn_id)s)")
 
 
-class BGPVPNPortAssocRouteWrongBGPVPNTenant(n_exc.BadRequest):
-    message = _("bgpvpn specified in route does not belong to the tenant "
+class BGPVPNPortAssocRouteWrongBGPVPNProject(n_exc.BadRequest):
+    message = _("bgpvpn specified in route does not belong to the project "
                 "(%(bgpvpn_id)s)")
 
 

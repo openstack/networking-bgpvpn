@@ -118,7 +118,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         router_port = plugin.get_ports(context, filters=filter)
         if router_port:
             router_id = router_port[0]['device_id']
-            filter = {'tenant_id': [network['tenant_id']]}
+            filter = {'project_id': [network['project_id']]}
             bgpvpns = self.driver.get_bgpvpns(context, filters=filter)
             bgpvpns = [str(bgpvpn['id']) for bgpvpn in bgpvpns
                        if router_id in bgpvpn['routers']]
@@ -147,7 +147,7 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                   'device_owner': [const.DEVICE_OWNER_ROUTER_INTF]}
         router_ports = plugin.get_ports(context, filters=filter)
         if router_ports:
-            filter = {'tenant_id': [router['tenant_id']]}
+            filter = {'project_id': [router['project_id']]}
             bgpvpns = self.driver.get_bgpvpns(context, filters=filter)
             for port in router_ports:
                 bgpvpns = [str(bgpvpn['id']) for bgpvpn in bgpvpns
@@ -189,14 +189,14 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         net_assoc = network_association['network_association']
         # check net exists
         net = self._validate_network(context, net_assoc['network_id'])
-        # check every resource belong to the same tenant
+        # check every resource belong to the same project
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
-        if net['tenant_id'] != bgpvpn['tenant_id']:
+        if net['project_id'] != bgpvpn['project_id']:
             msg = 'network doesn\'t belong to the bgpvpn owner'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
-        if net_assoc['tenant_id'] != bgpvpn['tenant_id']:
+        if net_assoc['project_id'] != bgpvpn['project_id']:
             msg = 'network association and bgpvpn should belong to\
-                the same tenant'
+                the same project'
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
         return self.driver.create_net_assoc(context, bgpvpn_id, net_assoc)
 
@@ -225,12 +225,12 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
             msg = ("Router associations require the bgpvpn to be of type %s"
                    % constants.BGPVPN_L3)
             raise n_exc.BadRequest(resource='bgpvpn', msg=msg)
-        if not router['tenant_id'] == bgpvpn['tenant_id']:
+        if not router['project_id'] == bgpvpn['project_id']:
             msg = "router doesn't belong to the bgpvpn owner"
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
-        if not (router_assoc['tenant_id'] == bgpvpn['tenant_id']):
+        if not (router_assoc['project_id'] == bgpvpn['project_id']):
             msg = "router association and bgpvpn should " \
-                  "belong to the same tenant"
+                  "belong to the same project"
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
         return self.driver.create_router_assoc(context, bgpvpn_id,
                                                router_assoc)
@@ -272,15 +272,15 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
                     bgpvpn_type=assoc_bgpvpn['type']
                 )
 
-            assoc_tenant_id = port_association.get('project_id')
-            if assoc_tenant_id is None:
-                # update, rather than create, we need to retrieve the tenant
+            assoc_project_id = port_association.get('project_id')
+            if assoc_project_id is None:
+                # update, rather than create, we need to retrieve the project
                 assoc = self.get_bgpvpn_port_association(context,
                                                          assoc_id, bgpvpn_id)
-                assoc_tenant_id = assoc.get('project_id')
+                assoc_project_id = assoc.get('project_id')
 
-            if route_bgpvpn['project_id'] != assoc_tenant_id:
-                raise bgpvpn_rc.BGPVPNPortAssocRouteWrongBGPVPNTenant(
+            if route_bgpvpn['project_id'] != assoc_project_id:
+                raise bgpvpn_rc.BGPVPNPortAssocRouteWrongBGPVPNProject(
                     bgpvpn_id=route['bgpvpn_id'])
 
     def create_bgpvpn_port_association(self, context, bgpvpn_id,
@@ -288,12 +288,12 @@ class BGPVPNPlugin(bgpvpn.BGPVPNPluginBase,
         port_association = port_association['port_association']
         port = self._validate_port(context, port_association['port_id'])
         bgpvpn = self.get_bgpvpn(context, bgpvpn_id)
-        if not port['tenant_id'] == bgpvpn['project_id']:
+        if not port['project_id'] == bgpvpn['project_id']:
             msg = "port doesn't belong to the bgpvpn owner"
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
         if not (port_association['project_id'] == bgpvpn['project_id']):
             msg = "port association and bgpvpn should " \
-                  "belong to the same tenant"
+                  "belong to the same project"
             raise n_exc.NotAuthorized(resource='bgpvpn', msg=msg)
         self._validate_port_association_routes_bgpvpn(context,
                                                       port_association,

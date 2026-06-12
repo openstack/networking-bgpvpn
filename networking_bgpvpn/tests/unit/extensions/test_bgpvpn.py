@@ -72,7 +72,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['1234:56'],
-                       'tenant_id': _uuid()}
+                       'project_id': _uuid()}
         }
         expected_ret_val = copy.copy(data['bgpvpn'])
         expected_ret_val['import_targets'] = []
@@ -99,7 +99,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
             'bgpvpn': {'name': 'bgpvpn1',
                        'type': 'l3',
                        'route_targets': ['ASN:NN'],
-                       'tenant_id': _uuid()}
+                       'project_id': _uuid()}
         }
 
         res = self.api.post(_get_path(BGPVPN_URI, fmt=self.fmt),
@@ -124,7 +124,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
             yield {'bgpvpn': {'name': 'bgpvpn1',
                               'type': 'l3',
                               field: value,
-                              'tenant_id': _uuid()}
+                              'project_id': _uuid()}
                    }
 
     def _data_for_valid_rtdt(self, field):
@@ -142,7 +142,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
             yield {'bgpvpn': {'name': 'bgpvpn1',
                               'type': 'l3',
                               field: value,
-                              'tenant_id': _uuid()}
+                              'project_id': _uuid()}
                    }
 
     def _test_invalid_field(self, field):
@@ -212,7 +212,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
         return_value = {'name': 'bgpvpn1',
                         'type': 'l3',
                         'route_targets': ['1234:56'],
-                        'tenant_id': _uuid(),
+                        'project_id': _uuid(),
                         'id': bgpvpn_id}
 
         self.instance.update_bgpvpn.return_value = return_value
@@ -237,7 +237,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
         return_value = {'name': 'bgpvpn1',
                         'type': 'l3',
                         'route_targets': ['1234:56'],
-                        'tenant_id': _uuid(),
+                        'project_id': _uuid(),
                         'id': bgpvpn_id}
 
         self.instance.get_bgpvpn.return_value = return_value
@@ -259,7 +259,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
 
     def test_bgpvpn_net_create(self):
         data = {'network_association': {'network_id': self.net_id,
-                                        'tenant_id': _uuid()}}
+                                        'project_id': _uuid()}}
         return_value = copy.copy(data['network_association'])
         return_value.update({'id': self.net_assoc_id})
         self.instance.create_bgpvpn_network_association.return_value = \
@@ -330,7 +330,7 @@ class BgpvpnExtensionTestCase(BgpvpnExtensionTestCaseBase):
         data = {
             'router_association': {
                 'router_id': self.router_id,
-                'tenant_id': _uuid()
+                'project_id': _uuid()
             }
         }
         return_value = copy.copy(data['router_association'])

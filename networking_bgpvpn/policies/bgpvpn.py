@@ -38,11 +38,11 @@ rules = [
             },
         ]
     ),
-    # TODO(amotoki): tenant_id is not updatable, so perhaps this can be dropped
+    # TODO(amotoki): project_id is not updatable, so perhaps can be dropped
     policy.DocumentedRuleDefault(
-        'update_bgpvpn:tenant_id',
+        'update_bgpvpn:project_id',
         base.RULE_ADMIN_ONLY,
-        'Update ``tenant_id`` attribute of a BGP VPN',
+        'Update ``project_id`` attribute of a BGP VPN',
         [
             {
                 'method': 'PUT',
@@ -135,9 +135,9 @@ rules = [
     ),
 
     policy.DocumentedRuleDefault(
-        'get_bgpvpn:tenant_id',
+        'get_bgpvpn:project_id',
         base.RULE_ADMIN_ONLY,
-        'Get ``tenant_id`` attributes of BGP VPNs',
+        'Get ``project_id`` attributes of BGP VPNs',
         [
             {
                 'method': 'GET',

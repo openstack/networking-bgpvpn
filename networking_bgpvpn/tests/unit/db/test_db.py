@@ -43,7 +43,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             # create
             bgpvpn = self.plugin_db.create_bgpvpn(
                 self.ctx,
-                {"tenant_id": self._project_id,
+                {"project_id": self._project_id,
                  "type": "l3",
                  "name": "",
                  "route_targets": ["64512:1"],
@@ -56,7 +56,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             )
 
             net_assoc = {'network_id': net['network']['id'],
-                         'tenant_id': self._project_id}
+                         'project_id': self._project_id}
             # associate network
             assoc1 = self.plugin_db.create_net_assoc(self.ctx, bgpvpn['id'],
                                                      net_assoc)
@@ -66,7 +66,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
             # check
             self.assertEqual("l3", bgpvpn['type'])
-            # we could check tenant_id
+            # we could check project_id
             self.assertEqual(["64512:1"], bgpvpn['route_targets'])
             self.assertEqual(["64512:11", "64512:12"],
                              bgpvpn['import_targets'])
@@ -104,7 +104,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
 
             with self.network(name='net2') as net2:
                 net_assoc2 = {'network_id': net2['network']['id'],
-                              'tenant_id': self._project_id}
+                              'project_id': self._project_id}
                 # associate network
                 assoc2 = self.plugin_db.create_net_assoc(self.ctx,
                                                          bgpvpn['id'],
@@ -125,7 +125,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 bgpvpn['id'],
                 {"type": "l2",
                  "name": "foo",
-                 "tenant_id": "a-b-c-d",
+                 "project_id": "a-b-c-d",
                  "route_targets": [],
                  "import_targets": ["64512:22"],
                  "route_distinguishers": [],
@@ -136,7 +136,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
             bgpvpn2 = self.plugin_db.get_bgpvpn(self.ctx, bgpvpn['id'])
             # check
             self.assertEqual("l2", bgpvpn2['type'])
-            self.assertEqual("a-b-c-d", bgpvpn2['tenant_id'])
+            self.assertEqual("a-b-c-d", bgpvpn2['project_id'])
             self.assertEqual("foo", bgpvpn2['name'])
             self.assertEqual([], bgpvpn2['route_targets'])
             self.assertEqual(["64512:22"], bgpvpn2['import_targets'])
@@ -186,7 +186,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                             previous_assocs=None):
         with self.router(project_id=self._project_id) as router:
             router_assoc = {'router_id': router['router']['id'],
-                            'tenant_id': self._project_id}
+                            'project_id': self._project_id}
             assoc = self.plugin_db.create_router_assoc(self.ctx,
                                                        bgpvpn_id,
                                                        router_assoc)
@@ -232,7 +232,7 @@ class BgpvpnDBTestCase(test_plugin.BgpvpnTestCaseMixin):
                 self.assertRaises(BGPVPNNetAssocAlreadyExists,
                                   self.plugin_db.create_net_assoc,
                                   self.ctx,
-                                  id, {'tenant_id': self._project_id,
+                                  id, {'project_id': self._project_id,
                                        'network_id': net_id})
 
     def test_db_find_bgpvpn_for_associated_network(self):

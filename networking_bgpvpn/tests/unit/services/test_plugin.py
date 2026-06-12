@@ -117,13 +117,13 @@ class BgpvpnTestCaseMixin(test_db_plugin.NeutronDbPluginV2TestCase,
         self.bgpvpn_data = {'bgpvpn': {'name': 'bgpvpn1',
                                        'type': 'l3',
                                        'route_targets': ['1234:56'],
-                                       'tenant_id': self._project_id}}
+                                       'project_id': self._project_id}}
         self.converted_data = copy.copy(self.bgpvpn_data)
         self.converted_data['bgpvpn'].update({'export_targets': [],
                                               'import_targets': [],
                                               'route_distinguishers': []})
 
-    def add_tenant(self, data):
+    def add_project(self, data):
         data.update({
             "project_id": self._project_id,
             "tenant_id": self._project_id
@@ -153,7 +153,7 @@ class BgpvpnTestCaseMixin(test_db_plugin.NeutronDbPluginV2TestCase,
     def assoc_net(self, bgpvpn_id, net_id, do_disassociate=True):
         fmt = 'json'
         data = {'network_association': {'network_id': net_id,
-                                        'tenant_id': self._project_id}}
+                                        'project_id': self._project_id}}
         req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -182,7 +182,7 @@ class BgpvpnTestCaseMixin(test_db_plugin.NeutronDbPluginV2TestCase,
     def assoc_router(self, bgpvpn_id, router_id, do_disassociate=True):
         fmt = 'json'
         data = {'router_association': {'router_id': router_id,
-                                       'tenant_id': self._project_id}}
+                                       'project_id': self._project_id}}
         req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -211,7 +211,7 @@ class BgpvpnTestCaseMixin(test_db_plugin.NeutronDbPluginV2TestCase,
     def assoc_port(self, bgpvpn_id, port_id, do_disassociate=True, **kwargs):
         fmt = 'json'
         data = {'port_association': {'port_id': port_id,
-                                     'tenant_id': self._project_id}}
+                                     'project_id': self._project_id}}
         data['port_association'].update(kwargs)
         req = self.new_create_request(
             'bgpvpn/bgpvpns',
@@ -278,7 +278,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             id = bgpvpn['bgpvpn']['id']
             net_id = _uuid()
             data = {'network_association': {'network_id': net_id,
-                                            'tenant_id': self._project_id}}
+                                            'project_id': self._project_id}}
             bgpvpn_net_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -291,10 +291,11 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
     def test_associate_unauthorized_net(self):
         with self.network() as net:
             net_id = net['network']['id']
-            with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
+            with self.bgpvpn(project_id='another_project') as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
-                data = {'network_association': {'network_id': net_id,
-                                                'tenant_id': self._project_id}}
+                data = {
+                    'network_association': {'network_id': net_id,
+                                            'project_id': self._project_id}}
                 bgpvpn_net_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -305,13 +306,14 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 res = bgpvpn_net_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
-    def test_net_assoc_belong_to_diff_tenant(self):
+    def test_net_assoc_belong_to_diff_project(self):
         with self.network() as net:
             net_id = net['network']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
-                data = {'network_association': {'network_id': net_id,
-                                                'tenant_id': 'another_tenant'}}
+                data = {
+                    'network_association': {'network_id': net_id,
+                                            'project_id': 'another_project'}}
                 bgpvpn_net_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -358,7 +360,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 'router_id': router['router']['id'],
                 'advertise_extra_routes': False
             }}
-            self.add_tenant(expected['router_association'])
+            self.add_project(expected['router_association'])
 
             self.assertEqual(expected, updated)
 
@@ -381,7 +383,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             id = bgpvpn['bgpvpn']['id']
             router_id = _uuid()
             data = {'router_association': {'router_id': router_id,
-                                           'tenant_id': self._project_id}}
+                                           'project_id': self._project_id}}
             bgpvpn_router_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -395,10 +397,10 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
     def test_associate_unauthorized_router(self):
         with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
-            with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
+            with self.bgpvpn(project_id='another_project') as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 data = {'router_association': {'router_id': router_id,
-                                               'tenant_id': self._project_id}}
+                                               'project_id': self._project_id}}
                 bgpvpn_router_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -412,11 +414,11 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
     def test_associate_router_incorrect_bgpvpn_type(self):
         with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
-            with self.bgpvpn(tenant_id='another_tenant',
+            with self.bgpvpn(project_id='another_project',
                              type=constants.BGPVPN_L2) as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 data = {'router_association': {'router_id': router_id,
-                                               'tenant_id': self._project_id}}
+                                               'project_id': self._project_id}}
                 bgpvpn_router_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -427,13 +429,14 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 res = bgpvpn_router_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
 
-    def test_router_assoc_belong_to_diff_tenant(self):
+    def test_router_assoc_belong_to_diff_project(self):
         with self.router(project_id=self._project_id) as router:
             router_id = router['router']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
-                data = {'router_association': {'router_id': router_id,
-                                               'tenant_id': 'another_tenant'}}
+                data = {
+                    'router_association': {'router_id': router_id,
+                                           'project_id': 'another_project'}}
                 bgpvpn_router_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -465,7 +468,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
         bgpvpn_id = bgpvpn['id']
         router_id = router['id']
         data = {'router_association': {'router_id': router_id,
-                                       'tenant_id': self._project_id}}
+                                       'project_id': self._project_id}}
         req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -490,7 +493,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 raise http_client_error(bgpvpn_rtr_intf_req, res)
 
             data = {'network_association': {'network_id': net_id,
-                                            'tenant_id': self._project_id}}
+                                            'project_id': self._project_id}}
             bgpvpn_net_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -506,7 +509,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
         router_id = router['id']
 
         data = {'network_association': {'network_id': net_id,
-                                        'tenant_id': self._project_id}}
+                                        'project_id': self._project_id}}
         req = self.new_create_request(
             'bgpvpn/bgpvpns',
             data=data,
@@ -531,7 +534,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 raise http_client_error(bgpvpn_rtr_intf_req, res)
 
             data = {'router_association': {'router_id': router_id,
-                                           'tenant_id': self._project_id}}
+                                           'project_id': self._project_id}}
             bgpvpn_router_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -612,7 +615,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 self.bgpvpn() as bgpvpn:
 
             data = {'port_association': {'port_id': port['port']['id'],
-                                         'tenant_id': self._project_id}}
+                                         'project_id': self._project_id}}
             data['port_association'].update(kwargs)
             bgpvpn_net_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
@@ -633,7 +636,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
             data = {'port_association': {
                     'port_id': port['port']['id'],
-                    'tenant_id': self._project_id,
+                    'project_id': self._project_id,
                     'routes': [{
                         'type': 'bgpvpn',
                         'bgpvpn_id': '3aff9b6b-387b-4ffd-a9ff-a4bdffb349ff'
@@ -650,16 +653,16 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             self.assertIn("bgpvpn specified in route does not exist",
                           str(res.body))
 
-    def test_bgpvpn_port_assoc_create_bgpvpn_route_wrong_tenant(self):
+    def test_bgpvpn_port_assoc_create_bgpvpn_route_wrong_project(self):
         with self.network() as net, \
                 self.subnet(network={'network': net['network']}) as subnet, \
                 self.port(subnet={'subnet': subnet['subnet']}) as port, \
                 self.bgpvpn() as bgpvpn, \
-                self.bgpvpn(tenant_id="notus") as bgpvpn_other:
+                self.bgpvpn(project_id="notus") as bgpvpn_other:
 
             data = {'port_association': {
                     'port_id': port['port']['id'],
-                    'tenant_id': self._project_id,
+                    'project_id': self._project_id,
                     'routes': [{
                         'type': 'bgpvpn',
                         'bgpvpn_id': bgpvpn_other['bgpvpn']['id']
@@ -675,7 +678,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             res = bgpvpn_net_req.get_response(self.ext_api)
             self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
             self.assertIn("bgpvpn specified in route does not belong to "
-                          "the tenant", str(res.body))
+                          "the project", str(res.body))
 
     def test_associate_empty_port(self):
         with self.bgpvpn() as bgpvpn:
@@ -696,7 +699,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             id = bgpvpn['bgpvpn']['id']
             port_id = _uuid()
             data = {'port_association': {'port_id': port_id,
-                                         'tenant_id': self._project_id}}
+                                         'project_id': self._project_id}}
             bgpvpn_port_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -709,10 +712,10 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
     def test_associate_unauthorized_port(self):
         with self.port(project_id=self._project_id) as port:
             port_id = port['port']['id']
-            with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
+            with self.bgpvpn(project_id='another_project') as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 data = {'port_association': {'port_id': port_id,
-                                             'tenant_id': self._project_id}}
+                                             'project_id': self._project_id}}
                 bgpvpn_port_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -723,13 +726,13 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
                 res = bgpvpn_port_req.get_response(self.ext_api)
                 self.assertEqual(res.status_int, webob.exc.HTTPForbidden.code)
 
-    def test_port_assoc_belong_to_diff_tenant(self):
+    def test_port_assoc_belong_to_diff_project(self):
         with self.port(project_id=self._project_id) as port:
             port_id = port['port']['id']
             with self.bgpvpn() as bgpvpn:
                 id = bgpvpn['bgpvpn']['id']
                 data = {'port_association': {'port_id': port_id,
-                                             'tenant_id': 'another_tenant'}}
+                                             'project_id': 'another_project'}}
                 bgpvpn_port_req = self.new_create_request(
                     'bgpvpn/bgpvpns',
                     data=data,
@@ -762,12 +765,12 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
             # one call for create, one call for update
             self.assertEqual(2, mock_validate.call_count)
 
-    def test_bgpvpn_port_assoc_update_bgpvpn_route_wrong_tenant(self):
+    def test_bgpvpn_port_assoc_update_bgpvpn_route_wrong_project(self):
         with self.network() as net, \
                 self.subnet(network={'network': net['network']}) as subnet, \
                 self.port(subnet={'subnet': subnet['subnet']}) as port, \
                 self.bgpvpn() as bgpvpn, \
-                self.bgpvpn(tenant_id="not-us") as bgpvpn_other, \
+                self.bgpvpn(project_id="not-us") as bgpvpn_other, \
                 self.assoc_port(bgpvpn['bgpvpn']['id'],
                                 port['port']['id']) as port_assoc:
 
@@ -789,7 +792,7 @@ class TestBGPVPNServicePlugin(BgpvpnTestCaseMixin):
 
             self.assertEqual(res.status_int, webob.exc.HTTPBadRequest.code)
             self.assertIn(
-                "bgpvpn specified in route does not belong to the tenant",
+                "bgpvpn specified in route does not belong to the project",
                 str(res.body))
 
     def test_bgpvpn_port_assoc_update_bgpvpn_route_wrong_type(self):
@@ -946,11 +949,15 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             old_bgpvpn['networks'] = []
             old_bgpvpn['routers'] = []
             old_bgpvpn['ports'] = []
-            old_bgpvpn['project_id'] = old_bgpvpn['tenant_id']
+            old_bgpvpn['project_id'] = old_bgpvpn['project_id']
             old_bgpvpn['local_pref'] = None
             new_bgpvpn = copy.copy(old_bgpvpn)
             update = {'name': 'foo'}
             new_bgpvpn.update(update)
+
+            # NOTE(haleyb): "tenant_id" reference should be removed
+            old_bgpvpn['tenant_id'] = old_bgpvpn['project_id']
+            new_bgpvpn['tenant_id'] = new_bgpvpn['project_id']
 
             mock_update_db.return_value = new_bgpvpn
 
@@ -995,7 +1002,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             with self.network() as net:
                 net_id = net['network']['id']
                 assoc_id = _uuid()
-                data = {'tenant_id': self._project_id,
+                data = {'project_id': self._project_id,
                         'network_id': net_id}
                 net_assoc_dict = copy.copy(data)
                 net_assoc_dict.update({'id': assoc_id,
@@ -1022,7 +1029,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                   new=self._raise_bgpvpn_driver_precommit_exc):
             fmt = 'json'
             data = {'network_association': {'network_id': net['network']['id'],
-                                            'tenant_id': self._project_id}}
+                                            'project_id': self._project_id}}
             bgpvpn_net_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -1105,7 +1112,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                     net_assoc = {'id': assoc_id,
                                  'network_id': net_id,
                                  'bgpvpn_id': bgpvpn_id}
-                    self.add_tenant(net_assoc)
+                    self.add_project(net_assoc)
                     mock_db_del.return_value = net_assoc
             mock_db_del.assert_called_once_with(mock.ANY,
                                                 assoc_id,
@@ -1126,7 +1133,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             bgpvpn_id = bgpvpn['bgpvpn']['id']
             router_id = router['router']['id']
             assoc_id = _uuid()
-            data = {'tenant_id': self._project_id,
+            data = {'project_id': self._project_id,
                     'router_id': router_id}
             router_assoc_dict = copy.copy(data)
             router_assoc_dict.update({'id': assoc_id,
@@ -1153,7 +1160,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                   new=self._raise_bgpvpn_driver_precommit_exc):
             fmt = 'json'
             data = {'router_association': {'router_id': router['router']['id'],
-                                           'tenant_id': self._project_id}}
+                                           'project_id': self._project_id}}
             bgpvpn_router_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -1238,7 +1245,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                     'router_id': router_id,
                                     'bgpvpn_id': bgpvpn_id,
                                     'advertise_extra_routes': True}
-                    self.add_tenant(router_assoc)
+                    self.add_project(router_assoc)
                     mock_db_del.return_value = router_assoc
 
             # (delete triggered by exit from with statement)
@@ -1265,7 +1272,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
             bgpvpn_id = bgpvpn['bgpvpn']['id']
             port_id = port['port']['id']
             assoc_id = _uuid()
-            data = {'tenant_id': self._project_id,
+            data = {'project_id': self._project_id,
                     'port_id': port_id}
             port_assoc_dict = copy.copy(data)
             port_assoc_dict.update({'id': assoc_id,
@@ -1292,7 +1299,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                                   new=self._raise_bgpvpn_driver_precommit_exc):
             fmt = 'json'
             data = {'port_association': {'port_id': port['port']['id'],
-                                         'tenant_id': self._project_id}}
+                                         'project_id': self._project_id}}
             bgpvpn_port_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,
@@ -1428,7 +1435,7 @@ class TestBGPVPNServiceDriverDB(BgpvpnTestCaseMixin):
                           'port_id': port_id,
                           'routes': [],
                           'advertise_fixed_ips': True}
-            self.add_tenant(port_assoc)
+            self.add_project(port_assoc)
             mock_db_del.return_value = port_assoc
 
         # (delete triggered by exit from with statement)

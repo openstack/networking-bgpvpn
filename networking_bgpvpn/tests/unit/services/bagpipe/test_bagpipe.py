@@ -333,10 +333,10 @@ class TestBagpipeServiceDriver(TestBagpipeCommon):
 
     def test_bagpipe_associate_external_net_failed(self):
         net_id = self.external_net['network']['id']
-        with self.bgpvpn(tenant_id='another_tenant') as bgpvpn:
+        with self.bgpvpn(project_id='another_project') as bgpvpn:
             id = bgpvpn['bgpvpn']['id']
             data = {'network_association': {'network_id': net_id,
-                                            'tenant_id': self._project_id}}
+                                            'project_id': self._project_id}}
             bgpvpn_net_req = self.new_create_request(
                 'bgpvpn/bgpvpns',
                 data=data,

@@ -72,7 +72,7 @@ def is_extension_supported(plugin, ext_alias):
 def make_bgpvpn_dict(bgpvpn, fields=None):
     res = {
         'id': bgpvpn['id'],
-        'tenant_id': bgpvpn['tenant_id'],
+        'project_id': bgpvpn['project_id'],
         'name': bgpvpn['name'],
         'type': bgpvpn['type'],
         'route_targets': rtrd_str2list(bgpvpn['route_targets']),
@@ -92,26 +92,26 @@ def make_bgpvpn_dict(bgpvpn, fields=None):
     return filter_fields(res, fields)
 
 
-def make_net_assoc_dict(id, tenant_id, bgpvpn_id, network_id, fields=None):
+def make_net_assoc_dict(id, project_id, bgpvpn_id, network_id, fields=None):
     res = {'id': id,
-           'tenant_id': tenant_id,
+           'project_id': project_id,
            'bgpvpn_id': bgpvpn_id,
            'network_id': network_id}
     return filter_fields(res, fields)
 
 
-def make_router_assoc_dict(id, tenant_id, bgpvpn_id, router_id, fields=None):
+def make_router_assoc_dict(id, project_id, bgpvpn_id, router_id, fields=None):
     res = {'id': id,
-           'tenant_id': tenant_id,
+           'project_id': project_id,
            'bgpvpn_id': bgpvpn_id,
            'router_id': router_id}
     return filter_fields(res, fields)
 
 
-def make_port_assoc_dict(id, tenant_id, bgpvpn_id, port_id, fields=None):
+def make_port_assoc_dict(id, project_id, bgpvpn_id, port_id, fields=None):
     # NOTE(tmorin): fields need to be added here, this isn't used yet
     res = {'id': id,
-           'tenant_id': tenant_id,
+           'project_id': project_id,
            'bgpvpn_id': bgpvpn_id,
            'port_id': port_id}
     return filter_fields(res, fields)

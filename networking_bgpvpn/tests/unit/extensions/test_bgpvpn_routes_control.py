@@ -160,7 +160,7 @@ class BgpvpnRoutesControlExtensionTestCase(
         data = {
             'port_association': {
                 'port_id': self.port_id,
-                'tenant_id': _uuid()
+                'project_id': _uuid()
             }
         }
         return_value = copy.copy(data['port_association'])

@@ -67,9 +67,9 @@ rules = [
         ]
     ),
     policy.DocumentedRuleDefault(
-        'get_bgpvpn_router_association:tenant_id',
+        'get_bgpvpn_router_association:project_id',
         base.RULE_ADMIN_ONLY,
-        'Get ``tenant_id`` attributes of router associations',
+        'Get ``project_id`` attributes of router associations',
         [
             {
                 'method': 'GET',
